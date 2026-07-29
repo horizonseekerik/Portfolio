@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JANUS — JIR Compiler & Register File</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/universe.css">
+  <script src="../shared/universe.js" defer></script>
+  <style>
+    *,*::before,*::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html,body { width: 100%; height: 100%; overflow-x: hidden; }
+    body { font-family: 'Cormorant Garamond', serif; -webkit-font-smoothing: antialiased; }
+    
+    body[data-theme="dark"] {
+      background: rgba(8, 8, 12, 0.88);
+      color: rgba(255, 255, 255, 0.9);
+      --accent: #5585ff;
+      --accent-rgb: 85,133,255;
+      --border: rgba(80, 130, 255, 0.25);
+    }
+    body[data-theme="light"] {
+      background: rgba(233, 226, 209, 0.92);
+      color: rgba(18, 12, 4, 0.95);
+      --accent: #b87010;
+      --accent-rgb: 184,112,16;
+      --border: rgba(175, 118, 18, 0.25);
+    }
+    
+    body {
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+    
+    .container {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 2rem 4rem 2rem;
+      min-height: 100vh;
+    }
+    
+    .return-btn {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      background: rgba(0, 0, 0, 0.1);
+      border: 1.5px solid var(--border);
+      color: var(--accent);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+      opacity: 0.65;
+      transition: opacity 0.25s, box-shadow 0.3s;
+      z-index: 100;
+    }
+    .return-btn:hover { opacity: 1; box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.4); }
+    
+    header {
+      margin-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+    }
+    
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(var(--accent-rgb), 0.2);
+    }
+    
+    #schematicCanvas {
+      width: 100%;
+      height: 220px;
+      margin: 1.5rem 0;
+      display: block;
+      border-radius: 4px;
+    }
+    
+    .content { line-height: 1.8; }
+    .content p { margin-bottom: 1.5rem; font-size: 1.02rem; opacity: 0.92; }
+    .content strong { color: var(--accent); font-weight: 600; }
+    
+    .drawer-section-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin: 2rem 0 1rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--accent);
+      opacity: 0.85;
+    }
+    
+    .drawer-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+    .drawer-table th {
+      text-align: left;
+      padding: 0.8rem 0.6rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 2px solid var(--border);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .drawer-table td {
+      padding: 0.6rem 0.6rem;
+      border-bottom: 1px solid var(--border);
+      opacity: 0.85;
+    }
+    
+    .drawer-badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 3px;
+      font-size: 0.65rem;
+      font-family: 'Space Mono', monospace;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-right: 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+    
+    body[data-theme="dark"] .drawer-badge-blue {
+      background: rgba(80, 125, 255, 0.15);
+      color: #94b2ff;
+      border: 1px solid rgba(80, 125, 255, 0.35);
+    }
+    body[data-theme="light"] .drawer-badge-blue {
+      background: rgba(175, 118, 18, 0.1);
+      color: #b87010;
+      border: 1px solid rgba(175, 118, 18, 0.3);
+    }
+    
+    body[data-theme="dark"] .drawer-badge-green {
+      background: rgba(72, 199, 116, 0.15);
+      color: #48c774;
+      border: 1px solid rgba(72, 199, 116, 0.3);
+    }
+    body[data-theme="light"] .drawer-badge-green {
+      background: rgba(26, 122, 74, 0.1);
+      color: #1a7a4a;
+      border: 1px solid rgba(26, 122, 74, 0.25);
+    }
+    
+    @media (max-width: 600px) {
+      .container { padding: 1.5rem; }
+      h1 { font-size: 2rem; }
+      .return-btn { padding: 0.5rem 1rem; font-size: 0.65rem; }
+    }
+  </style>
+</head>
+<body>
+  <button class="return-btn">[ Return to Universe ]</button>
+  
+  <div class="container">
+    <header>
+      <h1>JIR Compiler & Register File</h1>
+      <canvas id="schematicCanvas"></canvas>
+    </header>
+    
+    <div class="content">
+      <p>The <strong>JANUS Intermediate Representation (JIR)</strong> compiler is responsible for decomposing 64-bit integer workloads into per-modulus RNS residues and scheduling optical waveguide routing configurations before each computation window opens.</p>
+      <p>The <strong>Register File</strong> is a reconfigurable SRAM array. During the optical phase it operates as k independent 8-bit registers — one per modulus lane. During CRT reconstruction it aliases those k registers into a single k×8-bit wide register, mirroring the ARM SVE scalable vector aliasing model.</p>
+      
+      <div class="drawer-section-title">Register File Modes</div>
+      <table class="drawer-table">
+        <tr><th>Phase</th><th>Mode</th><th>Width</th></tr>
+        <tr><td>Optical</td><td>k independent 8-bit</td><td>8 bits × k</td></tr>
+        <tr><td>CRT Reconstruction</td><td>Single merged register</td><td>k × 8 bits</td></tr>
+      </table>
+      
+      <div class="drawer-section-title">JIR Compilation Steps</div>
+      <ul style="list-style: none; margin: 0 0 1.5rem 1.5rem;">
+        <li style="margin-bottom: 0.8rem; font-size: 1rem; opacity: 0.88;"><strong>Decompose</strong> — 64-bit integer → k residues (CRT forward transform)</li>
+        <li style="margin-bottom: 0.8rem; font-size: 1rem; opacity: 0.88;"><strong>Schedule</strong> — assign each residue to a modulus lane</li>
+        <li style="margin-bottom: 0.8rem; font-size: 1rem; opacity: 0.88;"><strong>Route</strong> — program Beneš crossbar with PCM switching configuration</li>
+        <li style="margin-bottom: 0.8rem; font-size: 1rem; opacity: 0.88;"><strong>Execute</strong> — trigger optical computation window</li>
+        <li style="margin-bottom: 0.8rem; font-size: 1rem; opacity: 0.88;"><strong>Collect</strong> — read one-hot detector outputs into register file</li>
+      </ul>
+      
+      <div>
+        <span class="drawer-badge drawer-badge-blue">JIR COMPILER</span>
+        <span class="drawer-badge drawer-badge-green">SVE-INSPIRED</span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const theme = new URLSearchParams(window.location.search).get('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    const isDark = theme === 'dark';
+    const accentColor = isDark ? '#5585ff' : '#b87010';
+    const accentRGB = isDark ? '85,133,255' : '184,112,16';
+    const textColor = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(18,12,4,0.7)';
+    
+    const canvas = document.getElementById('schematicCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = '220px';
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(220 * dpr);
+      ctx.scale(dpr, dpr);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    function drawCompilationFlow(t) {
+      const w = canvas.width / (window.devicePixelRatio || 1);
+      const h = 220;
+      ctx.clearRect(0, 0, w, h);
+      
+      const steps = ['DECOMPOSE', 'SCHEDULE', 'ROUTE', 'EXECUTE', 'COLLECT'];
+      const sw = 70, sh = 40;
+      const gap = 12;
+      const totalW = steps.length * sw + (steps.length - 1) * gap;
+      let sx = (w - totalW) / 2;
+      const sy = h / 2 - sh / 2;
+      
+      steps.forEach((label, i) => {
+        const pulse = 0.5 + 0.5 * Math.sin(t * 0.06 - i * 0.6);
+        const opacity = 0.45 + pulse * 0.4;
+        
+        ctx.save();
+        ctx.shadowColor = accentColor;
+        ctx.shadowBlur = pulse * 14;
+        ctx.strokeStyle = `rgba(${accentRGB},${opacity})`;
+        ctx.lineWidth = 1.3;
+        ctx.strokeRect(sx, sy, sw, sh);
+        ctx.restore();
+        
+        ctx.save();
+        ctx.fillStyle = textColor;
+        ctx.font = '6px "Space Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, sx + sw / 2, sy + sh / 2 + 3);
+        ctx.restore();
+        
+        if (i < steps.length - 1) {
+          const arrowX = sx + sw + gap / 2;
+          const arrowY = sy + sh / 2;
+          const pulse2 = 0.5 + 0.5 * Math.sin(t * 0.06 - i * 0.6 + 0.3);
+          ctx.strokeStyle = `rgba(${accentRGB},${0.4 + pulse2 * 0.4})`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(sx + sw, arrowY);
+          ctx.lineTo(sx + sw + gap, arrowY);
+          ctx.stroke();
+        }
+        
+        sx += sw + gap;
+      });
+    }
+    
+    function animate() {
+      const t = (Date.now() % 8000) / 1000;
+      drawCompilationFlow(t);
+      requestAnimationFrame(animate);
+    }
+    animate();
+    
+    document.querySelector('.return-btn').addEventListener('click', () => {
+      window.location.href = '../hi.html';
+    });
+  </script>
+</body>
+</html>

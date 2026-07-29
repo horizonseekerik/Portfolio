@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JANUS — One-Hot Priority Encoder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/universe.css">
+  <script src="../shared/universe.js" defer></script>
+  <style>
+    *,*::before,*::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html,body { width: 100%; height: 100%; overflow-x: hidden; }
+    body { font-family: 'Cormorant Garamond', serif; -webkit-font-smoothing: antialiased; }
+    
+    body[data-theme="dark"] {
+      background: rgba(8, 8, 12, 0.88);
+      color: rgba(255, 255, 255, 0.9);
+      --accent: #5585ff;
+      --accent-rgb: 85,133,255;
+      --border: rgba(80, 130, 255, 0.25);
+    }
+    body[data-theme="light"] {
+      background: rgba(233, 226, 209, 0.92);
+      color: rgba(18, 12, 4, 0.95);
+      --accent: #b87010;
+      --accent-rgb: 184,112,16;
+      --border: rgba(175, 118, 18, 0.25);
+    }
+    
+    body {
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+    
+    .container {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 2rem 4rem 2rem;
+      min-height: 100vh;
+    }
+    
+    .return-btn {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      background: rgba(0, 0, 0, 0.1);
+      border: 1.5px solid var(--border);
+      color: var(--accent);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+      opacity: 0.65;
+      transition: opacity 0.25s, box-shadow 0.3s;
+      z-index: 100;
+    }
+    .return-btn:hover { opacity: 1; box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.4); }
+    
+    header {
+      margin-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+    }
+    
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(var(--accent-rgb), 0.2);
+    }
+    
+    #schematicCanvas {
+      width: 100%;
+      height: 220px;
+      margin: 1.5rem 0;
+      display: block;
+      border-radius: 4px;
+    }
+    
+    .content { line-height: 1.8; }
+    .content p { margin-bottom: 1.5rem; font-size: 1.02rem; opacity: 0.92; }
+    .content strong { color: var(--accent); font-weight: 600; }
+    
+    .drawer-section-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin: 2rem 0 1rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--accent);
+      opacity: 0.85;
+    }
+    
+    .drawer-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+    .drawer-table th {
+      text-align: left;
+      padding: 0.8rem 0.6rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 2px solid var(--border);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .drawer-table td {
+      padding: 0.6rem 0.6rem;
+      border-bottom: 1px solid var(--border);
+      opacity: 0.85;
+    }
+    
+    .drawer-badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 3px;
+      font-size: 0.65rem;
+      font-family: 'Space Mono', monospace;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-right: 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+    
+    body[data-theme="dark"] .drawer-badge-blue {
+      background: rgba(80, 125, 255, 0.15);
+      color: #94b2ff;
+      border: 1px solid rgba(80, 125, 255, 0.35);
+    }
+    body[data-theme="light"] .drawer-badge-blue {
+      background: rgba(175, 118, 18, 0.1);
+      color: #b87010;
+      border: 1px solid rgba(175, 118, 18, 0.3);
+    }
+    
+    body[data-theme="dark"] .drawer-badge-green {
+      background: rgba(72, 199, 116, 0.15);
+      color: #48c774;
+      border: 1px solid rgba(72, 199, 116, 0.3);
+    }
+    body[data-theme="light"] .drawer-badge-green {
+      background: rgba(26, 122, 74, 0.1);
+      color: #1a7a4a;
+      border: 1px solid rgba(26, 122, 74, 0.25);
+    }
+    
+    @media (max-width: 600px) {
+      .container { padding: 1.5rem; }
+      h1 { font-size: 2rem; }
+      .return-btn { padding: 0.5rem 1rem; font-size: 0.65rem; }
+    }
+  </style>
+</head>
+<body>
+  <button class="return-btn">[ Return to Universe ]</button>
+  
+  <div class="container">
+    <header>
+      <h1>One-Hot Priority Encoder</h1>
+      <canvas id="schematicCanvas"></canvas>
+    </header>
+    
+    <div class="content">
+      <p>After photodetection, 256 binary signals arrive simultaneously — exactly one is high. The <strong>One-Hot Priority Encoder</strong> resolves these to an 8-bit index in a single 30.3 ps clock cycle using an 8-level binary <em>tournament tree</em> of OR gates.</p>
+      <p>Because the one-hot invariant is guaranteed by the optical layer, arbitration logic is entirely bypassed — a 40% gate reduction compared to a conventional priority encoder. This is architecturally analogous to NVIDIA Hopper's warp scheduler.</p>
+      
+      <div class="drawer-section-title">Tournament Tree Structure</div>
+      <ul style="list-style: none; margin: 0 0 1.5rem 1.5rem;">
+        <li style="margin-bottom: 0.8rem; font-size: 1rem; opacity: 0.88;">Level 0: 256 leaves (raw photodetector outputs)</li>
+        <li style="margin-bottom: 0.8rem; font-size: 1rem; opacity: 0.88;">Levels 1–7: 128 → 64 → 32 → 16 → 8 → 4 → 2 OR-gate pairs</li>
+        <li style="margin-bottom: 0.8rem; font-size: 1rem; opacity: 0.88;">Level 8: single root → 8-bit index output</li>
+        <li style="margin-bottom: 0.8rem; font-size: 1rem; opacity: 0.88;">Propagation delay: 1 cycle = 30.3 ps</li>
+      </ul>
+      
+      <div class="drawer-section-title">Gate Efficiency</div>
+      <table class="drawer-table">
+        <tr><th>Architecture</th><th>Gate Count</th></tr>
+        <tr><td>Conventional priority encoder</td><td>~3400 gates</td></tr>
+        <tr><td>JANUS one-hot encoder</td><td>~2040 gates (−40%)</td></tr>
+      </table>
+      
+      <div>
+        <span class="drawer-badge drawer-badge-blue">30.3 ps</span>
+        <span class="drawer-badge drawer-badge-green">−40% GATES</span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const theme = new URLSearchParams(window.location.search).get('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    const isDark = theme === 'dark';
+    const accentColor = isDark ? '#5585ff' : '#b87010';
+    const accentRGB = isDark ? '85,133,255' : '184,112,16';
+    const textColor = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(18,12,4,0.7)';
+    
+    const canvas = document.getElementById('schematicCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = '220px';
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(220 * dpr);
+      ctx.scale(dpr, dpr);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    function drawTournament(t) {
+      const w = canvas.width / (window.devicePixelRatio || 1);
+      const h = 220;
+      ctx.clearRect(0, 0, w, h);
+      
+      const levels = 4;
+      const levelHeight = h / (levels + 1);
+      const centerX = w / 2;
+      
+      for (let level = 0; level < levels; level++) {
+        const nodeCount = Math.pow(2, levels - level - 1);
+        const spacing = w / (nodeCount + 1);
+        
+        for (let i = 0; i < nodeCount; i++) {
+          const x = spacing * (i + 1);
+          const y = (level + 1) * levelHeight;
+          const pulse = 0.5 + 0.5 * Math.sin(t * 0.08 - level * 0.5 - i * 0.3);
+          const opacity = 0.4 + pulse * 0.5;
+          
+          ctx.save();
+          ctx.shadowColor = accentColor;
+          ctx.shadowBlur = pulse * 10;
+          ctx.strokeStyle = `rgba(${accentRGB},${opacity})`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(x, y, 6, 0, Math.PI * 2);
+          ctx.stroke();
+          
+          if (pulse > 0.7) {
+            ctx.fillStyle = `rgba(${accentRGB},${(pulse - 0.7) / 0.3 * 0.5})`;
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+          
+          if (level < levels - 1) {
+            const nextNodeCount = Math.pow(2, levels - level - 2);
+            const nextSpacing = w / (nextNodeCount + 1);
+            const leftChild = nextSpacing * Math.floor((i + 1) / 2);
+            const rightChild = nextSpacing * Math.ceil((i + 1) / 2);
+            const nextY = (level + 2) * levelHeight;
+            
+            ctx.strokeStyle = `rgba(${accentRGB},${0.25 + pulse * 0.3})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(leftChild, nextY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(rightChild, nextY);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+    
+    function animate() {
+      const t = (Date.now() % 6000) / 1000;
+      drawTournament(t);
+      requestAnimationFrame(animate);
+    }
+    animate();
+    
+    document.querySelector('.return-btn').addEventListener('click', () => {
+      window.location.href = '../hi.html';
+    });
+  </script>
+</body>
+</html>
