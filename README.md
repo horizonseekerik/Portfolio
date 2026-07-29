@@ -1,4 +1,4 @@
-# Deepanshu Sharma - Photonic Computing Portfolio
+# Deepanshu Bhardwaj - Photonic Computing Portfolio
 
 Welcome to my portfolio! This repository contains a static, interactive website that showcases ideas and architectures in photonic computing. Rather than relying on heavy frameworks, this portfolio is built using pure HTML, CSS, and JavaScript, featuring highly customized, canvas-based animations to visually explain complex photonic and electronic hardware concepts.
 
