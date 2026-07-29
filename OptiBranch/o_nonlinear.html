@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OptiBranch — Nonlinear Effects Mitigation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html,body { width: 100%; height: 100%; overflow-x: hidden; }
+    body { font-family: 'Cormorant Garamond', serif; -webkit-font-smoothing: antialiased; }
+    
+    body[data-theme="dark"] {
+      background: rgba(8, 8, 12, 0.88);
+      color: rgba(255, 255, 255, 0.9);
+      --accent: #b87010;
+      --accent-rgb: 184,112,16;
+      --border: rgba(175, 118, 18, 0.25);
+    }
+    body[data-theme="light"] {
+      background: rgba(233, 226, 209, 0.92);
+      color: rgba(18, 12, 4, 0.95);
+      --accent: #d4a574;
+      --accent-rgb: 212,165,116;
+      --border: rgba(175, 118, 18, 0.25);
+    }
+    
+    body {
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+    
+    .container {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 2rem 4rem 2rem;
+      min-height: 100vh;
+    }
+    
+    .return-btn {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      background: rgba(0, 0, 0, 0.1);
+      border: 1.5px solid var(--border);
+      color: var(--accent);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+      opacity: 0.65;
+      transition: opacity 0.25s, box-shadow 0.3s;
+      z-index: 100;
+    }
+    .return-btn:hover { opacity: 1; box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.4); }
+    
+    header {
+      margin-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+    }
+    
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(var(--accent-rgb), 0.2);
+    }
+    
+    #schematicCanvas {
+      width: 100%;
+      height: 220px;
+      margin: 1.5rem 0;
+      display: block;
+      border-radius: 4px;
+    }
+    
+    .content { line-height: 1.8; }
+    .content p { margin-bottom: 1.5rem; font-size: 1.02rem; opacity: 0.92; }
+    .content strong { color: var(--accent); font-weight: 600; }
+    
+    .drawer-section-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin: 2rem 0 1rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--accent);
+      opacity: 0.85;
+    }
+    
+    .drawer-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+    .drawer-table th {
+      text-align: left;
+      padding: 0.8rem 0.6rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 2px solid var(--border);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .drawer-table td {
+      padding: 0.6rem 0.6rem;
+      border-bottom: 1px solid var(--border);
+      opacity: 0.85;
+    }
+    
+    .drawer-badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 3px;
+      font-size: 0.65rem;
+      font-family: 'Space Mono', monospace;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-right: 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+    
+    body[data-theme="dark"] .drawer-badge-gold {
+      background: rgba(184, 112, 16, 0.15);
+      color: #d4a574;
+      border: 1px solid rgba(184, 112, 16, 0.35);
+    }
+    body[data-theme="light"] .drawer-badge-gold {
+      background: rgba(184, 112, 16, 0.1);
+      color: #b87010;
+      border: 1px solid rgba(184, 112, 16, 0.3);
+    }
+    
+    body[data-theme="dark"] .drawer-badge-green {
+      background: rgba(72, 199, 116, 0.15);
+      color: #48c774;
+      border: 1px solid rgba(72, 199, 116, 0.3);
+    }
+    body[data-theme="light"] .drawer-badge-green {
+      background: rgba(26, 122, 74, 0.1);
+      color: #1a7a4a;
+      border: 1px solid rgba(26, 122, 74, 0.25);
+    }
+    
+    @media (max-width: 600px) {
+      .container { padding: 1.5rem; }
+      h1 { font-size: 2rem; }
+      .return-btn { padding: 0.5rem 1rem; font-size: 0.65rem; }
+    }
+  </style>
+</head>
+<body>
+  <button class="return-btn">[ Return to Universe ]</button>
+  
+  <div class="container">
+    <header>
+      <h1>FWM / XPM / TPA Mitigation</h1>
+      <canvas id="schematicCanvas"></canvas>
+    </header>
+    
+    <div class="content">
+      <p>High-power modulation across three WDM lanes triggers third-order nonlinear effects: <strong>Four-Wave Mixing (FWM)</strong> creates ghost tones at ω₁ + ω₂ − ω₃; <strong>Cross-Phase Modulation (XPM)</strong> couples phase noise across channels; <strong>Two-Photon Absorption (TPA)</strong> generates free carriers and nonlinear loss. OptiBranch mitigates these through three mechanisms:</p>
+      
+      <div class="drawer-section-title">Mitigation Strategies</div>
+      <table class="drawer-table">
+        <tr><th>Effect</th><th>Root Cause</th><th>Mitigation</th></tr>
+        <tr><td>FWM</td><td>Phase-matching in 5 nm BW</td><td>Wavelength detuning + dispersion</td></tr>
+        <tr><td>XPM</td><td>Intensity cross-coupling</td><td>Orthogonal polarization lanes</td></tr>
+        <tr><td>TPA</td><td>Bandgap &lt; 2 ℏω</td><td>Power limiting + high-loss input stage</td></tr>
+      </table>
+      
+      <div class="drawer-section-title">Design Constraints</div>
+      <ul style="list-style: none; margin: 0 0 1.5rem 1.5rem;">
+        <li style="margin-bottom: 0.8rem; font-size: 1rem; opacity: 0.88;"><strong>Orthogonal polarization:</strong> Lane 0 (TE), Lane 1 (TM), Lane 2 (TE+45°) eliminates XPM</li>
+        <li style="margin-bottom: 0.8rem; font-size: 1rem; opacity: 0.88;"><strong>Dispersion engineering:</strong> D = −5 ps/nm/mm waveguide disrupts FWM phase matching</li>
+        <li style="margin-bottom: 0.8rem; font-size: 1rem; opacity: 0.88;"><strong>Power budget:</strong> Input power &lt; 0 dBm/lane keeps TPA absorption &lt; 0.5 dB over 1 cm</li>
+      </ul>
+      
+      <div>
+        <span class="drawer-badge drawer-badge-gold">ORTHOGONAL POLARIZATION</span>
+        <span class="drawer-badge drawer-badge-green">TPA &lt; 0.5 dB</span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const theme = localStorage.getItem('janus-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    const isDark = theme === 'dark';
+    const accentColor = isDark ? '#b87010' : '#d4a574';
+    const accentRGB = isDark ? '184,112,16' : '212,165,116';
+    
+    const canvas = document.getElementById('schematicCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = '220px';
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(220 * dpr);
+      ctx.scale(dpr, dpr);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    function drawNonlinearEffects(t) {
+      const w = canvas.width / (window.devicePixelRatio || 1);
+      const h = 220;
+      ctx.clearRect(0, 0, w, h);
+      
+      const laneCount = 3;
+      const laneH = h / (laneCount + 1);
+      
+      for (let i = 0; i < laneCount; i++) {
+        const ly = (i + 1) * laneH;
+        const intensity = 0.4 + 0.4 * Math.sin(t * 0.5 - i * 0.4);
+        
+        ctx.strokeStyle = `rgba(${accentRGB},${0.3 + intensity * 0.3})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(w * 0.1, ly);
+        ctx.lineTo(w * 0.9, ly);
+        ctx.stroke();
+        
+        ctx.save();
+        ctx.globalAlpha = intensity * 0.3;
+        ctx.strokeStyle = `rgba(${accentRGB},0.8)`;
+        ctx.lineWidth = 1;
+        for (let j = 0; j < 5; j++) {
+          const px = w * 0.1 + (j + 1) * (w * 0.8 / 6);
+          ctx.beginPath();
+          ctx.arc(px, ly, 3 + intensity * 3, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.restore();
+        
+        const polarizations = ['TE', 'TM', 'TE+45°'];
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.font = '6px "Space Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(polarizations[i], w * 0.08, ly + 2);
+      }
+      
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = '7px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('MITIGATED: FWM / XPM / TPA', w / 2, h - 8);
+    }
+    
+    function animate() {
+      const t = (Date.now() % 8000) / 1000;
+      drawNonlinearEffects(t);
+      requestAnimationFrame(animate);
+    }
+    animate();
+    
+    document.querySelector('.return-btn').addEventListener('click', () => {
+      window.location.href = '../hi.html';
+    });
+  </script>
+</body>
+</html>
