@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>About — Deepanshu Sharma</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./shared/universe.css">
+  <script src="./shared/universe.js" defer></script>
+  <style>
+    *,*::before,*::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html,body { width: 100%; height: 100%; overflow-x: hidden; }
+    body { font-family: 'Cormorant Garamond', serif; -webkit-font-smoothing: antialiased; }
+    
+    body[data-theme="dark"] {
+      background: rgba(8, 8, 12, 0.88);
+      color: rgba(255, 255, 255, 0.9);
+      --accent: #5585ff;
+      --accent-rgb: 85,133,255;
+      --border: rgba(80, 130, 255, 0.25);
+    }
+    body[data-theme="light"] {
+      background: rgba(233, 226, 209, 0.92);
+      color: rgba(18, 12, 4, 0.95);
+      --accent: #b87010;
+      --accent-rgb: 184,112,16;
+      --border: rgba(175, 118, 18, 0.25);
+    }
+    
+    body {
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+    
+    .container {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 2rem 4rem 2rem;
+      min-height: 100vh;
+    }
+    
+    .return-btn {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      background: rgba(0, 0, 0, 0.1);
+      border: 1.5px solid var(--border);
+      color: var(--accent);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+      opacity: 0.65;
+      transition: opacity 0.25s, box-shadow 0.3s;
+      z-index: 100;
+    }
+    .return-btn:hover { opacity: 1; box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.4); }
+    
+    header {
+      margin-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+    }
+    
+    h1 {
+      font-size: 3rem;
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(var(--accent-rgb), 0.2);
+    }
+    
+    .subtitle {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      opacity: 0.7;
+      margin-bottom: 2rem;
+    }
+    
+    .content {
+      line-height: 1.9;
+    }
+    
+    .content p {
+      margin-bottom: 1.5rem;
+      font-size: 1.04rem;
+      opacity: 0.92;
+    }
+    
+    .content strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    
+    .content em {
+      font-style: italic;
+      opacity: 0.88;
+    }
+    
+    .section {
+      margin: 2.5rem 0 1.5rem 0;
+    }
+    
+    .section-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      opacity: 0.85;
+    }
+    
+    .highlight-box {
+      background: rgba(0, 0, 0, 0.15);
+      border-left: 3px solid var(--accent);
+      padding: 1.2rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 2px;
+    }
+    
+    .highlight-box p {
+      margin-bottom: 0.8rem;
+    }
+    .highlight-box p:last-child {
+      margin-bottom: 0;
+    }
+    
+    .link-list {
+      list-style: none;
+      margin: 1rem 0 1.5rem 0;
+    }
+    
+    .link-list li {
+      margin-bottom: 0.6rem;
+      font-size: 1rem;
+      opacity: 0.88;
+    }
+    
+    .link-list strong {
+      color: var(--accent);
+    }
+    
+    @media (max-width: 600px) {
+      .container { padding: 1.5rem; }
+      h1 { font-size: 2.2rem; }
+      .return-btn { padding: 0.5rem 1rem; font-size: 0.65rem; }
+    }
+  </style>
+</head>
+<body>
+  <button class="return-btn">[ Return to Universe ]</button>
+  
+  <div class="container">
+    <header>
+      <h1>Deepanshu Sharma</h1>
+      <div class="subtitle">Photonic Computing Researcher & Hardware Designer</div>
+    </header>
+    
+    <div class="content">
+      <p>Welcome to my portfolio. I am a hardware engineer and researcher specializing in <strong>hybrid photonic-electronic computing architectures</strong>, with a focus on exploiting the unique properties of light to accelerate integer arithmetic at scale.</p>
+      
+      <div class="section">
+        <div class="section-title">Core Research</div>
+        <p><strong>JANUS</strong> is my flagship project — a proof-of-concept heterogeneous 3D system that demonstrates <em>how optical waveguide routing can collapse modular multiplication from hundreds of CMOS cycles into a single photonic crossing</em>. The system combines:</p>
+        <ul class="link-list">
+          <li><strong>Residue Number System (RNS)</strong> arithmetic for decomposing 64-bit integers</li>
+          <li><strong>One-hot spatial encoding</strong> to trade SNR requirements from 138 dB down to &gt; 0 dB</li>
+          <li><strong>Phase-change memory (GST-467)</strong> as non-volatile optical crossbar switching</li>
+          <li><strong>33 GHz CMOS backend</strong> with a 4-stage Garner pipeline for sub-200 ps CRT reconstruction</li>
+        </ul>
+      </div>
+      
+      <div class="highlight-box">
+        <p><strong>Key Innovation:</strong> By encoding operand residues as <em>waveguide indices</em> rather than optical intensities, JANUS achieves noise-immune integer arithmetic with zero holding power on reconfigurable connections.</p>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">OptiBranch — Next Generation</div>
+        <p><strong>OptiBranch</strong> extends JANUS with <strong>Gallium Phosphide (GaP) parametric amplification</strong> and <strong>thin-film lithium niobate (TFLN) integrated optics</strong>. The system explores:</p>
+        <ul class="link-list">
+          <li>Quantum-noise-limited phase stability without conventional amplifiers</li>
+          <li>10-phase encoded slots for higher-dimensional RNS extensions</li>
+          <li>Integrated photonic switches at 1550 nm with femtosecond-scale reconfiguration</li>
+          <li>Predictive thermal drift correction using ΔΣ ADC feedback</li>
+        </ul>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Background</div>
+        <p>My research bridges <strong>quantum photonics</strong>, <strong>integrated silicon photonics</strong>, and <strong>custom digital design</strong>. I have collaborated with leading institutions including:</p>
+        <ul class="link-list">
+          <li><strong>Ligentec (Switzerland)</strong> — Si₃N₄ waveguide platform expertise</li>
+          <li><strong>LioniX International (Netherlands)</strong> — Photonic integrated circuit prototyping</li>
+          <li><strong>imec (Belgium)</strong> — Die-to-die bonding and 3D heterogeneous integration</li>
+          <li><strong>SCL Mohali (India)</strong> — CMOS backend fabrication</li>
+        </ul>
+      </div>
+      
+      <div class="highlight-box">
+        <p><strong>Vision:</strong> Photonic computing is not about replacing electronics—it is about <em>coexistence</em>. Light excels at routing, phase manipulation, and parallelism. Electrons excel at sequential logic and state management. The future belongs to hybrid systems that exploit both.</p>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">This Portfolio</div>
+        <p>Explore the <strong>JANUS Architecture</strong> menu to dive into the 10 subsystems: from one-hot RNS encoding and Beneš routing networks, to the Garner CRT pipeline and thermal management. Then, step into <strong>OptiBranch</strong> to witness the optical frontier of the same computational philosophy applied at the quantum-limited regime.</p>
+        <p>Each page contains interactive canvas visualizations of the underlying hardware, technical specifications, and design rationale.</p>
+      </div>
+      
+      <div class="section" style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); opacity: 0.7;">
+        <p style="font-size: 0.95rem; margin-bottom: 0;">Last updated: 2025-07-16 | Funded by C2S / India DLI Program</p>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const theme = localStorage.getItem('janus-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    document.querySelector('.return-btn').addEventListener('click', () => {
+      window.location.href = './hi.html';
+    });
+  </script>
+</body>
+</html>

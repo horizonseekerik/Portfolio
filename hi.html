@@ -1,0 +1,3620 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Deepanshu</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #050508
+    }
+
+    body {
+      -webkit-font-smoothing: antialiased
+    }
+
+    #app {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100svh;
+      overflow: hidden
+    }
+
+    /* ── HALVES ── */
+    .half {
+      position: absolute;
+      inset: 0;
+      /* z-index removed: .half must NOT form a stacking context so that
+         .panel children can participate in #app's stacking context directly
+         and sit above the particle canvas (z-index:2) */
+      will-change: clip-path;
+      cursor: pointer
+    }
+
+    #dH {
+      background: #050508
+    }
+
+    #lH {
+      background: #e9e2d1
+    }
+
+    /* ── PANEL ── */
+    .panel {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      max-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      justify-content: safe center;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding-block: 5.5rem 4.5rem;
+      pointer-events: auto;
+      scrollbar-width: none;
+      /* z-index: 5 places panels above the particle canvas (z-index:2) and
+         torn SVG edge (z-index:3) — works because .half no longer creates
+         a stacking context, so this z-index is evaluated in #app's context */
+      z-index: 5;
+      transition: left .8s ease, right .8s ease, width .8s ease, align-items .8s, opacity .35s ease
+    }
+
+    .panel::-webkit-scrollbar {
+      display: none
+    }
+
+    .dp {
+      left: 0;
+      width: 50%;
+      align-items: center;
+      padding-left: 5%;
+      padding-right: 5%
+    }
+
+    .lp {
+      right: 0;
+      width: 50%;
+      align-items: center;
+      padding-left: 5%;
+      padding-right: 5%
+    }
+
+    /* Hide panels while the menu is open */
+    #app.menu-open .panel {
+      opacity: 0;
+      pointer-events: none !important
+    }
+
+    /* FIX 4 — center text after universe chosen */
+    .dp.centered {
+      left: 15% !important;
+      width: 70% !important
+    }
+
+    .lp.centered {
+      right: auto !important;
+      left: 15% !important;
+      width: 70% !important;
+      align-items: center !important
+    }
+
+    .lp.centered .stxt {
+      text-align: left !important
+    }
+
+    .lp.centered .tbtn-row {
+      justify-content: flex-start !important
+    }
+
+    .lp.centered .itrp {
+      text-align: left !important;
+      border-right: none !important;
+      border-left: 1px solid rgba(175, 118, 18, .28) !important;
+      padding-right: 0 !important;
+      padding-left: .85rem !important
+    }
+
+    .lp.centered .fact {
+      text-align: left !important;
+      border-right: none !important;
+      padding-right: 0 !important;
+      border-left: 1px solid rgba(172, 118, 18, .14) !important;
+      padding-left: .8rem !important
+    }
+
+    /* ── LABELS ── */
+
+    /* ── HINTS ── */
+
+    /* ── SHAYARI ── */
+    .swr {
+      margin-bottom: 2.8rem;
+      pointer-events: auto;
+    }
+
+    /* When scrolly engine is active, the panel becomes a clean centering container */
+    .panel.scrolly-active {
+      overflow: hidden !important;
+      padding: 0 !important;
+    }
+
+    /* In scrolly-active mode, both blocks are absolutely centered and toggled via opacity */
+    .panel.scrolly-active .swr,
+    .panel.scrolly-active .facts {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      max-width: 640px;
+      margin: 0;
+      box-sizing: border-box;
+      transition: opacity 0.45s ease;
+    }
+
+    .panel.scrolly-active .swr {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .panel.scrolly-active .swr.text-hidden {
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
+    .panel.scrolly-active .facts {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .panel.scrolly-active .facts.text-visible {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    .stxt {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 1.28rem;
+      line-height: 2.05;
+      letter-spacing: .03em
+    }
+
+    .dp .stxt {
+      color: rgba(255, 255, 255, .82)
+    }
+
+    .lp .stxt {
+      color: rgba(18, 12, 4, .92);
+      font-weight: 700;
+      text-align: right
+    }
+
+    .tbtn,
+    .tbtn-row {
+      display: none !important;
+    }
+
+    .itrp {
+      margin-top: 1.5rem;
+      display: block;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      line-height: 1.8;
+      max-width: 480px
+    }
+
+    .dp .itrp {
+      color: rgba(148, 178, 255, .88);
+      border-left: 1px solid rgba(80, 125, 255, .28);
+      padding-left: .85rem
+    }
+
+    .lp .itrp {
+      color: rgba(95, 62, 8, .88);
+      font-weight: 700;
+      border-right: 1px solid rgba(175, 118, 18, .28);
+      padding-right: .85rem;
+      text-align: right
+    }
+
+    /* ── FACTS ── */
+    .facts {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem
+    }
+
+    .fact {
+      font-family: 'Space Mono', monospace;
+      font-size: .95rem;
+      line-height: 1.72;
+      letter-spacing: .008em;
+      opacity: .46;
+      transition: opacity .4s;
+      max-width: 420px;
+      pointer-events: auto
+    }
+
+    .dp .fact {
+      color: rgba(175, 202, 255, 1);
+      border-left: 1px solid rgba(80, 125, 255, .14);
+      padding-left: .8rem
+    }
+
+    .lp .fact {
+      color: rgba(48, 32, 6, 1);
+      font-weight: 700;
+      border-right: 1px solid rgba(172, 118, 18, .14);
+      padding-right: .8rem;
+      text-align: right
+    }
+
+    /* ── CANVAS ── */
+    #cv {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none
+    }
+
+    /* ── TORN SVG ── */
+    #ts {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      pointer-events: none;
+      transition: opacity .6s
+    }
+
+    /* ── NAV ── */
+    #nav {
+      position: absolute;
+      inset: 0;
+      z-index: 9;
+      pointer-events: none
+    }
+
+    .ni {
+      position: absolute;
+      pointer-events: auto;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      opacity: 0;
+      background: none;
+      border: 0;
+      padding: 0;
+      text-align: inherit;
+      color: inherit;
+      transition: opacity .45s ease, top .6s ease, bottom .6s ease, left .6s ease, right .6s ease, font-size .5s ease, transform .6s ease
+    }
+
+    .ni:focus-visible,
+    .tbtn:focus-visible,
+    .ddi:focus-visible {
+      outline: 1px solid currentColor;
+      outline-offset: 6px
+    }
+
+    .ni.on {
+      opacity: 1
+    }
+
+    .dc {
+      color: rgba(255, 255, 255, .88);
+      text-shadow: 0 0 14px rgba(80, 130, 255, .32)
+    }
+
+    .lc {
+      color: rgba(20, 13, 3, .88)
+    }
+
+    #aB {
+      bottom: 2rem;
+      right: 2.5rem;
+      font-size: .75rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem
+    }
+
+    #sB {
+      bottom: 5.8rem;
+      right: 2.5rem;
+      font-size: .75rem
+    }
+
+    #app.dark-ui #aB {
+      top: auto;
+      right: 2.5rem;
+      bottom: 2rem;
+      left: auto
+    }
+
+    #app.dark-ui #sB {
+      top: 2rem;
+      right: 2.5rem;
+      bottom: auto;
+      left: auto
+    }
+
+    #app.light-ui #aB {
+      top: auto;
+      right: auto;
+      bottom: 2rem;
+      left: 2.5rem
+    }
+
+    #app.light-ui #sB {
+      top: 2rem;
+      right: auto;
+      bottom: auto;
+      left: 2.5rem
+    }
+
+    .pring {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: radial-gradient(circle at 35% 35%, #6090ff, #1c3a9a);
+      border: 1px solid rgba(145, 180, 255, .32)
+    }
+
+    /* FIX 2 — initial positions: both sides */
+    #jB {
+      top: 50%;
+      left: 7%;
+      font-size: 1.08rem;
+      transform: translateY(-50%)
+    }
+
+    #oB {
+      top: 50%;
+      right: 7%;
+      font-size: 1.08rem;
+      transform: translateY(-50%)
+    }
+
+    .dd {
+      display: none;
+      flex-direction: column;
+      gap: .38rem;
+      margin-top: .9rem;
+      font-size: .75rem;
+      font-weight: 400;
+      letter-spacing: .05em
+    }
+
+    .dd.on {
+      display: flex
+    }
+
+    .ddi {
+      display: inline-block;
+      color: inherit;
+      text-decoration: none;
+      opacity: .52;
+      transition: opacity .2s;
+      cursor: pointer
+    }
+
+    .ddi:visited {
+      color: inherit
+    }
+
+    /* FIX 2 — post-selection: JANUS center-left, OptiBranch center-right */
+    .to-ml {
+      top: 50% !important;
+      left: 26% !important;
+      right: auto !important;
+      transform: translateY(-50%) !important;
+      font-size: 1.08rem !important
+    }
+
+    .to-mr {
+      top: 50% !important;
+      right: 26% !important;
+      left: auto !important;
+      transform: translateY(-50%) !important;
+      font-size: 1.08rem !important
+    }
+
+    /* ── SCROLLYTELLING PARTICLE CANVAS & MORPH TARGETS ── */
+    .panel-particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .morph-target {
+      transition: opacity 0.45s ease, color 0.45s ease;
+    }
+
+    .quote-author {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.95rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-top: 1.6rem;
+      opacity: 0.75;
+      transition: opacity 0.45s ease;
+    }
+
+    .dp .quote-author {
+      color: rgba(180, 200, 255, 0.85);
+    }
+
+    /* ── scrolly-active FACTS grid layout ── */
+    .panel.scrolly-active .facts {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 2.5rem 3rem;
+      padding: 2rem 3rem;
+      align-items: center;
+      justify-items: center;
+    }
+
+    .panel.scrolly-active .facts .fact {
+      max-width: 350px;
+      opacity: 1 !important;
+    }
+
+    .panel.scrolly-active .facts .fact:nth-child(1) {
+      justify-self: start;
+      align-self: start;
+    }
+
+    .panel.scrolly-active .facts .fact:nth-child(2) {
+      justify-self: end;
+      align-self: start;
+    }
+
+    .panel.scrolly-active .facts .fact:nth-child(3) {
+      justify-self: start;
+      align-self: end;
+    }
+
+    .panel.scrolly-active .facts .fact:nth-child(4) {
+      justify-self: end;
+      align-self: end;
+    }
+
+    /* ── HITBOX ── */
+    #hbx {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 7;
+      border-radius: 50%;
+      cursor: pointer;
+      transform: translate3d(var(--hbx-x, 0), var(--hbx-y, 0), 0) translate(-50%, -50%);
+      transition: box-shadow .4s;
+      will-change: transform
+    }
+
+    /* ── OVERLAY ── */
+    @media (hover:hover) {
+      .tbtn:hover {
+        opacity: .85
+      }
+
+      .fact:hover {
+        opacity: .9
+      }
+
+      .ddi:hover {
+        opacity: 1
+      }
+    }
+
+    @media (max-height:680px) {
+      .panel {
+        padding-block: 5rem 3.5rem
+      }
+
+      .swr {
+        margin-bottom: 1.6rem
+      }
+
+      .facts {
+        gap: .75rem
+      }
+    }
+  </style>
+
+  .drawer-dark {
+  background: rgba(8, 8, 12, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-left: 1.5px solid rgba(80, 130, 255, 0.25);
+  color: rgba(255, 255, 255, 0.9);
+  }
+
+  .drawer-light {
+  background: rgba(233, 226, 209, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-left: 1.5px solid rgba(175, 118, 18, 0.25);
+  color: rgba(18, 12, 4, 0.95);
+  }
+
+  .drawer-canvas-container {
+  width: 100%;
+  height: 200px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+  background: rgba(0, 0, 0, 0.05);
+  }
+
+  #drawerCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  }
+
+  .drawer-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2.2rem 2rem 3rem 2rem;
+  scrollbar-width: none;
+  }
+  .drawer-body::-webkit-scrollbar {
+  display: none;
+  }
+
+  .drawer-header {
+  margin-bottom: 2rem;
+  }
+
+  .drawer-eyebrow {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-bottom: 0.5rem;
+  opacity: 0.65;
+  }
+
+  .drawer-dark .drawer-eyebrow {
+  color: #5585ff;
+  }
+  .drawer-light .drawer-eyebrow {
+  color: #b87010;
+  }
+
+  .drawer-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.85rem;
+  font-weight: 300;
+  line-height: 1.25;
+  }
+
+  .drawer-close {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.4rem;
+  opacity: 0.45;
+  transition: opacity 0.25s;
+  z-index: 10;
+  }
+
+  .drawer-dark .drawer-close {
+  color: #ffffff;
+  }
+  .drawer-light .drawer-close {
+  color: #120c04;
+  }
+
+  .drawer-close:hover {
+  opacity: 0.9;
+  }
+
+  /* ── DRAWER CONTENT ELEMENTS ── */
+  .drawer-desc {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.02rem;
+  line-height: 1.78;
+  margin-bottom: 1.5rem;
+  opacity: 0.88;
+  }
+
+  .drawer-desc p {
+  margin-bottom: 1rem;
+  }
+
+  .drawer-desc strong {
+  font-weight: bold;
+  }
+  .drawer-dark .drawer-desc strong { color: #ffffff; }
+  .drawer-light .drawer-desc strong { color: #120c04; }
+
+  .drawer-section-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 1.8rem 0 0.8rem 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+  }
+  .drawer-dark .drawer-section-title { color: rgba(148, 178, 255, 0.9); }
+  .drawer-light .drawer-section-title { color: rgba(95, 62, 8, 0.9); }
+
+  .drawer-list {
+  margin-bottom: 1.5rem;
+  padding-left: 1.2rem;
+  }
+
+  .drawer-list li {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  margin-bottom: 0.5rem;
+  opacity: 0.85;
+  }
+
+  .drawer-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.2rem 0;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  }
+
+  .drawer-table th {
+  text-align: left;
+  padding: 0.6rem 0.5rem;
+  font-weight: bold;
+  border-bottom: 2px solid rgba(128, 128, 128, 0.25);
+  }
+
+  .drawer-table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+  vertical-align: top;
+  }
+
+  .drawer-dark .drawer-table th { color: #94b2ff; }
+  .drawer-light .drawer-table th { color: #5f3e08; }
+
+  .drawer-badge {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  }
+
+  .drawer-dark .drawer-badge-blue { background: rgba(80, 125, 255, 0.15); color: #94b2ff; border: 1.5px solid rgba(80,
+  125, 255, 0.35); }
+  .drawer-light .drawer-badge-blue { background: rgba(175, 118, 18, 0.1); color: #b87010; border: 1.5px solid rgba(175,
+  118, 18, 0.3); }
+
+  .drawer-dark .drawer-badge-green { background: rgba(72, 199, 116, 0.15); color: #48c774; border: 1.5px solid
+  rgba(72,199,116,0.3); }
+  .drawer-light .drawer-badge-green { background: rgba(26, 122, 74, 0.1); color: #1a7a4a; border: 1.5px solid rgba(26,
+  122, 74, 0.25); }
+
+  .drawer-dark .drawer-badge-amber { background: rgba(240, 140, 60, 0.15); color: #f08c3c; border: 1.5px solid
+  rgba(240,140,60,0.3); }
+  .drawer-light .drawer-badge-amber { background: rgba(230, 126, 34, 0.1); color: #d35400; border: 1.5px solid
+  rgba(230,126,34,0.25); }
+
+  .drawer-code {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  padding: 0.8rem 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 1.2rem 0;
+  white-space: pre;
+  }
+  .drawer-dark .drawer-code {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(80, 125, 255, 0.15);
+  color: rgba(148, 178, 255, 0.9);
+  }
+  .drawer-light .drawer-code {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(175, 118, 18, 0.15);
+  color: rgba(95, 62, 8, 0.9);
+  }
+
+  /* Responsive adjustment */
+  @media (max-width: 600px) {
+  .drawer {
+  width: 100%;
+  border-left: none;
+  }
+  .drawer-body {
+  padding: 1.8rem 1.4rem;
+  }
+  }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- Dark half -->
+    <div id="dH" class="half">
+      <div class="panel dp">
+        <div class="swr">
+          <p class="stxt morph-target">Khoya hun us aandhere main,<br>Jahan pehchan na sako khud ko;<br>Bayan karu bhi
+            toh kya karun,<br>Jab koi khayal pehchan na saka mujhko.<br><br>Ab bateen zaruri lgne lagti hai,<br>Shikayat
+            khudse marne lgti hain;<br>Phir jake kahin us andhere main,<br>Mujhe meri parchai jalti dikhne lgti hai.</p>
+          <p class="quote-author">— Deepanshu Bhardwaj</p>
+          <button class="tbtn" data-ti="di">interpretation</button>
+          <p class="itrp" id="di">To exist in a depth where you become unrecognizable — even to yourself. Where the
+            shapes of thought no longer fit. Words feel important, then fall silent. And in that darkness, you see only
+            the outline of what you were — your own shadow, burning.</p>
+        </div>
+        <div class="facts">
+          <div class="fact morph-target">A vacuum is never truly empty. Pull two plates close enough and the void itself
+            pushes back
+            — the Casimir effect, a force born from nothing.</div>
+          <div class="fact morph-target">Hawking radiation doesn't originate inside a black hole. It emerges at the
+            boundary — where
+            the event horizon meets quantum uncertainty, and information escapes as heat.</div>
+          <div class="fact morph-target">Uncertainty isn't a measurement limitation. It's a constraint written into
+            spacetime.
+            Engineering around it isn't defeat — it's the beginning of quantum design.</div>
+          <div class="fact morph-target">Two particles, separated by galaxies, share a fate. Entanglement doesn't
+            transmit
+            information faster than light. What it does transmit has never been fully resolved.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Light half -->
+    <div id="lH" class="half">
+      <div class="panel lp">
+        <div class="swr">
+          <p class="stxt morph-target">Talassh hai uss manzar ki jiska koi kinara na ho,<br>Door usse utne hai jitna
+            hamara fasla
+            raha ho.<br>Baat hi na hui ho toh faasla kaise bol du
+            main,<br>Usko naam hi na pata ho toh pyaar kaise
+            karar du main.</p>
+          <p class="quote-author">— Deepanshu Bhardwaj</p>
+          <div class="tbtn-row"><button class="tbtn" data-ti="li">interpretation</button></div>
+          <p class="itrp" id="li">To search for a horizon that has no shore, across a distance you cannot name. If we
+            never spoke, how do I call it distance? If you have no name for me, how do I call it love?</p>
+        </div>
+        <div class="facts">
+          <div class="fact morph-target">A single photon carries enough phase information to route a computation — if
+            you know how to
+            read it. This is not metaphor. This is one-hot optical encoding.</div>
+          <div class="fact morph-target">TFLN doesn't amplify light — it reshapes it. The Pockels effect bends the
+            refractive index
+            with voltage, switching in picoseconds. No heat. No carriers. Just field.</div>
+          <div class="fact morph-target">GaP has no two-photon absorption at telecom wavelengths. High nonlinearity
+            without
+            self-destruction. In material science terms, this is a gift.</div>
+          <div class="fact morph-target">Parametric amplification creates gain without conventional noise. The signal
+            amplifies. The
+            noise floor doesn't follow. This breaks the fundamental amplifier tradeoff.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Canvas -->
+    <canvas id="cv"></canvas>
+
+    <!-- Torn SVG edge -->
+    <svg id="ts" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="gf" x="-30%" y="0" width="160%" height="100%">
+          <feGaussianBlur stdDeviation="2" result="b" />
+          <feMerge>
+            <feMergeNode in="b" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      <polyline id="tl" fill="none" stroke="rgba(210,210,210,0.11)" stroke-width="1.3" filter="url(#gf)" />
+    </svg>
+
+    <!-- Navigation -->
+    <div id="nav">
+      <button class="ni dc" id="aB" type="button"><span class="pring"></span><span>About</span></button>
+      <button class="ni dc" id="sB" type="button"><span>Light Universe</span></button>
+      <button class="ni dc" id="jB" type="button">
+        <span>JANUS</span>
+        <span class="dd" id="jDd">
+          <a class="ddi" href="Janus/overview.html" data-janus-page="Janus/overview.html">Architecture Overview</a>
+          <a class="ddi" href="Janus/routing.html" data-janus-page="Janus/routing.html">Bene&#353; Routing &amp; PCM
+            Switching</a>
+          <a class="ddi" href="Janus/onehot.html" data-janus-page="Janus/onehot.html">One-Hot Optical RNS</a>
+          <a class="ddi" href="Janus/cmos.html" data-janus-page="Janus/cmos.html">CMOS Backend</a>
+          <a class="ddi" href="Janus/compiler.html" data-janus-page="Janus/compiler.html">JIR Compiler &amp; Register
+            File</a>
+          <a class="ddi" href="Janus/garner.html" data-janus-page="Janus/garner.html">CRT Garner Pipeline</a>
+          <a class="ddi" href="Janus/thermal.html" data-janus-page="Janus/thermal.html">Thermal Controller</a>
+          <a class="ddi" href="Janus/priority.html" data-janus-page="Janus/priority.html">One-Hot Priority Encoder</a>
+          <a class="ddi" href="Janus/clock.html" data-janus-page="Janus/clock.html">Predictive Clock Gating</a>
+          <a class="ddi" href="Janus/fabrication.html" data-janus-page="Janus/fabrication.html">Fabrication &amp; Yield
+            Analysis</a>
+        </span>
+      </button>
+      <button class="ni lc" id="oB" type="button">
+        <span>OptiBranch</span>
+        <span class="dd" id="oDd">
+          <a class="ddi" href="OptiBranch/o_overview.html"
+            data-optibranch-page="OptiBranch/o_overview.html">Architecture Overview</a>
+          <a class="ddi" href="OptiBranch/o_psa.html" data-optibranch-page="OptiBranch/o_psa.html">GaP PSA Stage &amp;
+            Phase Coherence</a>
+          <a class="ddi" href="OptiBranch/o_tfln.html" data-optibranch-page="OptiBranch/o_tfln.html">TFLN Pockels
+            Physics</a>
+          <a class="ddi" href="OptiBranch/o_10phase.html" data-optibranch-page="OptiBranch/o_10phase.html">10-Phase Slot
+            Encoding</a>
+          <a class="ddi" href="OptiBranch/o_nlmzi.html" data-optibranch-page="OptiBranch/o_nlmzi.html">NLMZI Binary
+            Amplitude Gating</a>
+          <a class="ddi" href="OptiBranch/o_wdm.html" data-optibranch-page="OptiBranch/o_wdm.html">Three-Lane
+            Architecture</a>
+          <a class="ddi" href="OptiBranch/o_dispersion.html"
+            data-optibranch-page="OptiBranch/o_dispersion.html">Dispersion Management</a>
+          <a class="ddi" href="OptiBranch/o_thermal.html" data-optibranch-page="OptiBranch/o_thermal.html">Thermal Drift
+            &amp; PID Locking</a>
+          <a class="ddi" href="OptiBranch/o_nonlinear.html" data-optibranch-page="OptiBranch/o_nonlinear.html">FWM / XPM
+            / TPA Mitigation</a>
+          <a class="ddi" href="OptiBranch/o_latency.html" data-optibranch-page="OptiBranch/o_latency.html">Latency
+            Analysis &amp; Targets</a>
+        </span>
+      </button>
+    </div>
+
+    <!-- Central object hitbox -->
+    <div id="hbx"></div>
+
+    <!-- JANUS content drawer -->
+    <div id="janusDrawer" class="drawer drawer-dark" aria-hidden="true">
+      <div class="drawer-header">
+        <div>
+          <div class="drawer-eyebrow">JANUS Details</div>
+          <div class="drawer-title" id="drawerTitle"></div>
+        </div>
+        <button class="drawer-close" id="drawerCloseBtn" type="button" aria-label="Close drawer">×</button>
+      </div>
+      <div class="drawer-canvas-container">
+        <canvas id="drawerCanvas"></canvas>
+      </div>
+      <div class="drawer-body" id="drawerContent"></div>
+    </div>
+
+  </div>
+
+
+
+  <script>
+    (() => {
+      'use strict';
+      // ═══════════════════════════════════════════════
+      // THEME PERSISTENCE — sessionStorage sync
+      // ═══════════════════════════════════════════════
+      localStorage.removeItem('janus-theme');
+      const savedTheme = sessionStorage.getItem('janus-theme');
+      let initTheme = null;
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        initTheme = savedTheme === 'dark' ? 'DARK' : 'LIGHT';
+      }
+
+      // ═══════════════════════════════════════════════
+      // DEVICE CAPABILITY DETECTION — GRAPHICS FALLBACK TIERS
+      // Phones/touch, small screens, and weak CPUs/RAM all step
+      // down the render load instead of a single mobile/desktop switch.
+      // ═══════════════════════════════════════════════
+      const isTouch = matchMedia('(pointer: coarse)').matches;
+      const smallScreen = Math.min(innerWidth, innerHeight) <= 480 || innerWidth <= 820;
+      const lowCPU = (navigator.hardwareConcurrency || 8) <= 4;
+      const lowMem = (navigator.deviceMemory || 8) <= 4;
+      const veryLowCPU = (navigator.hardwareConcurrency || 8) <= 2;
+      const veryLowMem = (navigator.deviceMemory || 8) <= 2;
+      const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // navigator.deviceMemory doesn't exist in Safari/iOS, so hardwareConcurrency/deviceMemory
+      // alone miss weak iPhones. A tiny synchronous benchmark works everywhere as a CPU proxy.
+      // Two things keep this from blocking first paint on the very devices it's checking:
+      //  1. Skip it outright when the cheap signals already say "clearly capable machine"
+      //     (desktop, not a small screen, decent cores/memory) — running it there would
+      //     only ever push the tier *down*, and it's the low-end path we actually care about.
+      //  2. Shrink the sample size a lot; thresholds are rescaled to match.
+      function quickBenchmark() {
+        const t0 = performance.now();
+        let x = 0;
+        for (let i = 0; i < 400000; i++) { x += Math.sqrt(i) % 7; }
+        return performance.now() - t0;
+      }
+      const skipBenchmark = !isTouch && !smallScreen && !lowCPU && !lowMem;
+      const benchMs = skipBenchmark ? 0 : quickBenchmark();
+      const slowBench = benchMs > 3.2;
+      const verySlowBench = benchMs > 8;
+
+      let TIER = 'full';
+      if (isTouch && smallScreen && (veryLowCPU || veryLowMem || verySlowBench)) TIER = 'static';
+      else if (isTouch && (lowCPU || lowMem || smallScreen || slowBench)) TIER = 'minimal';
+      else if (isTouch || smallScreen || lowCPU || lowMem || slowBench) TIER = 'reduced';
+      if (reducedMotion && TIER === 'full') TIER = 'reduced';
+
+      const CFG = {
+        full: { NP: 460, dprCap: 2, cursor: 12, blur: true, glowScale: 1, orbit: true, jitter: 1, ripple: 10 },
+        reduced: { NP: 220, dprCap: 1.5, cursor: isTouch ? 0 : 6, blur: false, glowScale: .78, orbit: true, jitter: reducedMotion ? 0 : .6, ripple: 6 },
+        minimal: { NP: 104, dprCap: 1, cursor: 0, blur: false, glowScale: .5, orbit: false, jitter: 0, ripple: 3 },
+        static: { NP: 80, dprCap: 1, cursor: 0, blur: false, glowScale: .45, orbit: false, jitter: 0, ripple: 0 }
+      }[TIER];
+
+      document.documentElement.classList.add('gfx-' + TIER);
+      document.documentElement.dataset.gfxTier = TIER;
+
+      const cv = document.getElementById('cv');
+      const ctx = cv.getContext('2d');
+      let vw = innerWidth, vh = innerHeight, dpr = 1;
+      function resize() {
+        vw = innerWidth;
+        vh = innerHeight;
+        dpr = Math.min(window.devicePixelRatio || 1, CFG.dprCap);
+        cv.style.width = vw + 'px';
+        cv.style.height = vh + 'px';
+        cv.width = Math.round(vw * dpr);
+        cv.height = Math.round(vh * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      resize();
+      window.addEventListener('resize', () => {
+        resize();
+        if (TIER === 'static') {
+          if (ST === 'SPLIT') { ox = vw / 2; oy = vh / 2; applyEdge(rawEdge); }
+          else applyEdge(rawEdge.map(p => ({ x: ST === 'DARK' ? 101 : -1, y: p.y })));
+          const hb = document.getElementById('hbx');
+          hb.style.setProperty('--hbx-x', ox + 'px');
+          hb.style.setProperty('--hbx-y', oy + 'px');
+          paintStatic();
+        }
+      });
+
+      // Drop the expensive Gaussian blur filter on the torn-edge SVG for reduced/minimal tiers
+      if (!CFG.blur) {
+        const tl = document.getElementById('tl');
+        if (tl) tl.removeAttribute('filter');
+      }
+
+      const spriteCache = new Map();
+      const gradientCache = new Map();
+
+      function getGlowSprite(radius, stops) {
+        const r = Math.max(1, Math.ceil(radius));
+        const key = r + stops.map(([p, c]) => `${p}:${c}`).join('|');
+        if (spriteCache.has(key)) return spriteCache.get(key);
+
+        const size = r * 2;
+        const sprite = document.createElement('canvas');
+        sprite.width = size;
+        sprite.height = size;
+        const sctx = sprite.getContext('2d');
+        const g = sctx.createRadialGradient(r, r, 0, r, r, r);
+        stops.forEach(([pos, color]) => g.addColorStop(pos, color));
+        sctx.fillStyle = g;
+        sctx.beginPath();
+        sctx.arc(r, r, r, 0, Math.PI * 2);
+        sctx.fill();
+        spriteCache.set(key, sprite);
+        return sprite;
+      }
+
+      function drawGlow(x, y, radius, stops) {
+        const sprite = getGlowSprite(radius, stops);
+        ctx.drawImage(sprite, x - radius, y - radius, radius * 2, radius * 2);
+      }
+
+      function cachedRadialGradient(key, cx, cy, r0, r1, stops) {
+        const qKey = `${key}:${Math.round(cx / 4)}:${Math.round(cy / 4)}:${Math.round(r0 / 2)}:${Math.round(r1 / 2)}`;
+        if (gradientCache.has(qKey)) return gradientCache.get(qKey);
+        const g = ctx.createRadialGradient(cx, cy, r0, cx, cy, r1);
+        stops.forEach(([pos, color]) => g.addColorStop(pos, color));
+        gradientCache.set(qKey, g);
+        if (gradientCache.size > 120) gradientCache.delete(gradientCache.keys().next().value);
+        return g;
+      }
+
+      function cachedRadialGradientFull(key, x0, y0, r0, x1, y1, r1, stops) {
+        const qKey = `${key}:${Math.round(x0 / 4)}:${Math.round(y0 / 4)}:${Math.round(r0 / 2)}:${Math.round(x1 / 4)}:${Math.round(y1 / 4)}:${Math.round(r1 / 2)}`;
+        if (gradientCache.has(qKey)) return gradientCache.get(qKey);
+        const g = ctx.createRadialGradient(x0, y0, r0, x1, y1, r1);
+        stops.forEach(([pos, color]) => g.addColorStop(pos, color));
+        gradientCache.set(qKey, g);
+        if (gradientCache.size > 120) gradientCache.delete(gradientCache.keys().next().value);
+        return g;
+      }
+
+      function cachedLinearGradient(key, x0, y0, x1, y1, stops) {
+        const qKey = `${key}:${Math.round(x0 / 4)}:${Math.round(y0 / 4)}:${Math.round(x1 / 4)}:${Math.round(y1 / 4)}`;
+        if (gradientCache.has(qKey)) return gradientCache.get(qKey);
+        const g = ctx.createLinearGradient(x0, y0, x1, y1);
+        stops.forEach(([pos, color]) => g.addColorStop(pos, color));
+        gradientCache.set(qKey, g);
+        if (gradientCache.size > 120) gradientCache.delete(gradientCache.keys().next().value);
+        return g;
+      }
+
+      // ═══════════════════════════════════════════════
+      // TORN EDGE — seeded, organic, micro-detailed
+      // ═══════════════════════════════════════════════
+      const rng = (() => { let s = 7919; return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; }; })();
+      const SEG = 30;
+      const baseEdge = [];
+      for (let i = 0; i <= SEG; i++) {
+        const y = i / SEG * 100;
+        const amp = Math.sin(y / 100 * Math.PI) * 6 + 0.8;
+        baseEdge.push({ x: 50 + (rng() - .5) * amp, y });
+      }
+      baseEdge[0].x = 50; baseEdge[SEG].x = 50;
+      const rawEdge = [];
+      for (let i = 0; i < baseEdge.length - 1; i++) {
+        rawEdge.push(baseEdge[i]);
+        rawEdge.push({ x: (baseEdge[i].x + baseEdge[i + 1].x) / 2 + (rng() - .5) * 1.3, y: (baseEdge[i].y + baseEdge[i + 1].y) / 2 });
+      }
+      rawEdge.push(baseEdge[SEG]);
+      let liveEdge = rawEdge.map(p => ({ ...p }));
+
+      function applyEdge(pts) {
+        const w = vw, h = vh;
+        const dp = '0% 0%,' + pts.map(p => `${p.x}% ${p.y}%`).join(',') + ',0% 100%';
+        const lp = '100% 0%,' + pts.map(p => `${p.x}% ${p.y}%`).join(',') + ',100% 100%';
+        document.getElementById('dH').style.clipPath = `polygon(${dp})`;
+        document.getElementById('lH').style.clipPath = `polygon(${lp})`;
+        const sp = pts.map(p => `${p.x / 100 * w},${p.y / 100 * h}`).join(' ');
+        document.getElementById('tl').setAttribute('points', sp);
+      }
+
+      // ═══════════════════════════════════════════════
+      // STATE
+      // ═══════════════════════════════════════════════
+      let ST = initTheme || 'SPLIT'; // SPLIT | CHOOSING | DARK | LIGHT
+
+      // Persist whichever universe is currently active. Called any time ST settles
+      // into DARK/LIGHT — both on explicit picks and on navigation — so a saved
+      // theme always reflects the last universe the visitor actually landed on.
+      function saveTheme() {
+        if (ST !== 'DARK' && ST !== 'LIGHT') return;
+        sessionStorage.setItem('janus-theme', ST === 'LIGHT' ? 'light' : 'dark');
+      }
+
+      let menuOn = false, actMnu = null;
+      let selDir = 0, selT0 = 0;
+      let ox = vw / 2, oy = vh / 2, oR = 52;
+      // One-time random jitter so the black hole's ring color stops blend organically
+      // instead of at perfectly even intervals — computed once so it stays stable across frames.
+      const ringStopJitter = [0, 1, 2, 3].map(() => (Math.random() - .5) * .08);
+      let bha = 1, sta = 1;
+
+      function navIds() {
+        return ST === 'SPLIT' || ST === 'CHOOSING' ? ['aB', 'jB', 'oB'] : ['aB', 'sB', 'jB', 'oB'];
+      }
+
+      // ═══════════════════════════════════════════════
+      // FIX 5 — MOUSE TRACKING FOR CURSOR PARTICLES
+      // ═══════════════════════════════════════════════
+      let mouseX = vw / 2, mouseY = vh / 2;
+      document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+      // Cursor-following glow particles — each with unique lag & phase
+      const cparts = Array.from({ length: CFG.cursor }, (_, i) => ({
+        x: vw / 2, y: vh / 2,
+        vx: (Math.random() - .5) * 1.2,
+        vy: (Math.random() - .5) * 1.2,
+        sz: Math.random() * 2.2 + 0.5,
+        ph: Math.random() * Math.PI * 2,
+        ps: 0.04 + Math.random() * 0.05,
+        lag: 0.025 + Math.random() * 0.055,  // how tightly it follows
+        drift: Math.random() * 0.8 + 0.3        // random jitter amount
+      }));
+
+      function drawCursorParticles() {
+        cparts.forEach(p => {
+          // Pull toward cursor with unique lag, plus small random drift
+          p.vx += (mouseX - p.x) * p.lag * 0.07 + (Math.random() - .5) * p.drift;
+          p.vy += (mouseY - p.y) * p.lag * 0.07 + (Math.random() - .5) * p.drift;
+          p.vx *= 0.87; p.vy *= 0.87;
+          p.x += p.vx; p.y += p.vy;
+          p.ph += p.ps;
+
+          const alpha = (0.22 + 0.2 * Math.sin(p.ph)) * (ST === 'SPLIT' ? 0.55 : 0.9);
+          if (alpha < 0.02) return;
+
+          // Color shifts based on which side the particle currently sits on
+          const frac = Math.max(0, Math.min(1, p.x / vw));
+          // Blend blue (dark side) → gold (light side)
+          const c = ST === 'DARK' ? 'rgba(90,132,255,' : ST === 'LIGHT' ? 'rgba(255,215,30,' : frac < 0.5 ? 'rgba(90,132,255,' : 'rgba(255,215,30,';
+          const glowR = p.sz * (ST === 'SPLIT' ? 8 : 11) * CFG.glowScale;
+
+          ctx.globalAlpha = alpha;
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.sz, 0, Math.PI * 2);
+          ctx.fillStyle = c + '1)'; ctx.fill();
+
+          drawGlow(p.x, p.y, glowR, [[0, c + (ST === 'SPLIT' ? '.38)' : '.56)')], [1, c + '0)']]);
+          ctx.globalAlpha = 1;
+        });
+      }
+
+      // ═══════════════════════════════════════════════
+      // PARTICLE SYSTEM
+      // ═══════════════════════════════════════════════
+      const NP = CFG.NP;
+      const parts = [];
+
+      class P {
+        constructor(s) {
+          this.s = s; this.cv = false; this.a = 0;
+          this.spawn();
+        }
+        spawn() {
+          const w = vw, h = vh, cx = w / 2;
+          const m = 30; // tighter margin → particles spawn closer to edge for wider spread
+          this.x = this.s === 'd' ? m + Math.random() * (cx - m * 1.4) : cx + m + Math.random() * (cx - m * 1.2);
+          this.y = Math.random() * h;
+          // wider initial velocity range → more varied trajectories from the start
+          this.vx = (Math.random() - .5) * 1.1; this.vy = (Math.random() - .5) * 1.1;
+          // broader size range → mix of tiny specks and large glowing orbs
+          this.sz = this.s === 'l' ? Math.random() * 3.8 + 0.4 : Math.random() * 3.0 + 0.2;
+          // wider alpha range → stronger contrast between dim and bright particles
+          this.ba = this.s === 'l' ? Math.random() * 0.88 + 0.12 : Math.random() * 0.72 + 0.08;
+          this.ph = Math.random() * Math.PI * 2;
+          // faster phase oscillation → more visible twinkle / flicker
+          this.ps = .012 + Math.random() * .032;
+          // Dark side accretion matter isn't uniform — mix photons with dust and ice grains
+          if (this.s === 'd') {
+            const r = Math.random();
+            this.kind = r < .45 ? 'photon' : r < .74 ? 'dust' : 'ice';
+          } else {
+            this.kind = 'photon';
+          }
+        }
+        conv(tx, ty) { this.cv = true; this.tx = tx; this.ty = ty; }
+        upd() {
+          if (this.cv) {
+            const dx = this.tx - this.x, dy = this.ty - this.y, d = Math.hypot(dx, dy);
+            if (d > 8) { this.x += dx * .04; this.y += dy * .04; this.a = Math.min(.9, this.a + .018); }
+            else { this.a -= .07; if (this.a <= 0) { this.cv = false; this.spawn(); this.a = .05; } }
+            return;
+          }
+          if (ST === 'DARK' && this.s === 'l') this.ba = Math.max(0, this.ba - .0008);
+          if (ST === 'LIGHT' && this.s === 'd') this.ba = Math.max(0, this.ba - .0008);
+          this.ph += this.ps;
+          this.a = this.ba * (.68 + .32 * Math.sin(this.ph));
+          this.x += this.vx; this.y += this.vy;
+          // stronger per-frame random nudge → more chaotic, unpredictable paths
+          this.vx += (Math.random() - .5) * .045; this.vy += (Math.random() - .5) * .045;
+          // higher cap → particles can build real speed before bouncing
+          this.vx = Math.max(-1.4, Math.min(1.4, this.vx)); this.vy = Math.max(-1.4, Math.min(1.4, this.vy));
+          const ecx = ox;
+          const g = 34;
+          if (this.s === 'd') {
+            if (this.x < 12) this.vx = Math.abs(this.vx);
+            if (ST === 'SPLIT' && this.x > ecx - g) this.vx = -Math.abs(this.vx);
+            if (ST !== 'SPLIT' && this.x > vw - 14) this.vx = -Math.abs(this.vx);
+          } else {
+            if (this.x > vw - 12) this.vx = -Math.abs(this.vx);
+            if (ST === 'SPLIT' && this.x < ecx + g) this.vx = Math.abs(this.vx);
+            if (ST !== 'SPLIT' && this.x < 14) this.vx = Math.abs(this.vx);
+          }
+          if (this.y < 12) this.vy = Math.abs(this.vy);
+          if (this.y > vh - 12) this.vy = -Math.abs(this.vy);
+        }
+        draw() {
+          if (this.a < .02) return;
+          const isLight = this.s === 'l';
+          if ((ST === 'DARK' && isLight) || (ST === 'LIGHT' && !isLight)) return;
+
+          // Hard-clip each particle to its own half during SPLIT so that
+          // momentum overshoot never lets a particle visibly cross the boundary.
+          // Mirrors the same pattern already used in drawObj().
+          ctx.save();
+          if (ST === 'SPLIT') {
+            ctx.beginPath();
+            if (isLight) ctx.rect(ox, 0, vw - ox, vh);  // right half only
+            else ctx.rect(0, 0, ox, vh);  // left half only
+            ctx.clip();
+          }
+
+          // Glow radius multiplier per universe state:
+          //   LIGHT → dim the gold photon halos so they don't drown the cream background
+          //   DARK  → punch up the blue/dust/ice glows for drama against the dark field
+          //   SPLIT → neutral baseline
+          const glowMod = ST === 'LIGHT' ? 0.42 : ST === 'DARK' ? 1.55 : 1.0;
+
+          if (isLight) {
+            // richer gold + white core for photon particles
+            const c = 'rgba(255,218,28,';
+            const glowR = this.sz * 13 * CFG.glowScale * glowMod;
+
+            ctx.globalAlpha = Math.min(1, this.a * 0.45);
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.sz, 0, Math.PI * 2);
+            ctx.fillStyle = c + '1)'; ctx.fill();
+
+            // Bright white-hot core
+            ctx.globalAlpha = Math.min(1, this.a * 0.65);
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.sz * 0.45, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,230,1)'; ctx.fill();
+
+            ctx.globalAlpha = Math.min(1, this.a * 0.35);
+            drawGlow(this.x, this.y, glowR, [[0, c + '.68)'], [1, c + '0)']]);
+            ctx.globalAlpha = 1;
+            ctx.restore(); return;
+          }
+
+          // Dark side — accretion matter isn't uniform: photons, dust grains, ice grains
+          if (this.kind === 'dust') {
+            const c = 'rgba(180,152,118,';
+            ctx.globalAlpha = Math.min(1, this.a * .8);
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.sz * .78, 0, Math.PI * 2);
+            ctx.fillStyle = c + '1)'; ctx.fill();
+            ctx.globalAlpha = Math.min(1, this.a * .4);
+            drawGlow(this.x, this.y, this.sz * 3.2 * CFG.glowScale * glowMod, [[0, c + '.32)'], [1, c + '0)']]);
+            ctx.globalAlpha = 1;
+            ctx.restore(); return;
+          }
+          if (this.kind === 'ice') {
+            const c = 'rgba(198,230,255,';
+            ctx.globalAlpha = Math.min(1, this.a * 1.1);
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.sz * .82, 0, Math.PI * 2);
+            ctx.fillStyle = c + '1)'; ctx.fill();
+            ctx.globalAlpha = Math.min(1, this.a * .85);
+            drawGlow(this.x, this.y, this.sz * 6 * CFG.glowScale * glowMod, [[0, c + '.5)'], [1, c + '0)']]);
+            ctx.globalAlpha = 1;
+            ctx.restore(); return;
+          }
+
+          // dark photon (default) — blue glow
+          const c = 'rgba(90,132,255,';
+          const glowR = this.sz * 8 * CFG.glowScale * glowMod;
+          ctx.globalAlpha = Math.min(1, this.a);
+          ctx.beginPath(); ctx.arc(this.x, this.y, this.sz, 0, Math.PI * 2);
+          ctx.fillStyle = c + '1)'; ctx.fill();
+          ctx.globalAlpha = Math.min(1, this.a);
+          drawGlow(this.x, this.y, glowR, [[0, c + '.46)'], [1, c + '0)']]);
+          ctx.globalAlpha = 1;
+          ctx.restore(); // paired with ctx.save() at draw() entry
+        }
+      }
+
+      for (let i = 0; i < NP; i++) {
+        const p = new P(i < NP / 2 ? 'd' : 'l');
+        parts.push(p);
+        if (TIER === 'static') { p.a = p.ba * .68; }
+        else { setTimeout(() => { p.a = p.ba * .5; }, i * 22 + Math.random() * 180); }
+      }
+
+      // ═══════════════════════════════════════════════
+      // FIX 1 — NAV ORBIT GLOWS (revolve around JANUS + OptiBranch)
+      // ═══════════════════════════════════════════════
+      function drawNavOrbits(t) {
+        if (!menuOn || !CFG.orbit) return;
+        const navDefs = [
+          { id: 'jB', spd: 1.6, clr: ST === 'LIGHT' ? 'rgba(255,195,50,' : 'rgba(90,132,255,', offset: 0 },
+          { id: 'oB', spd: -1.2, clr: ST === 'DARK' ? 'rgba(90,132,255,' : 'rgba(255,195,50,', offset: Math.PI * 0.6 }
+        ];
+        navDefs.forEach(({ id, spd, clr, offset }) => {
+          const el = document.getElementById(id);
+          if (!el.classList.contains('on')) return;
+          const rect = el.getBoundingClientRect();
+          if (!rect.width) return;
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          const rw = Math.max(rect.width / 2 + 22, 48); // orbit x-radius
+          const rh = 14;                                 // orbit y-radius (flat ellipse)
+
+          // Draw 2 orbiting photon dots per nav item
+          for (let k = 0; k < 2; k++) {
+            const angle = t * spd + k * Math.PI + offset;
+            const px = cx + Math.cos(angle) * rw;
+            const py = cy + Math.sin(angle) * rh;
+            const alpha = 0.72 + 0.28 * Math.sin(t * 2.8 + k * 1.9);
+
+            ctx.globalAlpha = alpha * 0.9;
+            drawGlow(px, py, 16, [[0, clr + '0.55)'], [1, clr + '0)']]);
+
+            // Core dot
+            ctx.globalAlpha = alpha;
+            ctx.beginPath(); ctx.arc(px, py, 2.8, 0, Math.PI * 2);
+            ctx.fillStyle = clr + '1)'; ctx.fill();
+
+            // Bright white center
+            ctx.globalAlpha = alpha * 0.85;
+            ctx.beginPath(); ctx.arc(px, py, 1.1, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,1)'; ctx.fill();
+
+            ctx.globalAlpha = 1;
+          }
+        });
+      }
+
+      // ═══════════════════════════════════════════════
+      // CENTRAL OBJECT RENDERER
+      // ═══════════════════════════════════════════════
+      function drawObj(t) {
+        const pulse = .96 + .04 * Math.sin(t * .72);
+        const r = oR * pulse, cx = ox, cy = oy;
+        // FIX 2 — only clip to half during SPLIT/CHOOSING; full object after selection
+        const inSplit = ST === 'SPLIT' || ST === 'CHOOSING';
+
+        // ── BLACK HOLE ──
+        if (bha > .01) {
+          ctx.save(); ctx.globalAlpha = bha;
+          if (inSplit) { ctx.beginPath(); ctx.rect(0, 0, cx, vh); ctx.clip(); }
+          // 10x scale only applies once settled at the corner (post-selection); the
+          // SPLIT/CHOOSING chooser screen keeps its original size — otherwise the
+          // extra clip below would cross the existing center divider mid-page.
+          const rBH = inSplit ? r : r * 10;
+          // Only the bottom-right quarter of the (enlarged) black hole is visible,
+          // clipped relative to its current center position — object doesn't move.
+          if (!inSplit) { ctx.beginPath(); ctx.rect(cx, cy, rBH * 3.2, rBH * 3.2); ctx.clip(); }
+          // Grav field
+          const gf = cachedRadialGradient('bh-field', cx, cy, rBH * .8, rBH * 2.65, [[0, 'rgba(52,94,255,.52)'], [.55, 'rgba(20,42,150,.24)'], [1, 'rgba(0,0,0,0)']]);
+          ctx.fillStyle = gf; ctx.beginPath(); ctx.arc(cx, cy, rBH * 2.65, 0, Math.PI * 2); ctx.fill();
+          // Accretion disk
+          ctx.save(); ctx.translate(cx, cy); ctx.scale(1.58, .21);
+          const ad = cachedRadialGradient('bh-disk', 0, 0, rBH * .86, rBH * 1.85, [[0, 'rgba(135,182,255,.9)'], [.42, 'rgba(70,122,255,.52)'], [1, 'rgba(8,26,108,0)']]);
+          ctx.fillStyle = ad; ctx.beginPath(); ctx.arc(0, 0, rBH * 1.85, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+          // Event horizon — near-black but with a faint bluish core, never pure flat black
+          const eh = cachedRadialGradient('bh-horizon', cx, cy, 0, rBH, [[0, 'rgba(22,40,82,1)'], [.5, 'rgba(10,18,42,1)'], [1, 'rgba(2,3,8,1)']]);
+          ctx.fillStyle = eh; ctx.beginPath(); ctx.arc(cx, cy, rBH, 0, Math.PI * 2); ctx.fill();
+          // Blended ring — one continuous glow, no hard seams. Darkest right at the
+          // black hole, warming smoothly out through brown, grey and gold to white at
+          // the outer edge — like the accretion disk glow in Interstellar. Kept muted
+          // and low-opacity so it stays quiet, sitting behind the shayari text rather
+          // than competing with it. A soft, additive rotating glow drifts around it.
+          const innerR = rBH * 1.02, outerR = rBH * 1.34;
+          const spin = t * (Math.PI / 4); // 7.5rpm = 7.5*2π/60 rad/s = π/4 rad/s
+
+          ctx.save();
+          ctx.globalAlpha *= .5; // duller overall — de-emphasized against the text
+          const ringGrad = ctx.createRadialGradient(cx, cy, innerR, cx, cy, outerR);
+          ringGrad.addColorStop(0, '#0a0705');
+          ringGrad.addColorStop(.22, '#20130a');
+          ringGrad.addColorStop(.42, '#5e4020');
+          ringGrad.addColorStop(.58, '#6d675a');
+          ringGrad.addColorStop(.72, '#8a6c30');
+          ringGrad.addColorStop(.86, '#a3893c');
+          ringGrad.addColorStop(1, '#ada284');
+          ctx.beginPath();
+          ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
+          ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
+          ctx.fillStyle = ringGrad;
+          ctx.fill('evenodd');
+
+          if (ctx.createConicGradient) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
+            ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
+            ctx.clip('evenodd');
+            ctx.globalCompositeOperation = 'lighter';
+            const glow = ctx.createConicGradient(spin, cx, cy);
+            // one broad, soft, warm-white glow band — feathered in and out so it
+            // brightens the existing gradient as it turns rather than adding a new hue
+            glow.addColorStop(0, 'rgba(255,244,214,0)');
+            glow.addColorStop(.18, 'rgba(255,244,214,.12)');
+            glow.addColorStop(.36, 'rgba(255,244,214,0)');
+            glow.addColorStop(1, 'rgba(255,244,214,0)');
+            ctx.fillStyle = glow;
+            ctx.fillRect(cx - outerR, cy - outerR, outerR * 2, outerR * 2);
+            ctx.restore();
+          }
+          ctx.restore(); // matches the ring's globalAlpha-reducing save()
+          ctx.globalAlpha = 1; ctx.restore();
+        }
+
+        // ── STAR ──
+        if (sta > .01) {
+          ctx.save(); ctx.globalAlpha = sta;
+          if (inSplit) { ctx.beginPath(); ctx.rect(cx, 0, vw - cx, vh); ctx.clip(); }
+          const rST = inSplit ? r : r * 10;
+          // Only the bottom-left quarter of the (enlarged) sun is visible,
+          // clipped relative to its current center position — object doesn't move.
+          if (!inSplit) { ctx.beginPath(); ctx.rect(cx - rST * 3.2, cy, rST * 3.2, rST * 3.2); ctx.clip(); }
+          // Corona
+          const co = cachedRadialGradient('star-corona', cx, cy, rST * .3, rST * 3.2, [[0, 'rgba(255,248,166,.98)'], [.22, 'rgba(255,210,46,.68)'], [.62, 'rgba(255,154,8,.24)'], [1, 'rgba(255,88,0,0)']]);
+          ctx.fillStyle = co; ctx.beginPath(); ctx.arc(cx, cy, rST * 3.2, 0, Math.PI * 2); ctx.fill();
+
+          // FIX 3 — Photon ring (bright inner aureole)
+          const pr = cachedRadialGradient('star-ring', cx, cy, rST * .82, rST * 1.38, [[0, 'rgba(255,255,210,1)'], [.52, 'rgba(255,240,84,.72)'], [1, 'rgba(255,200,10,0)']]);
+          ctx.fillStyle = pr; ctx.beginPath(); ctx.arc(cx, cy, rST * 1.38, 0, Math.PI * 2); ctx.fill();
+
+          // Rays
+          for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2 + t * .09;
+            const len = rST * (1.36 + .44 * Math.sin(t * .42 + i * 1.28));
+            ctx.strokeStyle = 'rgba(255,222,78,.18)'; ctx.lineWidth = 1.4;
+            ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * rST, cy + Math.sin(a) * rST); ctx.lineTo(cx + Math.cos(a) * len, cy + Math.sin(a) * len); ctx.stroke();
+          }
+          // Body
+          const sb = cachedRadialGradientFull('star-body', cx + rST * .22, cy - rST * .24, 0, cx, cy, rST, [[0, '#fff'], [.38, '#fff8d2'], [.74, '#ffe054'], [1, '#ffaa00']]);
+          ctx.fillStyle = sb; ctx.beginPath(); ctx.arc(cx, cy, rST, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = 1; ctx.restore();
+        }
+
+        // Divider line — only in SPLIT/CHOOSING state
+        if (inSplit) {
+          const dg = cachedLinearGradient('divider', cx, cy - r, cx, cy + r, [[0, 'rgba(130,130,130,0)'], [.5, 'rgba(130,130,130,.3)'], [1, 'rgba(130,130,130,0)']]);
+          ctx.strokeStyle = dg; ctx.lineWidth = .55;
+          ctx.beginPath(); ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r); ctx.stroke();
+        }
+      }
+
+      // ═══════════════════════════════════════════════
+      // MAIN LOOP
+      // ═══════════════════════════════════════════════
+      const T0 = Date.now(); let fr = 0;
+      let mainLoopId = null;
+      let migAnimId = null;
+      function loop() {
+        const t = (Date.now() - T0) / 1e3;
+        const w = vw, h = vh;
+
+        if (fr % 2 === 0 && ST === 'SPLIT') {
+          liveEdge = rawEdge.map((p, i) => ({ x: p.x + Math.sin(t * .28 + i * .44) * .28 * CFG.jitter, y: p.y }));
+          applyEdge(liveEdge);
+          const mid = liveEdge[Math.floor(liveEdge.length / 2)];
+          ox = mid.x / 100 * w; oy = h / 2;
+          const hb = document.getElementById('hbx');
+          hb.style.setProperty('--hbx-x', ox + 'px');
+          hb.style.setProperty('--hbx-y', oy + 'px');
+          hb.style.width = '260px'; hb.style.height = '260px';
+        }
+
+        if (ST === 'CHOOSING') {
+          const prog = Math.min((Date.now() - selT0) / 920, 1);
+          const ease = 1 - Math.pow(1 - prog, 3);
+          const tX = selDir > 0 ? 101 : -1;
+          const pts = rawEdge.map(p => ({ x: p.x + (tX - p.x) * ease, y: p.y }));
+          applyEdge(pts);
+          document.getElementById('ts').style.opacity = (1 - prog * .9).toString();
+        }
+
+        ctx.clearRect(0, 0, w, h);
+        parts.forEach(p => { p.upd(); p.draw(); });
+        drawCursorParticles();   // FIX 5
+        drawObj(t);
+        drawNavOrbits(t);        // FIX 1
+        fr++; mainLoopId = requestAnimationFrame(loop);
+      }
+
+      // Stop rAF loops when the page is being torn down/navigated away from,
+      // so nothing keeps ticking (and holding the tab "busy") past unload.
+      window.addEventListener('pagehide', () => {
+        if (mainLoopId !== null) { cancelAnimationFrame(mainLoopId); mainLoopId = null; }
+        if (migAnimId !== null) { cancelAnimationFrame(migAnimId); migAnimId = null; }
+        stopDrawerAnim();
+      });
+
+      // Static tier: paint one frame (no physics, no rAF loop) — cheapest possible render
+      function paintStatic() {
+        ctx.clearRect(0, 0, vw, vh);
+        parts.forEach(p => p.draw());
+        drawObj(0);
+      }
+
+      // Initialize theme on page load if saved theme exists
+      if (initTheme) {
+        updateUniverseMenuLayout();
+        document.getElementById('sB').textContent = initTheme === 'DARK' ? 'Light Universe' : 'Dark Universe';
+        if (ST === 'DARK') {
+          ox = 0;
+          oy = 0;
+          oR = 22;
+          bha = 1;
+          sta = 0;
+        } else {
+          ox = vw;
+          oy = 0;
+          oR = 22;
+          bha = 0;
+          sta = 1;
+        }
+        document.querySelector('.dp').classList.toggle('centered', ST === 'DARK');
+        document.querySelector('.lp').classList.toggle('centered', ST !== 'DARK');
+        // These buttons ship with hardcoded dc/lc classes in the HTML (JANUS = dc,
+        // OptiBranch = lc) meant for the initial split-choice screen. switchUniverse()
+        // recolors them to match the chosen universe, but a natural page load with a
+        // saved theme skipped that step — leaving OptiBranch dark-on-dark in the DARK
+        // universe and JANUS light-on-light in the LIGHT universe. Match that fix here.
+        const jb0 = document.getElementById('jB'), ob0 = document.getElementById('oB'), ab0 = document.getElementById('aB'), sb0 = document.getElementById('sB');
+        [jb0, ob0, ab0, sb0].forEach(el => {
+          if (!el) return;
+          el.classList.toggle('dc', ST === 'DARK');
+          el.classList.toggle('lc', ST !== 'DARK');
+        });
+        const hb = document.getElementById('hbx');
+        hb.style.width = '460px';
+        hb.style.height = '460px';
+        hb.style.setProperty('--hbx-x', ox + 'px');
+        hb.style.setProperty('--hbx-y', oy + 'px');
+        applyEdge(rawEdge.map(p => ({ x: ST === 'DARK' ? 101 : -1, y: p.y })));
+      }
+
+      if (TIER === 'static') {
+        // Only fall back to the split-screen edge/hitbox when there's no saved
+        // theme to restore — otherwise this clobbers the themed state the
+        // "Initialize theme on page load" block above just set up.
+        if (!initTheme) {
+          applyEdge(rawEdge);
+          const hb0 = document.getElementById('hbx');
+          hb0.style.width = '260px';
+          hb0.style.height = '260px';
+          hb0.style.setProperty('--hbx-x', ox + 'px');
+          hb0.style.setProperty('--hbx-y', oy + 'px');
+        }
+        paintStatic();
+      } else {
+        loop();
+      }
+
+      // ═══════════════════════════════════════════════
+      // SCROLLYTELLING PARTICLE MORPHING TEXT ENGINE
+      // ═══════════════════════════════════════════════
+      const scrollyEngine = {
+        canvas: null,
+        ctx: null,
+        activePanel: null,
+        theme: 'DARK',
+        particles: [],
+        animId: null,
+        resizeObserver: null,
+        scrollHandler: null,
+        offCanvas: document.createElement('canvas'),
+        activeGlowState: 'NONE',
+        currentState: null,
+        panelLeft: 0,
+        panelTop: 0,
+
+        activateForPanel(panelSelector, theme) {
+          this.deactivate();
+          const panel = document.querySelector(panelSelector);
+          if (!panel) return;
+          this.activePanel = panel;
+          this.theme = theme;
+          this.activeGlowState = 'NONE';
+          this.currentState = null;
+
+          let canvas = panel.querySelector('.panel-particle-canvas');
+          if (!canvas) {
+            canvas = document.createElement('canvas');
+            canvas.className = 'panel-particle-canvas';
+            panel.insertBefore(canvas, panel.firstChild);
+          }
+          this.canvas = canvas;
+          this.ctx = canvas.getContext('2d');
+
+          if (this.particles.length === 0) {
+            const dpr = window.devicePixelRatio || 1;
+            const w = window.innerWidth * dpr;
+            const h = window.innerHeight * dpr;
+            for (let i = 0; i < 7500; i++) {
+              this.particles.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                vx: 0,
+                vy: 0,
+                localTargetX: undefined,
+                localTargetY: undefined,
+                a: 0,
+                ta: 0,
+                size: Math.random() * 1.35 + 1.15,
+                phase: Math.random() * Math.PI * 2,
+                speed: Math.random() * 0.04 + 0.015
+              });
+            }
+          }
+
+          this.isTransitioning = false;
+
+          this.resizeObserver = new ResizeObserver(() => {
+            this.refreshDimensionsAndTargets();
+          });
+          this.resizeObserver.observe(panel);
+
+          this.refreshDimensionsAndTargets();
+
+          const clearInitTimers = () => {
+            if (this.initTimer1) { clearTimeout(this.initTimer1); this.initTimer1 = null; }
+            if (this.initTimer2) { clearTimeout(this.initTimer2); this.initTimer2 = null; }
+          };
+
+          this.wheelHandler = (e) => {
+            if (this.isTransitioning) return;
+
+            if (e.deltaY > 5) {
+              // Scroll down -> Trigger Facts transition
+              if (this.currentState === 'SHAYARI') {
+                this.isTransitioning = true;
+                clearInitTimers();
+                this.evaluateActiveTarget(false, 'FACTS');
+                setTimeout(() => { this.isTransitioning = false; }, 3000);
+              }
+            } else if (e.deltaY < -5) {
+              // Scroll up -> Trigger Shayari transition
+              if (this.currentState === 'FACTS') {
+                this.isTransitioning = true;
+                clearInitTimers();
+                this.evaluateActiveTarget(false, 'SHAYARI');
+                setTimeout(() => { this.isTransitioning = false; }, 2600);
+              }
+            }
+          };
+
+          let touchStartY = 0;
+          this.touchStartHandler = (e) => {
+            touchStartY = e.touches[0].clientY;
+          };
+
+          this.touchEndHandler = (e) => {
+            if (this.isTransitioning) return;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diff = touchStartY - touchEndY; // positive: swipe up (scroll down)
+
+            if (diff > 15) {
+              if (this.currentState === 'SHAYARI') {
+                this.isTransitioning = true;
+                clearInitTimers();
+                this.evaluateActiveTarget(false, 'FACTS');
+                setTimeout(() => { this.isTransitioning = false; }, 3000);
+              }
+            } else if (diff < -15) {
+              if (this.currentState === 'FACTS') {
+                this.isTransitioning = true;
+                clearInitTimers();
+                this.evaluateActiveTarget(false, 'SHAYARI');
+                setTimeout(() => { this.isTransitioning = false; }, 2600);
+              }
+            }
+          };
+
+          panel.addEventListener('wheel', this.wheelHandler, { passive: true });
+          panel.addEventListener('touchstart', this.touchStartHandler, { passive: true });
+          panel.addEventListener('touchend', this.touchEndHandler, { passive: true });
+
+          panel.classList.add('scrolly-active');
+
+          this.initTimer1 = setTimeout(() => {
+            this.refreshDimensionsAndTargets();
+            this.evaluateActiveTarget(true, 'SHAYARI');
+          }, 80);
+          this.initTimer2 = setTimeout(() => {
+            this.refreshDimensionsAndTargets();
+            this.evaluateActiveTarget(false, 'SHAYARI');
+          }, 860);
+
+          this.startLoop();
+        },
+
+        deactivate() {
+          if (this.animId) {
+            cancelAnimationFrame(this.animId);
+            this.animId = null;
+          }
+          if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+            this.resizeObserver = null;
+          }
+          if (this.activePanel) {
+            if (this.wheelHandler) {
+              this.activePanel.removeEventListener('wheel', this.wheelHandler);
+              this.wheelHandler = null;
+            }
+            if (this.touchStartHandler) {
+              this.activePanel.removeEventListener('touchstart', this.touchStartHandler);
+              this.touchStartHandler = null;
+            }
+            if (this.touchEndHandler) {
+              this.activePanel.removeEventListener('touchend', this.touchEndHandler);
+              this.touchEndHandler = null;
+            }
+          }
+          if (this.initTimer1) { clearTimeout(this.initTimer1); this.initTimer1 = null; }
+          if (this.initTimer2) { clearTimeout(this.initTimer2); this.initTimer2 = null; }
+          if (this.assocTimer) {
+            clearTimeout(this.assocTimer);
+            this.assocTimer = null;
+          }
+          if (this.fadeParticlesTimer) {
+            clearTimeout(this.fadeParticlesTimer);
+            this.fadeParticlesTimer = null;
+          }
+          if (this.activePanel) {
+            this.activePanel.classList.remove('scrolly-active');
+            const swr = this.activePanel.querySelector('.swr');
+            if (swr) swr.classList.remove('text-hidden');
+            const facts = this.activePanel.querySelector('.facts');
+            if (facts) facts.classList.remove('text-visible');
+          }
+          this.activePanel = null;
+          this.currentState = null;
+          this.activeGlowState = 'NONE';
+        },
+
+        refreshDimensionsAndTargets() {
+          if (!this.activePanel || !this.canvas) return;
+          const panel = this.activePanel;
+          const rect = panel.getBoundingClientRect();
+          const dpr = window.devicePixelRatio || 1;
+          const w = Math.round(window.innerWidth * dpr);
+          const h = Math.round(window.innerHeight * dpr);
+          if (this.canvas.width !== w || this.canvas.height !== h) {
+            this.canvas.width = w;
+            this.canvas.height = h;
+          }
+
+          this.panelLeft = rect.left;
+          this.panelTop = rect.top;
+
+          const swrContainer = panel.querySelector('.swr');
+          const rawFactElements = Array.from(panel.querySelectorAll('.fact'));
+          const off = this.offCanvas;
+          const offCtx = off.getContext('2d');
+
+          const sampleElement = (el, isShayari) => {
+            if (!el) return { points: [], absoluteX: 0, absoluteY: 0 };
+            const computedStyle = window.getComputedStyle(el);
+
+            // Sample within the CONTENT box, not the border box — otherwise any
+            // padding/border (e.g. the .itrp translation block's left/right rule)
+            // shifts the sampled glyphs away from where the real text actually sits.
+            const insetLeft = (parseFloat(computedStyle.paddingLeft) || 0) + (parseFloat(computedStyle.borderLeftWidth) || 0);
+            const insetRight = (parseFloat(computedStyle.paddingRight) || 0) + (parseFloat(computedStyle.borderRightWidth) || 0);
+            const insetTop = (parseFloat(computedStyle.paddingTop) || 0) + (parseFloat(computedStyle.borderTopWidth) || 0);
+            const insetBottom = (parseFloat(computedStyle.paddingBottom) || 0) + (parseFloat(computedStyle.borderBottomWidth) || 0);
+
+            const elRect = el.getBoundingClientRect();
+            const localWidth = Math.max(Math.round(elRect.width - insetLeft - insetRight), 40);
+            const localHeight = Math.max(Math.round(elRect.height - insetTop - insetBottom), 20);
+
+            off.width = localWidth;
+            off.height = localHeight;
+            offCtx.clearRect(0, 0, localWidth, localHeight);
+
+            const style = computedStyle.fontStyle || 'normal';
+            const weight = computedStyle.fontWeight || '400';
+            const size = computedStyle.fontSize || '16px';
+            const family = computedStyle.fontFamily || 'sans-serif';
+            offCtx.font = `${style} ${weight} ${size} ${family}`;
+
+            if (computedStyle.letterSpacing && computedStyle.letterSpacing !== 'normal') {
+              offCtx.letterSpacing = computedStyle.letterSpacing;
+            }
+            offCtx.fillStyle = '#ffffff';
+
+            const align = computedStyle.textAlign || 'left';
+            let computedAlign = 'left';
+            let drawX = 0;
+
+            if (align === 'center' || align === 'webkit-center') {
+              computedAlign = 'center';
+              drawX = localWidth / 2;
+            } else if (align === 'right' || align === 'end') {
+              computedAlign = 'right';
+              drawX = localWidth;
+            }
+
+            offCtx.textAlign = computedAlign;
+            offCtx.textBaseline = 'top';
+
+            const fontSize = parseFloat(size) || (isShayari ? 15 : 12);
+
+            // Use the REAL computed line-height instead of a guessed multiplier —
+            // .itrp (1.8), .quote-author (default/normal) and .stxt (2.05) all
+            // differ, and a wrong line-height throws off vertical placement.
+            const lhRaw = computedStyle.lineHeight;
+            const lineHeight = (lhRaw && lhRaw !== 'normal') ? parseFloat(lhRaw) : fontSize * 1.2;
+
+            // Respect text-transform (e.g. .quote-author is uppercase) so the
+            // sampled glyphs match the letters actually painted on screen.
+            const transform = computedStyle.textTransform;
+            const applyTransform = (s) => {
+              if (transform === 'uppercase') return s.toUpperCase();
+              if (transform === 'lowercase') return s.toLowerCase();
+              if (transform === 'capitalize') return s.replace(/\b\w/g, c => c.toUpperCase());
+              return s;
+            };
+
+            const rawLines = el.innerText.trim().split('\n').map(applyTransform);
+            const wrappedLines = [];
+            const maxW = Math.max(localWidth, 40);
+
+            for (let line of rawLines) {
+              const words = line.split(' ');
+              let curLine = '';
+              for (let word of words) {
+                const testLine = curLine ? curLine + ' ' + word : word;
+                if (offCtx.measureText(testLine).width > maxW && curLine) {
+                  wrappedLines.push(curLine);
+                  curLine = word;
+                } else {
+                  curLine = testLine;
+                }
+              }
+              if (curLine) wrappedLines.push(curLine);
+            }
+
+            const totalH = wrappedLines.length * lineHeight;
+            const startY = Math.max((localHeight - totalH) / 2, 0);
+
+            for (let i = 0; i < wrappedLines.length; i++) {
+              offCtx.fillText(wrappedLines[i], drawX, startY + i * lineHeight);
+            }
+            const imgData = offCtx.getImageData(0, 0, localWidth, localHeight).data;
+            const points = [];
+
+            for (let y = 0; y < localHeight; y += 2) {
+              for (let x = 0; x < localWidth; x += 2) {
+                if (imgData[(y * localWidth + x) * 4 + 3] > 128) {
+                  points.push({
+                    x: (x + insetLeft) * dpr,
+                    y: (y + insetTop) * dpr
+                  });
+                }
+              }
+            }
+
+            return {
+              points: points,
+              absoluteX: elRect.left - rect.left,
+              absoluteY: elRect.top - rect.top + panel.scrollTop
+            };
+          };
+
+          const shayariEl = panel.querySelector('.stxt');
+          const authorEl = panel.querySelector('.quote-author');
+          const itrpEl = panel.querySelector('.itrp');
+
+          let shayariPoints = [];
+          const addPoints = (el) => {
+            if (!el) return;
+            const res = sampleElement(el, true);
+            if (!res || !res.points) return;
+            res.points.forEach(pt => {
+              shayariPoints.push({
+                x: res.absoluteX * dpr + pt.x,
+                y: res.absoluteY * dpr + pt.y
+              });
+            });
+          };
+
+          addPoints(shayariEl);
+          addPoints(authorEl);
+          addPoints(itrpEl);
+
+          this.shayariObj = {
+            points: shayariPoints,
+            xOffset: 0,
+            yOffset: 0
+          };
+
+          const factElements = Array.from(panel.querySelectorAll('.fact'));
+          this.factObjs = factElements.map(el => {
+            const res = sampleElement(el, false);
+            if (!res || !res.points) return null;
+            const pts = res.points.map(pt => ({
+              x: res.absoluteX * dpr + pt.x,
+              y: res.absoluteY * dpr + pt.y
+            }));
+            return {
+              points: pts,
+              xOffset: 0,
+              yOffset: 0
+            };
+          }).filter(Boolean);
+        },
+
+        evaluateActiveTarget(forceInit = false, overrideState = null) {
+          if (!this.activePanel) return;
+
+          this.refreshDimensionsAndTargets();
+
+          const panel = this.activePanel;
+          const isScrolled = panel.scrollTop > panel.clientHeight * 0.35;
+          const targetState = overrideState || (isScrolled ? 'FACTS' : 'SHAYARI');
+
+          if (targetState !== this.currentState || forceInit) {
+            const oldState = this.currentState;
+            this.currentState = targetState;
+
+            if (this.assocTimer) { clearTimeout(this.assocTimer); this.assocTimer = null; }
+            if (this.fadeParticlesTimer) { clearTimeout(this.fadeParticlesTimer); this.fadeParticlesTimer = null; }
+
+            const swr = panel.querySelector('.swr');
+            const factsContainer = panel.querySelector('.facts');
+
+            if (targetState === 'SHAYARI') {
+              if (oldState === null && forceInit) {
+                if (swr) swr.classList.remove('text-hidden');
+                if (factsContainer) factsContainer.classList.remove('text-visible');
+                this.particles.forEach(p => { p.ta = 0; p.a = 0; p.vx = 0; p.vy = 0; p.localTargetX = undefined; });
+                this.activeGlowState = 'NONE';
+                return;
+              }
+
+              // FACTS -> SHAYARI Transition
+              // 1. Facts Glow (400ms)
+              if (factsContainer) factsContainer.classList.add('text-visible');
+              this.activeGlowState = 'FACTS';
+              this.particles.forEach(p => { p.ta = 0.95; });
+
+              this.assocTimer = setTimeout(() => {
+                if (this.currentState === 'SHAYARI') {
+                  // 2. Disintegrate (Explode & Drift freely for 1000ms)
+                  if (factsContainer) factsContainer.classList.remove('text-visible');
+                  this.activeGlowState = 'DISINTEGRATING';
+                  this.assignParticlesToShayari(true);
+
+                  this.assocTimer = setTimeout(() => {
+                    if (this.currentState === 'SHAYARI') {
+                      // 3. Assemble into Shayari
+                      this.assembleParticlesToShayari();
+                      this.activeGlowState = 'NONE';
+
+                      this.fadeParticlesTimer = setTimeout(() => {
+                        if (this.currentState === 'SHAYARI') {
+                          if (swr) swr.classList.remove('text-hidden');
+                          this.fadeParticlesTimer = setTimeout(() => {
+                            if (this.currentState === 'SHAYARI') {
+                              this.particles.forEach(p => p.ta = 0);
+                            }
+                          }, 350);
+                        }
+                      }, 1000);
+                    }
+                  }, 1000);
+                }
+              }, 400);
+
+            } else if (targetState === 'FACTS') {
+              // SHAYARI -> FACTS Transition
+              // 1. Shayari Glow (800ms)
+              if (swr) swr.classList.remove('text-hidden');
+              this.activeGlowState = 'SHAYARI';
+              this.particles.forEach(p => { p.ta = 0.95; });
+
+              this.assocTimer = setTimeout(() => {
+                if (this.currentState === 'FACTS') {
+                  // 2. Disintegrate (Explode & Drift freely for 1000ms)
+                  if (swr) swr.classList.add('text-hidden');
+                  this.activeGlowState = 'DISINTEGRATING';
+                  this.assignParticlesToFacts(true);
+
+                  this.assocTimer = setTimeout(() => {
+                    if (this.currentState === 'FACTS') {
+                      // 3. Assemble into Facts
+                      this.assembleParticlesToFacts();
+                      this.activeGlowState = 'NONE';
+
+                      this.fadeParticlesTimer = setTimeout(() => {
+                        if (this.currentState === 'FACTS') {
+                          if (factsContainer) factsContainer.classList.add('text-visible');
+                          this.fadeParticlesTimer = setTimeout(() => {
+                            if (this.currentState === 'FACTS') {
+                              this.particles.forEach(p => p.ta = 0);
+                            }
+                          }, 350);
+                        }
+                      }, 1000);
+                    }
+                  }, 1000);
+                }
+              }, 800);
+            }
+          }
+        },
+
+        assignParticlesToFacts(burstFromShayari) {
+          if (!this.factObjs || this.factObjs.length === 0) return;
+          const dpr = window.devicePixelRatio || 1;
+          const panel = this.activePanel;
+          const panelRect = panel.getBoundingClientRect();
+
+          const getShayariPos = (idx) => {
+            if (!this.shayariObj || !this.shayariObj.points || this.shayariObj.points.length === 0) return null;
+            const pt = this.shayariObj.points[idx % this.shayariObj.points.length];
+            return {
+              x: panelRect.left * dpr + pt.x,
+              y: (panelRect.top - panel.scrollTop) * dpr + pt.y
+            };
+          };
+
+          for (let i = 0; i < this.particles.length; i++) {
+            const p = this.particles[i];
+            p.targetPoint = null;
+            if (burstFromShayari) {
+              const pt = getShayariPos(i);
+              if (pt) {
+                p.x = pt.x;
+                p.y = pt.y;
+                p.a = 0.98;
+              }
+              const angle = Math.random() * Math.PI * 2;
+              const force = (Math.random() * 45 + 20) * dpr; // slightly faster disintegrate
+              p.vx = Math.cos(angle) * force;
+              p.vy = Math.sin(angle) * force;
+            }
+          }
+        },
+
+        assignParticlesToShayari(burstFromFacts) {
+          if (!this.shayariObj || !this.factObjs || this.factObjs.length === 0) return;
+          const dpr = window.devicePixelRatio || 1;
+          const panel = this.activePanel;
+          const panelRect = panel.getBoundingClientRect();
+          const numFacts = this.factObjs.length;
+          const particlesPerFact = Math.floor(this.particles.length / numFacts);
+
+          const getFactPos = (idx) => {
+            const f = Math.min(Math.floor(idx / particlesPerFact), numFacts - 1);
+            const factObj = this.factObjs[f];
+            if (!factObj || !factObj.points || factObj.points.length === 0) return null;
+            const pt = factObj.points[idx % factObj.points.length];
+            return {
+              x: panelRect.left * dpr + pt.x,
+              y: (panelRect.top - panel.scrollTop) * dpr + pt.y
+            };
+          };
+
+          for (let i = 0; i < this.particles.length; i++) {
+            const p = this.particles[i];
+            p.targetPoint = null;
+            if (burstFromFacts) {
+              const pt = getFactPos(i);
+              if (pt) {
+                p.x = pt.x;
+                p.y = pt.y;
+                p.a = 0.98;
+              }
+              const angle = Math.random() * Math.PI * 2;
+              const force = (Math.random() * 45 + 20) * dpr; // slightly faster disintegrate
+              p.vx = Math.cos(angle) * force;
+              p.vy = Math.sin(angle) * force;
+            }
+          }
+        },
+
+        assembleParticlesToFacts() {
+          if (!this.factObjs || this.factObjs.length === 0) return;
+          const numFacts = this.factObjs.length;
+          const particlesPerFact = Math.floor(this.particles.length / numFacts);
+
+          for (let f = 0; f < numFacts; f++) {
+            const factObj = this.factObjs[f];
+            if (!factObj || !factObj.points) continue;
+            const pts = factObj.points;
+
+            for (let j = 0; j < particlesPerFact; j++) {
+              const pIdx = f * particlesPerFact + j;
+              if (pIdx >= this.particles.length) break;
+              const p = this.particles[pIdx];
+
+              if (j < pts.length) {
+                p.targetPoint = pts[j];
+                p.ta = 0.95;
+              } else {
+                p.targetPoint = null;
+                p.ta = 0;
+              }
+            }
+          }
+        },
+
+        assembleParticlesToShayari() {
+          if (!this.shayariObj || !this.shayariObj.points) return;
+          const pts = this.shayariObj.points;
+
+          for (let i = 0; i < this.particles.length; i++) {
+            const p = this.particles[i];
+            if (i < pts.length) {
+              p.targetPoint = pts[i];
+              p.ta = 0.95;
+            } else {
+              p.targetPoint = null;
+              p.ta = 0;
+            }
+          }
+        },
+
+        startLoop() {
+          const step = () => {
+            if (!this.activePanel || !this.canvas || !this.ctx) return;
+            const ctx = this.ctx;
+            const w = this.canvas.width;
+            const h = this.canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            const panel = this.activePanel;
+            const panelRect = panel.getBoundingClientRect();
+            this.panelLeft = panelRect.left;
+            this.panelTop = panelRect.top;
+
+            const isDark = (this.theme === 'DARK');
+            const rgb = isDark ? '85, 133, 255' : '184, 112, 16';
+            const glowRgb = isDark ? '148, 178, 255' : '230, 156, 36';
+            const dpr = window.devicePixelRatio || 1;
+            const spring = 0.082;
+            const friction = 0.81;
+
+            const getShayariPoint = (idx) => {
+              if (!this.shayariObj || !this.shayariObj.points || this.shayariObj.points.length === 0) return null;
+              const pt = this.shayariObj.points[idx % this.shayariObj.points.length];
+              return {
+                x: this.panelLeft * dpr + pt.x,
+                y: (this.panelTop - panel.scrollTop) * dpr + pt.y
+              };
+            };
+
+            const getFactPoint = (idx) => {
+              if (!this.factObjs || this.factObjs.length === 0) return null;
+              const numFacts = this.factObjs.length;
+              const particlesPerFact = Math.floor(this.particles.length / numFacts);
+              const f = Math.min(Math.floor(idx / particlesPerFact), numFacts - 1);
+              const factObj = this.factObjs[f];
+              if (!factObj || !factObj.points || factObj.points.length === 0) return null;
+              const pt = factObj.points[idx % factObj.points.length];
+              return {
+                x: this.panelLeft * dpr + pt.x,
+                y: (this.panelTop - panel.scrollTop) * dpr + pt.y
+              };
+            };
+
+            for (let i = 0; i < this.particles.length; i++) {
+              const p = this.particles[i];
+              p.phase += p.speed;
+
+              let tx, ty;
+              let hasTarget = false;
+
+              if (this.activeGlowState === 'SHAYARI') {
+                const pt = getShayariPoint(i);
+                if (pt) { tx = pt.x; ty = pt.y; hasTarget = true; p.ta = 0.95; }
+              } else if (this.activeGlowState === 'FACTS') {
+                const pt = getFactPoint(i);
+                if (pt) { tx = pt.x; ty = pt.y; hasTarget = true; p.ta = 0.95; }
+              } else {
+                if (p.targetPoint && p.ta > 0) {
+                  tx = this.panelLeft * dpr + p.targetPoint.x;
+                  ty = (this.panelTop - panel.scrollTop) * dpr + p.targetPoint.y;
+                  hasTarget = true;
+                } else if (this.currentState === 'SHAYARI') {
+                  const pt = getShayariPoint(i);
+                  if (pt) { tx = pt.x; ty = pt.y; hasTarget = true; }
+                } else if (this.currentState === 'FACTS') {
+                  const pt = getFactPoint(i);
+                  if (pt) { tx = pt.x; ty = pt.y; hasTarget = true; }
+                }
+              }
+
+              if (hasTarget && p.ta > 0) {
+                const targetX = tx + Math.sin(p.phase) * 0.4 * dpr;
+                const targetY = ty + Math.cos(p.phase * 0.8) * 0.4 * dpr;
+
+                p.vx = (p.vx + (targetX - p.x) * spring) * friction;
+                p.vy = (p.vy + (targetY - p.y) * spring) * friction;
+              } else {
+                p.vx *= 0.95;
+                p.vy *= 0.95;
+                p.x += Math.sin(p.phase) * 0.5 * dpr;
+                p.y += Math.cos(p.phase) * 0.5 * dpr;
+              }
+
+              p.x += p.vx;
+              p.y += p.vy;
+              p.a += (p.ta - p.a) * 0.12;
+
+              if (p.a > 0.02 && p.x >= -20 && p.x <= w + 20 && p.y >= -20 && p.y <= h + 20) {
+                ctx.save();
+                let drawAlpha = p.a;
+                if (!isDark) drawAlpha *= 0.35;
+                ctx.globalAlpha = drawAlpha;
+                ctx.fillStyle = `rgb(${rgb})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * dpr, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (p.a > 0.6 && (i % 3 === 0)) {
+                  let glowAlpha = p.a * 0.38;
+                  if (!isDark) glowAlpha *= 0.3;
+                  ctx.globalAlpha = glowAlpha;
+                  ctx.fillStyle = `rgb(${glowRgb})`;
+                  ctx.beginPath();
+                  ctx.arc(p.x, p.y, p.size * dpr * 2.8, 0, Math.PI * 2);
+                  ctx.fill();
+                }
+                ctx.restore();
+              }
+            }
+
+            this.animId = requestAnimationFrame(step);
+          };
+          this.animId = requestAnimationFrame(step);
+        }
+      };
+
+      // Activate if theme pre-loaded on start
+      if (initTheme) {
+        setTimeout(() => {
+          scrollyEngine.activateForPanel(ST === 'DARK' ? '.dp' : '.lp', ST);
+        }, 120);
+      }
+
+      // ═══════════════════════════════════════════════
+      // INTERACTIONS
+      // ═══════════════════════════════════════════════
+      function ti(id) { document.getElementById(id).classList.toggle('on') }
+
+      document.querySelectorAll('[data-ti]').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          ti(btn.dataset.ti);
+        });
+      });
+
+      function bindHalfScroll(halfId, panelSelector) {
+        const half = document.getElementById(halfId);
+        const panel = half.querySelector(panelSelector);
+        let touchY = 0;
+
+        half.addEventListener('wheel', e => {
+          if (!panel || menuOn) return;
+          e.preventDefault();
+          panel.scrollTop += e.deltaY;
+        }, { passive: false });
+
+        half.addEventListener('touchstart', e => {
+          touchY = e.touches[0]?.clientY || 0;
+        }, { passive: true });
+
+        half.addEventListener('touchmove', e => {
+          if (!panel || menuOn) return;
+          const nextY = e.touches[0]?.clientY || touchY;
+          const delta = touchY - nextY;
+          if (delta !== 0) {
+            e.preventDefault();
+            panel.scrollTop += delta;
+            touchY = nextY;
+          }
+        }, { passive: false });
+      }
+
+      bindHalfScroll('dH', '.dp');
+      bindHalfScroll('lH', '.lp');
+
+      document.getElementById('hbx').addEventListener('click', e => { e.stopPropagation(); toggleMenu(); });
+
+      function toggleMenu() {
+        menuOn = !menuOn;
+        const app = document.getElementById('app');
+        if (menuOn) {
+          // FIX 1 — only hide panels when in SPLIT state
+          app.classList.add('menu-open');
+          if (ST === 'SPLIT') app.classList.add('menu-open-split');
+          navIds().forEach((id, i) => setTimeout(() => document.getElementById(id).classList.add('on'), i * 110));
+          if (TIER !== 'static') doConv();
+        } else {
+          app.classList.remove('menu-open');
+          app.classList.remove('menu-open-split');
+          ['aB', 'sB', 'jB', 'oB'].forEach(id => document.getElementById(id).classList.remove('on'));
+          closeDds();
+        }
+      }
+
+      function doConv() {
+        const tx = ox, ty = oy;
+        const near = (arr, n) => arr.filter(p => !p.cv).sort((a, b) => Math.hypot(a.x - tx, a.y - ty) - Math.hypot(b.x - tx, b.y - ty)).slice(0, n);
+        [...near(parts.filter(p => p.s === 'd'), 14), ...near(parts.filter(p => p.s === 'l'), 14)].forEach(p => p.conv(tx, ty));
+      }
+
+      // Click "ripple" — nearby photons/dust/ice gather at the click point and dissolve,
+      // reusing the same convergence mechanic as the nav-open effect, rather than a literal
+      // expanding-ring ripple.
+      function gatherAt(x, y, side) {
+        if (CFG.ripple <= 0) return;
+        parts.filter(p => p.s === side && !p.cv)
+          .sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))
+          .slice(0, CFG.ripple)
+          .forEach(p => p.conv(x, y));
+      }
+
+      function closeDds() {
+        document.getElementById('jDd').classList.remove('on');
+        document.getElementById('oDd').classList.remove('on');
+        actMnu = null;
+      }
+
+      function updateSwitchLabel() {
+        document.getElementById('sB').textContent = ST === 'DARK' ? 'Light Universe' : 'Dark Universe';
+      }
+
+      function updateUniverseMenuLayout() {
+        const app = document.getElementById('app');
+        app.classList.toggle('dark-ui', ST === 'DARK');
+        app.classList.toggle('light-ui', ST === 'LIGHT');
+      }
+
+      function hideMenu() {
+        menuOn = false;
+        document.getElementById('app').classList.remove('menu-open', 'menu-open-split');
+        ['aB', 'sB', 'jB', 'oB'].forEach(id => document.getElementById(id).classList.remove('on'));
+        closeDds();
+      }
+
+      function needsUniverse() {
+        const hb = document.getElementById('hbx');
+        hb.style.boxShadow = '0 0 0 14px rgba(200,200,200,.15)';
+        setTimeout(() => hb.style.boxShadow = '', 550);
+      }
+
+      document.getElementById('jB').addEventListener('click', e => {
+        e.stopPropagation();
+        if (ST === 'SPLIT') { needsUniverse(); return; }
+        actMnu === 'j' ? closeDds() : (closeDds(), document.getElementById('jDd').classList.add('on'), actMnu = 'j');
+      });
+      document.getElementById('oB').addEventListener('click', e => {
+        e.stopPropagation();
+        if (ST === 'SPLIT') { needsUniverse(); return; }
+        actMnu === 'o' ? closeDds() : (closeDds(), document.getElementById('oDd').classList.add('on'), actMnu = 'o');
+      });
+      document.getElementById('aB').addEventListener('click', e => {
+        e.stopPropagation();
+        if (ST === 'SPLIT') { needsUniverse(); return; }
+        saveTheme();
+        const theme = (ST === 'LIGHT') ? 'light' : 'dark';
+        closeDds();
+        hideMenu();
+        window.location.href = './about.html?theme=' + theme;
+      });
+
+      document.getElementById('sB').addEventListener('click', e => {
+        e.stopPropagation();
+        if (ST === 'SPLIT') { needsUniverse(); return; }
+        switchUniverse(ST === 'DARK' ? 'l' : 'd');
+      });
+
+      document.getElementById('dH').addEventListener('click', e => {
+        if (e.target.closest('.tbtn') || e.target.closest('.itrp')) return;
+        // Hitbox optimization: ignore clicks within 90px of center border or outside main interactive zone
+        if (ST === 'SPLIT' && Math.abs(e.clientX - vw / 2) < 90) return;
+        gatherAt(e.clientX, e.clientY, 'd');
+        if (ST === 'SPLIT') { TIER === 'static' ? instantChoose('d') : pick('d'); }
+      });
+      document.getElementById('lH').addEventListener('click', e => {
+        if (e.target.closest('.tbtn') || e.target.closest('.itrp')) return;
+        // Hitbox optimization: ignore clicks within 90px of center border or outside main interactive zone
+        if (ST === 'SPLIT' && Math.abs(e.clientX - vw / 2) < 90) return;
+        gatherAt(e.clientX, e.clientY, 'l');
+        if (ST === 'SPLIT') { TIER === 'static' ? instantChoose('l') : pick('l'); }
+      });
+
+      function pick(ch) {
+        if (ST !== 'SPLIT') return;
+        ST = 'CHOOSING'; selDir = ch === 'd' ? 1 : -1; selT0 = Date.now();
+        menuOn = false;
+        document.getElementById('app').classList.remove('menu-open', 'menu-open-split', 'dark-ui', 'light-ui');
+        ['aB', 'sB', 'jB', 'oB'].forEach(id => document.getElementById(id).classList.remove('on'));
+        closeDds();
+        setTimeout(() => migObj(ch), 180);
+        setTimeout(() => finalize(ch), 960);
+      }
+
+      function migObj(ch) {
+        // Cancel any migration still in flight (e.g. a rapid double pick) so two
+        // step() loops never fight over ox/oy/oR at once.
+        if (migAnimId !== null) { cancelAnimationFrame(migAnimId); migAnimId = null; }
+        const sx = ox, sy = oy, sR = oR;
+        // FIX 2 — keep objects slightly larger after migration so they're legible
+        const tx = ch === 'd' ? 0 : vw, ty = 0;
+        const dur = 760, t0 = Date.now();
+        function step() {
+          const t = Math.min((Date.now() - t0) / dur, 1);
+          const e = 1 - Math.pow(1 - t, 2.5);
+          ox = sx + (tx - sx) * e; oy = sy + (ty - sy) * e; oR = sR + (22 - sR) * e;
+          if (ch === 'd') sta = 1 - e; else bha = 1 - e;
+          migAnimId = t < 1 ? requestAnimationFrame(step) : null;
+        }
+        step();
+      }
+
+      // Particles spawn confined to their half for the SPLIT homepage view. Once a universe
+      // takes the full screen, spread that side's particles across the whole width so they
+      // don't stay clustered on the half they were born in.
+      function spreadX(side) {
+        parts.forEach(p => { if (p.s === side) p.x = 24 + Math.random() * (vw - 48); });
+      }
+
+      function switchUniverse(ch) {
+        hideMenu();
+        ST = ch === 'd' ? 'DARK' : 'LIGHT';
+        saveTheme();
+        selDir = ch === 'd' ? 1 : -1;
+        applyEdge(rawEdge.map(p => ({ x: ch === 'd' ? 101 : -1, y: p.y })));
+        document.getElementById('ts').style.opacity = '0';
+        updateUniverseMenuLayout();
+
+        const jb = document.getElementById('jB'), ob = document.getElementById('oB'), ab = document.getElementById('aB'), sb = document.getElementById('sB');
+        [jb, ob, ab, sb].forEach(el => {
+          el.classList.toggle('dc', ch === 'd');
+          el.classList.toggle('lc', ch !== 'd');
+          el.classList.remove('on');
+        });
+
+        document.querySelector('.dp').classList.toggle('centered', ch === 'd');
+        document.querySelector('.lp').classList.toggle('centered', ch !== 'd');
+
+        ox = ch === 'd' ? 0 : vw;
+        oy = 0;
+        oR = 22;
+        bha = ch === 'd' ? 1 : 0;
+        sta = ch === 'd' ? 0 : 1;
+
+        parts.forEach(p => {
+          p.ba = p.s === 'l' ? Math.random() * 0.72 + 0.22 : Math.random() * 0.52 + 0.1;
+          p.a = Math.max(p.a, p.ba * .45);
+        });
+        spreadX(ch === 'd' ? 'd' : 'l');
+
+        const hb = document.getElementById('hbx');
+        hb.style.width = '460px'; hb.style.height = '460px';
+        hb.style.setProperty('--hbx-x', ox + 'px');
+        hb.style.setProperty('--hbx-y', oy + 'px');
+        updateSwitchLabel();
+        updateUniverseMenuLayout();
+        if (TIER === 'static') paintStatic();
+
+        // Activate scrollytelling engine for full screen panel
+        setTimeout(() => {
+          scrollyEngine.activateForPanel(ch === 'd' ? '.dp' : '.lp', ST);
+        }, 50);
+      }
+
+      // Static tier: the same end-state as the animated SPLIT→DARK/LIGHT flow (pick → migObj →
+      // finalize), but applied instantly in one step since there's no rAF loop to animate through.
+      function instantChoose(ch) {
+        hideMenu();
+        applyEdge(rawEdge.map(p => ({ x: ch === 'd' ? 101 : -1, y: p.y })));
+        document.getElementById('ts').style.opacity = '0';
+        ST = ch === 'd' ? 'DARK' : 'LIGHT';
+        saveTheme();
+        updateUniverseMenuLayout();
+
+        const jb = document.getElementById('jB'), ob = document.getElementById('oB'), ab = document.getElementById('aB'), sb = document.getElementById('sB');
+        [jb, ob, ab, sb].forEach(el => {
+          el.classList.toggle('dc', ch === 'd');
+          el.classList.toggle('lc', ch !== 'd');
+          el.classList.remove('on');
+        });
+        jb.classList.remove('to-tl', 'to-tc'); ob.classList.remove('to-tl', 'to-tc');
+        jb.classList.add('to-ml'); ob.classList.add('to-mr');
+
+        document.querySelector('.dp').classList.toggle('centered', ch === 'd');
+        document.querySelector('.lp').classList.toggle('centered', ch !== 'd');
+
+        ox = ch === 'd' ? 0 : vw;
+        oy = 0;
+        oR = 22;
+        bha = ch === 'd' ? 1 : 0;
+        sta = ch === 'd' ? 0 : 1;
+        spreadX(ch);
+
+        const hb = document.getElementById('hbx');
+        hb.style.width = '460px'; hb.style.height = '460px';
+        hb.style.setProperty('--hbx-x', ox + 'px');
+        hb.style.setProperty('--hbx-y', oy + 'px');
+        updateSwitchLabel();
+        paintStatic();
+
+        setTimeout(() => {
+          scrollyEngine.activateForPanel(ch === 'd' ? '.dp' : '.lp', ST);
+        }, 50);
+      }
+
+      function finalize(ch) {
+        ST = ch === 'd' ? 'DARK' : 'LIGHT';
+        saveTheme();
+        document.getElementById('ts').style.opacity = '0';
+        updateUniverseMenuLayout();
+        const jb = document.getElementById('jB'), ob = document.getElementById('oB'), ab = document.getElementById('aB'), sb = document.getElementById('sB');
+        const allNi = [jb, ob, ab, sb];
+
+        // Set color theme
+        if (ch === 'd') {
+          allNi.forEach(el => { el.classList.remove('lc'); el.classList.add('dc'); });
+        } else {
+          allNi.forEach(el => { el.classList.remove('dc'); el.classList.add('lc'); });
+        }
+
+        // FIX 2 — JANUS center-left, OptiBranch center-right (both universes)
+        jb.classList.remove('to-tl', 'to-tc');
+        ob.classList.remove('to-tl', 'to-tc');
+        jb.classList.add('to-ml');
+        ob.classList.add('to-mr');
+
+        // FIX 4 — center the active universe's text panel
+        if (ch === 'd') {
+          document.querySelector('.dp').classList.add('centered');
+        } else {
+          document.querySelector('.lp').classList.add('centered');
+        }
+
+        // Update hitbox to follow migrated object
+        const hb = document.getElementById('hbx');
+        hb.style.width = '460px'; hb.style.height = '460px';
+        updateSwitchLabel();
+        spreadX(ch === 'd' ? 'd' : 'l');
+        setTimeout(() => {
+          hb.style.setProperty('--hbx-x', ox + 'px');
+          hb.style.setProperty('--hbx-y', oy + 'px');
+          // Keep the menu closed after universe selection; the object opens it on click.
+        }, 230);
+
+        setTimeout(() => {
+          scrollyEngine.activateForPanel(ch === 'd' ? '.dp' : '.lp', ST);
+        }, 50);
+      }
+
+      // ═══════════════════════════════════════════════
+      // JANUS — multi-page navigation controller
+      // ═══════════════════════════════════════════════
+      document.querySelectorAll('#jDd .ddi[data-janus-page]').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          e.preventDefault();
+          const page = this.dataset.janusPage;
+          saveTheme();
+          const theme = (ST === 'LIGHT') ? 'light' : 'dark';
+          closeDds();
+          hideMenu();
+          window.location.href = page + '?theme=' + theme;
+        });
+      });
+
+      document.querySelectorAll('#oDd .ddi[data-optibranch-page]').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          e.preventDefault();
+          const page = this.dataset.optibranchPage;
+          saveTheme();
+          const theme = (ST === 'LIGHT') ? 'light' : 'dark';
+          closeDds();
+          hideMenu();
+          window.location.href = page + '?theme=' + theme;
+        });
+      });
+
+    })();
+
+    /* ── 1. CONTENT DATABASE ── */
+    const JANUS_CONTENT = {
+      overview: {
+        title: 'Architecture Overview',
+        html: `
+            <div class="drawer-desc">
+              <p>JANUS is a <strong>hybrid photonic-electronic processor</strong> built on the Chinese Remainder Theorem.
+              A 64-bit integer is decomposed into residues modulo ten small co-prime moduli and each residue is encoded
+              as a unique optical waveguide position — no arithmetic, only light routing.</p>
+              <p>Multiplications that would take hundreds of CMOS cycles collapse into a single waveguide-crossing.
+              The CMOS backend reconstructs the full 64-bit result in ≤ 5 clock cycles via the Garner Pipeline.</p>
+            </div>
+            <div class="drawer-section-title">System Flow</div>
+            <ul class="drawer-list">
+              <li><strong>Input</strong> — 64-bit integer decomposed into k residues (mod m₀…m₉)</li>
+              <li><strong>One-Hot Encoding</strong> — each residue selects 1 of 256 Si₃N₄ waveguides</li>
+              <li><strong>Beneš Routing</strong> — dilated GST-467 PCM crossbar performs modular multiply-in-place</li>
+              <li><strong>Photodetection</strong> — binary spatial detector array (light vs. no-light)</li>
+              <li><strong>CRT Reconstruction</strong> — 5-stage Garner Pipeline in 152 ps at 33 GHz</li>
+            </ul>
+            <div class="drawer-section-title">Key Metrics</div>
+            <table class="drawer-table">
+              <tr><th>Parameter</th><th>Value</th></tr>
+              <tr><td>Moduli used</td><td>k = 1…8 (configurable)</td></tr>
+              <tr><td>Waveguide count</td><td>256 per modulus lane</td></tr>
+              <tr><td>Max throughput</td><td>33 GHz FSM clock</td></tr>
+              <tr><td>Reconstruction latency</td><td>152 ps (5 cycles)</td></tr>
+              <tr><td>Optical layer</td><td>Ligentec Si₃N₄ + LioniX heaters</td></tr>
+              <tr><td>CMOS die</td><td>SCL Mohali / imec Cu-Cu D2D</td></tr>
+            </table>
+            <span class="drawer-badge drawer-badge-blue">PHOTONIC</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">RNS COMPUTE</span>&nbsp;
+            <span class="drawer-badge drawer-badge-amber">33 GHz FSM</span>
+          `
+      },
+      routing: {
+        title: 'Beneš Routing & PCM Switching',
+        html: `
+            <div class="drawer-desc">
+              <p>The optical crossbar is a <strong>dilated non-volatile Beneš network</strong> built on
+              Ge₂Sb₂Se₄Te₁ (GST-467) phase-change cells over Si₃N₄ waveguides. Each cell toggles
+              between amorphous (transparent) and crystalline (reflective) states on nanosecond timescales
+              without holding power — a fully non-volatile routing state.</p>
+              <p>Mechanical reliability is achieved through a <strong>vertical reservoir design</strong>:
+              a sacrificial GST migration sink sits atop each active cell, absorbing elemental drift
+              across 10⁶–10⁸ switching cycles. Void-gap isolation rings prevent delamination stress
+              from propagating across adjacent waveguide crossings.</p>
+            </div>
+            <div class="drawer-section-title">PCM Switch Specs</div>
+            <table class="drawer-table">
+              <tr><th>Property</th><th>Value</th></tr>
+              <tr><td>Material</td><td>GST-467 on Si₃N₄</td></tr>
+              <tr><td>Insertion loss (ON)</td><td>&lt; 0.5 dB</td></tr>
+              <tr><td>Extinction ratio</td><td>&gt; 20 dB</td></tr>
+              <tr><td>Switching energy</td><td>~10 pJ per cell</td></tr>
+              <tr><td>Non-volatile retention</td><td>&gt; 10 years @ 85°C</td></tr>
+              <tr><td>Cycle endurance</td><td>10⁶ – 10⁸ cycles</td></tr>
+            </table>
+            <div class="drawer-section-title">Reliability Features</div>
+            <ul class="drawer-list">
+              <li>Vertical GST reservoir absorbs migration drift without active correction</li>
+              <li>Void-gap isolation rings decouple mechanical stress between adjacent cells</li>
+              <li>Dilated topology — each logical switch has 2× physical switch redundancy</li>
+            </ul>
+            <span class="drawer-badge drawer-badge-blue">GST-467 PCM</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">NON-VOLATILE</span>
+          `
+      },
+      rns: {
+        title: 'One-Hot Optical RNS Encoding',
+        html: `
+            <div class="drawer-desc">
+              <p>Conventional RNS processors sample optical <em>intensity</em> — requiring SNR &gt; 138 dB for
+              8-bit precision. JANUS sidesteps this entirely: each residue value is encoded as a
+              <strong>spatial waveguide index</strong>, not a signal amplitude.</p>
+              <p>A residue of value v selects exactly waveguide v (out of 256). The detector only asks
+              "is there light or not?" — a binary presence test. This collapses the SNR requirement from
+              138 dB down to <strong>&gt; 0 dB</strong>, making the system immune to optical noise at
+              the arithmetic level.</p>
+            </div>
+            <div class="drawer-section-title">Encoding Comparison</div>
+            <table class="drawer-table">
+              <tr><th>Scheme</th><th>SNR Required</th><th>Bits</th></tr>
+              <tr><td>Intensity (conventional)</td><td>138 dB</td><td>8-bit</td></tr>
+              <tr><td>One-Hot Spatial (JANUS)</td><td>&gt; 0 dB</td><td>8-bit</td></tr>
+            </table>
+            <div class="drawer-section-title">Properties</div>
+            <ul class="drawer-list">
+              <li>256 waveguides per modulus lane → 256 distinct residue values</li>
+              <li>Exactly one lane active at any time (one-hot invariant)</li>
+              <li>Detector reads: active lane index = residue value</li>
+              <li>Tolerates &gt; 50% optical crosstalk without arithmetic error</li>
+            </ul>
+            <pre class="drawer-code">Residue r ∈ {0…255}
+Waveguide w = r  (one-hot select)
+Detector output: (lane_index where signal present)</pre>
+            <span class="drawer-badge drawer-badge-blue">SPATIAL ENCODING</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">NOISE IMMUNE</span>
+          `
+      },
+      cmos: {
+        title: 'CMOS Backend Architecture',
+        html: `
+            <div class="drawer-desc">
+              <p>The CMOS backend is a <strong>bounded 33 GHz FSM</strong> — not a general-purpose
+              processor. It contains exactly five hardware subsystems dedicated to receiving optical
+              results and reconstructing the 64-bit integer output via CRT arithmetic.</p>
+              <p>Each subsystem maps to a well-known industry analog, validating the design space
+              against deployed silicon.</p>
+            </div>
+            <div class="drawer-section-title">Subsystem Map</div>
+            <table class="drawer-table">
+              <tr><th>JANUS Block</th><th>Industry Analog</th><th>Function</th></tr>
+              <tr><td>Register File</td><td>ARM SVE / Intel AVX-512</td><td>Reconfigurable SRAM — 8-bit lanes merge to k×8</td></tr>
+              <tr><td>Garner Pipeline</td><td>Custom DSP MAC array</td><td>4-stage CRT reconstruction in 152 ps</td></tr>
+              <tr><td>JIR Thermal Ctrl</td><td>TI TMP117 + AD7124</td><td>ΔΣ ADC thermal diode monitor + slope predictor</td></tr>
+              <tr><td>Priority Encoder</td><td>NVIDIA Hopper warp scheduler</td><td>8-level OR tournament tree, 30.3 ps</td></tr>
+              <tr><td>Clock Gating</td><td>ARM DynamIQ / Apple ANE</td><td>Predictive per-tile power domain gating</td></tr>
+            </table>
+            <div class="drawer-section-title">Clock Domain</div>
+            <ul class="drawer-list">
+              <li>Master clock: 33 GHz (30.3 ps period)</li>
+              <li>All five blocks share one synchronous domain</li>
+              <li>Garner pipeline latency: 5 cycles = 152 ps</li>
+            </ul>
+            <span class="drawer-badge drawer-badge-blue">33 GHz FSM</span>&nbsp;
+            <span class="drawer-badge drawer-badge-amber">5 BLOCKS</span>
+          `
+      },
+      compiler: {
+        title: 'JIR Compiler & Register File',
+        html: `
+            <div class="drawer-desc">
+              <p>The <strong>JANUS Intermediate Representation (JIR)</strong> compiler is responsible for
+              decomposing 64-bit integer workloads into per-modulus RNS residues and scheduling
+              optical waveguide routing configurations before each computation window opens.</p>
+              <p>The <strong>Register File</strong> is a reconfigurable SRAM array. During the optical
+              phase it operates as k independent 8-bit registers — one per modulus lane. During CRT
+              reconstruction it aliases those k registers into a single k×8-bit wide register, mirroring
+              the ARM SVE scalable vector aliasing model.</p>
+            </div>
+            <div class="drawer-section-title">Register File Modes</div>
+            <table class="drawer-table">
+              <tr><th>Phase</th><th>Mode</th><th>Width</th></tr>
+              <tr><td>Optical</td><td>k independent 8-bit</td><td>8 bits × k</td></tr>
+              <tr><td>CRT Reconstruction</td><td>Single merged register</td><td>k × 8 bits</td></tr>
+            </table>
+            <div class="drawer-section-title">JIR Compilation Steps</div>
+            <ul class="drawer-list">
+              <li><strong>Decompose</strong> — 64-bit integer → k residues (CRT forward transform)</li>
+              <li><strong>Schedule</strong> — assign each residue to a modulus lane</li>
+              <li><strong>Route</strong> — program Beneš crossbar with PCM switching configuration</li>
+              <li><strong>Execute</strong> — trigger optical computation window</li>
+              <li><strong>Collect</strong> — read one-hot detector outputs into register file</li>
+            </ul>
+            <span class="drawer-badge drawer-badge-blue">JIR COMPILER</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">SVE-INSPIRED</span>
+          `
+      },
+      garner: {
+        title: 'CRT Garner Pipeline',
+        html: `
+            <div class="drawer-desc">
+              <p>The Garner Pipeline is a <strong>4-stage fixed-function arithmetic unit</strong> that
+              reconstructs the full 64-bit integer from k residues in exactly 5 clock cycles (152 ps
+              at 33 GHz). This represents a <strong>30% improvement</strong> over the naïve sequential
+              CRT approach (210 ps).</p>
+            </div>
+            <div class="drawer-section-title">Pipeline Stages</div>
+            <table class="drawer-table">
+              <tr><th>#</th><th>Stage</th><th>Operation</th><th>Latency</th></tr>
+              <tr><td>1</td><td>Coeff-Multiply</td><td>Constant-coefficient modular multiply</td><td>1 cycle</td></tr>
+              <tr><td>2</td><td>Wallace Tree</td><td>Partial product reduction</td><td>1 cycle</td></tr>
+              <tr><td>3</td><td>Kogge-Stone</td><td>Parallel prefix carry-lookahead add</td><td>1 cycle</td></tr>
+              <tr><td>4</td><td>Montgomery Reduce</td><td>Modular reduction to output domain</td><td>2 cycles</td></tr>
+            </table>
+            <div class="drawer-section-title">Latency Budget</div>
+            <pre class="drawer-code">Naïve CRT (sequential):   210 ps
+Garner Pipeline (5-stage): 152 ps
+Improvement:               30.5% reduction</pre>
+            <span class="drawer-badge drawer-badge-green">152 ps</span>&nbsp;
+            <span class="drawer-badge drawer-badge-blue">4-STAGE</span>&nbsp;
+            <span class="drawer-badge drawer-badge-amber">30% FASTER</span>
+          `
+      },
+      thermal: {
+        title: 'JIR Thermal Controller',
+        html: `
+            <div class="drawer-desc">
+              <p>GST-467 phase-change cells are highly sensitive to temperature. Even a few degrees of
+              drift can shift the amorphous-to-crystalline transition point, causing routing errors.
+              The <strong>JIR Thermal Controller</strong> monitors all photonic tile thermal diodes using
+              a ΔΣ ADC and runs a real-time slope estimator to predict thermal runaway before it occurs.</p>
+              <p>When a tile's temperature slope exceeds the safety threshold, the controller
+              <strong>predictively migrates</strong> active computations to redundant tiles without
+              stalling the pipeline — analogous to TI TMP117 / Analog Devices AD7124 firmware.</p>
+            </div>
+            <div class="drawer-section-title">Thermal Control Specs</div>
+            <table class="drawer-table">
+              <tr><th>Parameter</th><th>Value</th></tr>
+              <tr><td>Sensor type</td><td>On-tile thermal diodes</td></tr>
+              <tr><td>ADC type</td><td>ΔΣ (delta-sigma)</td></tr>
+              <tr><td>Sampling rate</td><td>~1 kHz per tile</td></tr>
+              <tr><td>Slope estimator window</td><td>Rolling 4-sample gradient</td></tr>
+              <tr><td>Migration trigger</td><td>Predicted Tcrit within 200 ms</td></tr>
+              <tr><td>Redundant tile count</td><td>4 tiles hot-standby</td></tr>
+            </table>
+            <span class="drawer-badge drawer-badge-amber">THERMAL AWARE</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">PREDICTIVE MIGRATION</span>
+          `
+      },
+      priority: {
+        title: 'One-Hot Priority Encoder',
+        html: `
+            <div class="drawer-desc">
+              <p>After photodetection, 256 binary signals arrive simultaneously — exactly one is high.
+              The <strong>One-Hot Priority Encoder</strong> resolves these to an 8-bit index in a single
+              30.3 ps clock cycle using an 8-level binary <em>tournament tree</em> of OR gates.</p>
+              <p>Because the one-hot invariant is guaranteed by the optical layer, arbitration logic is
+              entirely bypassed — a 40% gate reduction compared to a conventional priority encoder.
+              This is architecturally analogous to NVIDIA Hopper's warp scheduler.</p>
+            </div>
+            <div class="drawer-section-title">Tournament Tree Structure</div>
+            <ul class="drawer-list">
+              <li>Level 0: 256 leaves (raw photodetector outputs)</li>
+              <li>Levels 1–7: 128 → 64 → 32 → 16 → 8 → 4 → 2 OR-gate pairs</li>
+              <li>Level 8: single root → 8-bit index output</li>
+              <li>Propagation delay: 1 cycle = 30.3 ps</li>
+            </ul>
+            <div class="drawer-section-title">Gate Efficiency</div>
+            <table class="drawer-table">
+              <tr><th>Architecture</th><th>Gate Count</th></tr>
+              <tr><td>Conventional priority encoder</td><td>~3400 gates</td></tr>
+              <tr><td>JANUS one-hot encoder</td><td>~2040 gates (−40%)</td></tr>
+            </table>
+            <span class="drawer-badge drawer-badge-blue">30.3 ps</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">−40% GATES</span>
+          `
+      },
+      clock: {
+        title: 'Predictive Clock Gating',
+        html: `
+            <div class="drawer-desc">
+              <p>At INT4 precision (k=1 modulus), 31 of 32 compute tiles are idle. Without clock gating
+              this idle circuitry dissipates near-full dynamic power. JANUS's <strong>Predictive Clock
+              Gating Network</strong> pre-gates power domains during weight-loading, eliminating switching
+              activity in idle tiles before the computation window opens.</p>
+              <p>At k=1, <strong>96% of pipeline dynamic power</strong> is saved. This is architecturally
+              equivalent to ARM DynamIQ's per-core power domain isolation and Apple Neural Engine's
+              weight-load pre-gating.</p>
+            </div>
+            <div class="drawer-section-title">Gating Efficiency by Precision</div>
+            <table class="drawer-table">
+              <tr><th>Precision</th><th>k (moduli)</th><th>Active Tiles</th><th>Power Saved</th></tr>
+              <tr><td>INT4</td><td>1</td><td>1 / 32</td><td>~96%</td></tr>
+              <tr><td>INT8</td><td>2</td><td>2 / 32</td><td>~94%</td></tr>
+              <tr><td>INT16</td><td>4</td><td>4 / 32</td><td>~88%</td></tr>
+              <tr><td>INT64</td><td>8</td><td>8 / 32</td><td>~75%</td></tr>
+            </table>
+            <span class="drawer-badge drawer-badge-green">96% IDLE POWER SAVED</span>&nbsp;
+            <span class="drawer-badge drawer-badge-blue">PREDICTIVE</span>
+          `
+      },
+      fabrication: {
+        title: 'Fabrication & Yield Analysis',
+        html: `
+            <div class="drawer-desc">
+              <p>JANUS uses a <strong>heterogeneous 3D Z-stack</strong>: a silicon photonics (SiPh) die
+              bonded face-to-face onto a CMOS logic die using imec's copper-to-copper (Cu-Cu) die-to-die
+              interconnect at ~250,000 vias/mm². LioniX thermo-optic heaters control waveguide phase,
+              and Ligentec provides the ultra-low-loss Si₃N₄ waveguide platform.</p>
+            </div>
+            <div class="drawer-section-title">Supply Chain</div>
+            <table class="drawer-table">
+              <tr><th>Component</th><th>Vendor</th><th>Role</th></tr>
+              <tr><td>Si₃N₄ waveguides</td><td>Ligentec</td><td>Low-loss optical routing layer</td></tr>
+              <tr><td>Thermo-optic heaters</td><td>LioniX</td><td>Waveguide phase tuning</td></tr>
+              <tr><td>CMOS logic die</td><td>SCL Mohali (India)</td><td>Backend FSM + CRT pipeline</td></tr>
+              <tr><td>D2D bonding</td><td>imec (Belgium)</td><td>Cu-Cu face-to-face, ~250k vias/mm²</td></tr>
+              <tr><td>Funding</td><td>C2S / India DLI</td><td>Government R&amp;D program</td></tr>
+            </table>
+            <div class="drawer-section-title">3D Stack</div>
+            <ul class="drawer-list">
+              <li>Layer 0 (bottom): CMOS logic — 33 GHz FSM + Garner Pipeline</li>
+              <li>Layer 1 (middle): Cu-Cu D2D bond interface, ~250k vias/mm²</li>
+              <li>Layer 2 (top): Si₃N₄ photonic layer — waveguides, GST-467 cells, heaters</li>
+            </ul>
+            <span class="drawer-badge drawer-badge-blue">3D HETEROGENEOUS</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">250k VIAS/mm²</span>&nbsp;
+            <span class="drawer-badge drawer-badge-amber">GOVT FUNDED</span>
+          `
+      }
+    };
+
+    /* ── 2. SCHEMATIC CANVAS ENGINE ── */
+    let drawerAnimId = null;
+    let drawerT = 0;
+
+    function stopDrawerAnim() {
+      if (drawerAnimId !== null) { cancelAnimationFrame(drawerAnimId); drawerAnimId = null; }
+      drawerT = 0;
+    }
+
+    function getThemeColors() {
+      const dark = (ST === 'DARK');
+      return {
+        accent: dark ? '#5585ff' : '#b87010',
+        accentRgb: dark ? '85,133,255' : '184,112,16',
+        dim: dark ? 'rgba(85,133,255,0.18)' : 'rgba(184,112,16,0.18)',
+        line: dark ? 'rgba(85,133,255,0.6)' : 'rgba(184,112,16,0.65)',
+        bg: dark ? 'rgba(8,8,12,0)' : 'rgba(233,226,209,0)',
+        text: dark ? 'rgba(255,255,255,0.7)' : 'rgba(18,12,4,0.7)',
+        glow: dark ? 'rgba(85,133,255,0.45)' : 'rgba(184,112,16,0.4)',
+      };
+    }
+
+    function setupCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const w = Math.round(rect.width);
+      const h = Math.round(rect.height);
+      if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        const ctx2 = canvas.getContext('2d');
+        ctx2.scale(dpr, dpr);
+      }
+      return { w, h };
+    }
+
+    /* helper: glowing line */
+    function glowLine(ctx2, x1, y1, x2, y2, col, width, blur) {
+      ctx2.save();
+      ctx2.shadowColor = col;
+      ctx2.shadowBlur = blur || 12;
+      ctx2.strokeStyle = col;
+      ctx2.lineWidth = width || 1.5;
+      ctx2.beginPath();
+      ctx2.moveTo(x1, y1);
+      ctx2.lineTo(x2, y2);
+      ctx2.stroke();
+      ctx2.restore();
+    }
+
+    /* helper: glowing circle */
+    function glowCircle(ctx2, x, y, r, col, filled) {
+      ctx2.save();
+      ctx2.shadowColor = col; ctx2.shadowBlur = 14;
+      if (filled) {
+        ctx2.fillStyle = col; ctx2.beginPath(); ctx2.arc(x, y, r, 0, Math.PI * 2); ctx2.fill();
+      }
+      ctx2.strokeStyle = col; ctx2.lineWidth = 1.5;
+      ctx2.beginPath(); ctx2.arc(x, y, r, 0, Math.PI * 2); ctx2.stroke();
+      ctx2.restore();
+    }
+
+    /* helper: labeled box */
+    function labelBox(ctx2, x, y, w2, h2, label, col, textCol, font) {
+      ctx2.save();
+      ctx2.strokeStyle = col; ctx2.lineWidth = 1.2;
+      ctx2.shadowColor = col; ctx2.shadowBlur = 8;
+      ctx2.strokeRect(x, y, w2, h2);
+      ctx2.restore();
+      ctx2.save();
+      ctx2.fillStyle = 'rgba(0,0,0,0.0)';
+      ctx2.font = font || '10px "Space Mono", monospace';
+      ctx2.fillStyle = textCol;
+      ctx2.textAlign = 'center';
+      ctx2.fillText(label, x + w2 / 2, y + h2 / 2 + 4);
+      ctx2.restore();
+    }
+
+    const JANUS_SCHEMATICS = {
+
+      /* OVERVIEW — block-flow pipeline */
+      overview: function (canvas, t) {
+        const { w, h } = setupCanvas(canvas);
+        const c = canvas.getContext('2d');
+        const th = getThemeColors();
+        c.clearRect(0, 0, w, h);
+
+        const blocks = ['INPUT\n64-bit', 'CRT\nDECOMP', 'ONE-HOT\nENCODE', 'BENES\nROUTE', 'DETECT', 'GARNER\nCRT'];
+        const n = blocks.length;
+        const bw = 64, bh = 36;
+        const totalW = n * bw + (n - 1) * 22;
+        let bx = (w - totalW) / 2;
+        const by = h / 2 - bh / 2;
+
+        blocks.forEach((label, i) => {
+          const pulse = 0.5 + 0.5 * Math.sin(t * 0.04 - i * 0.9);
+          const col = `rgba(${th.accentRgb},${0.45 + pulse * 0.4})`;
+          c.save();
+          c.shadowColor = th.accent; c.shadowBlur = pulse * 14;
+          c.strokeStyle = col; c.lineWidth = 1.3;
+          c.strokeRect(bx, by, bw, bh);
+          c.restore();
+          c.save();
+          c.fillStyle = th.text; c.font = '7.5px "Space Mono", monospace';
+          c.textAlign = 'center';
+          label.split('\n').forEach((ln, li) => c.fillText(ln, bx + bw / 2, by + 13 + li * 11));
+          c.restore();
+          if (i < n - 1) {
+            const arrowX = bx + bw + 11;
+            const arrowY = by + bh / 2;
+            const pulse2 = 0.5 + 0.5 * Math.sin(t * 0.04 - i * 0.9 + 0.4);
+            glowLine(c, bx + bw, arrowY, bx + bw + 22, arrowY, `rgba(${th.accentRgb},${0.5 + pulse2 * 0.4})`, 1.5, 8);
+            c.save();
+            c.fillStyle = th.accent; c.shadowColor = th.accent; c.shadowBlur = 8;
+            c.beginPath(); c.moveTo(arrowX + 9, arrowY); c.lineTo(arrowX + 4, arrowY - 4); c.lineTo(arrowX + 4, arrowY + 4); c.closePath(); c.fill();
+            c.restore();
+          }
+          bx += bw + 22;
+        });
+
+        /* scanning beam */
+        const beam = ((t * 1.2) % (w + 40)) - 20;
+        const grad = c.createLinearGradient(beam - 20, 0, beam + 20, 0);
+        grad.addColorStop(0, 'rgba(0,0,0,0)');
+        grad.addColorStop(0.5, `rgba(${th.accentRgb},0.06)`);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = grad; c.fillRect(beam - 20, 0, 40, h);
+      },
+
+      /* ROUTING — Benes network stages with animated photon paths */
+      routing: function (canvas, t) {
+        const { w, h } = setupCanvas(canvas);
+        const c = canvas.getContext('2d');
+        const th = getThemeColors();
+        c.clearRect(0, 0, w, h);
+
+        const stages = 5, rows = 6;
+        const colW = w / (stages + 1), rowH = h / (rows + 1);
+        const nodes = [];
+
+        for (let s = 0; s <= stages; s++) {
+          for (let r = 0; r < rows; r++) {
+            nodes.push({ x: (s + 0.5) * colW, y: (r + 1) * rowH, s, r });
+          }
+        }
+
+        /* draw cross-links */
+        nodes.forEach(n1 => {
+          if (n1.s >= stages) return;
+          const n2 = nodes.find(n => n.s === n1.s + 1 && n.r === n1.r);
+          const cross = nodes.find(n => n.s === n1.s + 1 && n.r === (n1.r + 1 + ((n1.s % 2 === 0 && n1.r % 2 !== 0) ? -2 : (n1.s % 2 === 0 ? 2 : (n1.r % 2 === 0 ? 1 : -1)))) % rows);
+          if (n2) glowLine(c, n1.x, n1.y, n2.x, n2.y, th.dim.replace('0.18', '0.25'), 1, 6);
+          if (cross && cross !== n2) glowLine(c, n1.x, n1.y, cross.x, cross.y, th.dim.replace('0.18', '0.15'), 0.8, 4);
+        });
+
+        /* animated photon */
+        const routePath = [0, 1, 3, 5, 4, 5]; /* row indices per stage */
+        const phase = (t * 0.018) % 1;
+        const segIdx = Math.floor(phase * stages);
+        const segFrac = (phase * stages) % 1;
+        if (segIdx < stages) {
+          const a = nodes.find(n => n.s === segIdx && n.r === routePath[segIdx] % rows);
+          const b = nodes.find(n => n.s === segIdx + 1 && n.r === routePath[segIdx + 1] % rows);
+          if (a && b) {
+            const px = a.x + (b.x - a.x) * segFrac;
+            const py = a.y + (b.y - a.y) * segFrac;
+            const glow2 = c.createRadialGradient(px, py, 0, px, py, 16);
+            glow2.addColorStop(0, th.accent); glow2.addColorStop(1, 'rgba(0,0,0,0)');
+            c.fillStyle = glow2; c.beginPath(); c.arc(px, py, 16, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#fff'; c.beginPath(); c.arc(px, py, 3, 0, Math.PI * 2); c.fill();
+          }
+        }
+
+        /* nodes */
+        nodes.forEach(n1 => {
+          const pulse = 0.5 + 0.5 * Math.sin(t * 0.03 + n1.r * 0.8 + n1.s * 0.5);
+          glowCircle(c, n1.x, n1.y, 5, `rgba(${th.accentRgb},${0.4 + pulse * 0.5})`);
+        });
+
+        /* stage labels */
+        ['IN', 'S1', 'S2', 'S3', 'S4', 'OUT'].forEach((lbl, i) => {
+          c.save(); c.fillStyle = th.text; c.font = '7px "Space Mono", monospace';
+          c.textAlign = 'center'; c.fillText(lbl, (i + 0.5) * colW, h - 6); c.restore();
+        });
+      },
+
+      /* RNS — animated light pulse on a single lane among 8 parallel lanes */
+      rns: function (canvas, t) {
+        const { w, h } = setupCanvas(canvas);
+        const c = canvas.getContext('2d');
+        const th = getThemeColors();
+        c.clearRect(0, 0, w, h);
+
+        const lanes = 8;
+        const laneH = h / (lanes + 1);
+        /* which lane is active — changes every ~120 frames */
+        const activeLane = Math.floor(((t * 0.008) % 1) * lanes);
+        const pulseX = ((t * 1.5) % (w + 60)) - 30;
+
+        for (let i = 0; i < lanes; i++) {
+          const y = (i + 1) * laneH;
+          const isActive = i === activeLane;
+
+          /* lane line */
+          c.save();
+          c.strokeStyle = isActive ? th.accent : `rgba(${th.accentRgb},0.15)`;
+          c.lineWidth = isActive ? 1.5 : 0.7;
+          c.shadowColor = isActive ? th.accent : 'transparent';
+          c.shadowBlur = isActive ? 8 : 0;
+          c.setLineDash(isActive ? [] : [4, 6]);
+          c.beginPath(); c.moveTo(20, y); c.lineTo(w - 20, y); c.stroke();
+          c.setLineDash([]);
+          c.restore();
+
+          /* lane label */
+          c.save(); c.fillStyle = isActive ? th.accent : th.text;
+          c.font = '7px "Space Mono", monospace'; c.textAlign = 'right';
+          c.fillText('w' + (i * 32).toString().padStart(3, '0'), 18, y + 3);
+          c.restore();
+        }
+
+        /* traveling pulse on active lane */
+        const py = (activeLane + 1) * laneH;
+        if (pulseX > 20 && pulseX < w - 20) {
+          const pGrad = c.createRadialGradient(pulseX, py, 0, pulseX, py, 22);
+          pGrad.addColorStop(0, th.accent);
+          pGrad.addColorStop(0.3, `rgba(${th.accentRgb},0.6)`);
+          pGrad.addColorStop(1, 'rgba(0,0,0,0)');
+          c.fillStyle = pGrad;
+          c.beginPath(); c.arc(pulseX, py, 22, 0, Math.PI * 2); c.fill();
+          /* bright core */
+          c.fillStyle = '#fff'; c.beginPath(); c.arc(pulseX, py, 3.5, 0, Math.PI * 2); c.fill();
+        }
+
+        /* "ONE-HOT" label */
+        c.save(); c.fillStyle = th.accent; c.font = 'bold 9px "Space Mono", monospace';
+        c.textAlign = 'right'; c.fillText('ONE-HOT: lane ' + activeLane, w - 12, h - 6); c.restore();
+      },
+
+      /* CMOS BACKEND — 5 interconnected block schematic */
+      cmos: function (canvas, t) {
+        const { w, h } = setupCanvas(canvas);
+        const c = canvas.getContext('2d');
+        const th = getThemeColors();
+        c.clearRect(0, 0, w, h);
+
+        const bw = 78, bh = 34;
+        const labels = ['REGISTER\nFILE', 'GARNER\nPIPELINE', 'THERMAL\nCTRL', 'PRIORITY\nENCODER', 'CLOCK\nGATING'];
+        /* Layout: 3 top + 2 bottom centered */
+        const topY = h * 0.22, botY = h * 0.62;
+        const topX = [(w - 3 * bw - 2 * 18) / 2, (w - 3 * bw - 2 * 18) / 2 + bw + 18, (w - 3 * bw - 2 * 18) / 2 + (bw + 18) * 2];
+        const botX = [(w / 2) - bw - 10, (w / 2) + 10];
+        const positions = [
+          { x: topX[0], y: topY }, { x: topX[1], y: topY }, { x: topX[2], y: topY },
+          { x: botX[0], y: botY }, { x: botX[1], y: botY }
+        ];
+
+        /* connections */
+        const edges = [[0, 1], [1, 2], [0, 3], [1, 3], [1, 4], [2, 4], [3, 4]];
+        edges.forEach(([a, b]) => {
+          const pa = positions[a], pb = positions[b];
+          const pulse = 0.4 + 0.3 * Math.sin(t * 0.035 + a * 1.1);
+          glowLine(c, pa.x + bw / 2, pa.y + bh / 2, pb.x + bw / 2, pb.y + bh / 2,
+            `rgba(${th.accentRgb},${pulse})`, 1.2, 6);
+        });
+
+        /* boxes */
+        positions.forEach((pos, i) => {
+          const pulse = 0.5 + 0.4 * Math.sin(t * 0.03 - i * 0.7);
+          c.save();
+          c.strokeStyle = `rgba(${th.accentRgb},${0.4 + pulse * 0.45})`;
+          c.shadowColor = th.accent; c.shadowBlur = pulse * 12; c.lineWidth = 1.3;
+          c.strokeRect(pos.x, pos.y, bw, bh); c.restore();
+          c.save(); c.fillStyle = th.text;
+          c.font = '7px "Space Mono", monospace'; c.textAlign = 'center';
+          labels[i].split('\n').forEach((ln, li) => c.fillText(ln, pos.x + bw / 2, pos.y + 12 + li * 11));
+          c.restore();
+        });
+
+        /* MHz label */
+        c.save(); c.fillStyle = th.accent; c.font = 'bold 8px "Space Mono", monospace';
+        c.textAlign = 'center'; c.fillText('33 GHz FSM', w / 2, h - 7); c.restore();
+      },
+
+      /* REGISTER FILE — boxes merging from k=8 to single wide register */
+      compiler: function (canvas, t) {
+        const { w, h } = setupCanvas(canvas);
+        const c = canvas.getContext('2d');
+        const th = getThemeColors();
+        c.clearRect(0, 0, w, h);
+
+        const k = 8;
+        const boxW = (w - 60) / k - 4;
+        const boxH = 30;
+        const startY = h * 0.18;
+        const phase = (Math.sin(t * 0.022) + 1) / 2; /* 0→1 oscillate */
+
+        /* individual registers (top row) */
+        for (let i = 0; i < k; i++) {
+          const bx = 30 + i * (boxW + 4);
+          const alpha = 1 - phase * 0.7;
+          c.save();
+          c.strokeStyle = `rgba(${th.accentRgb},${0.35 + alpha * 0.5})`;
+          c.shadowColor = th.accent; c.shadowBlur = alpha * 10; c.lineWidth = 1.2;
+          c.strokeRect(bx, startY, boxW, boxH); c.restore();
+          c.save(); c.fillStyle = th.text; c.font = '7px "Space Mono", monospace';
+          c.textAlign = 'center'; c.fillText('R' + i, bx + boxW / 2, startY + 19); c.restore();
+        }
+
+        /* merge lines */
+        const mergeAlpha = phase;
+        for (let i = 0; i < k; i++) {
+          const bx = 30 + i * (boxW + 4);
+          glowLine(c, bx + boxW / 2, startY + boxH, bx + boxW / 2, startY + boxH + 22,
+            `rgba(${th.accentRgb},${mergeAlpha * 0.6})`, 1, 6);
+        }
+
+        /* merged wide register (bottom) */
+        const mergedY = startY + boxH + 44;
+        const mergedW = w - 60;
+        c.save();
+        c.strokeStyle = `rgba(${th.accentRgb},${mergeAlpha * 0.85 + 0.15})`;
+        c.shadowColor = th.accent; c.shadowBlur = mergeAlpha * 16; c.lineWidth = 1.6;
+        c.strokeRect(30, mergedY, mergedW, boxH + 4); c.restore();
+        c.save(); c.fillStyle = th.text; c.font = '8px "Space Mono", monospace'; c.textAlign = 'center';
+        c.fillText('MERGED  ' + k + '×8 = 64-bit CRT REGISTER', w / 2, mergedY + 20); c.restore();
+
+        /* labels */
+        const modeLabel = phase > 0.5 ? 'CRT MERGE MODE' : 'OPTICAL LANE MODE';
+        c.save(); c.fillStyle = th.accent; c.font = 'bold 8px "Space Mono", monospace';
+        c.textAlign = 'center'; c.fillText(modeLabel, w / 2, h - 7); c.restore();
+      },
+
+      /* GARNER PIPELINE — stage progress bar animation */
+      garner: function (canvas, t) {
+        const { w, h } = setupCanvas(canvas);
+        const c = canvas.getContext('2d');
+        const th = getThemeColors();
+        c.clearRect(0, 0, w, h);
+
+        const stages = [
+          { name: 'COEFF\nMULT', cycles: 1 },
+          { name: 'WALLACE\nTREE', cycles: 1 },
+          { name: 'KOGGE\nSTONE', cycles: 1 },
+          { name: 'MONTGOMERY\nREDUCE', cycles: 2 },
+        ];
+        const totalCycles = 5;
+        const barW = w - 60; const barH = 28;
+        const barX = 30; const barY = h / 2 - barH / 2;
+
+        /* background track */
+        c.save(); c.fillStyle = `rgba(${th.accentRgb},0.06)`;
+        c.strokeStyle = `rgba(${th.accentRgb},0.15)`; c.lineWidth = 1;
+        c.strokeRect(barX, barY, barW, barH); c.restore();
+
+        /* active cycle pulse: 0→5 every ~3s */
+        const activeCycle = Math.floor(((t * 0.018) % 1) * (totalCycles + 1));
+
+        let cx = barX;
+        stages.forEach((s, si) => {
+          const sw = (s.cycles / totalCycles) * barW;
+          const isActive = activeCycle >= stages.slice(0, si).reduce((a, x) => a + x.cycles, 0) &&
+            activeCycle < stages.slice(0, si + 1).reduce((a, x) => a + x.cycles, 0);
+          const done = activeCycle >= stages.slice(0, si + 1).reduce((a, x) => a + x.cycles, 0);
+          const fillAlpha = done ? 0.35 : isActive ? 0.22 : 0.05;
+          c.save(); c.fillStyle = `rgba(${th.accentRgb},${fillAlpha})`; c.fillRect(cx, barY, sw, barH); c.restore();
+          c.save(); c.strokeStyle = `rgba(${th.accentRgb},0.3)`; c.lineWidth = 0.8;
+          c.beginPath(); c.moveTo(cx + sw, barY); c.lineTo(cx + sw, barY + barH); c.stroke(); c.restore();
+
+          /* glow for active */
+          if (isActive) {
+            c.save(); c.shadowColor = th.accent; c.shadowBlur = 18;
+            c.strokeStyle = th.accent; c.lineWidth = 1.5; c.strokeRect(cx, barY, sw, barH); c.restore();
+          }
+
+          c.save(); c.fillStyle = isActive ? th.accent : th.text;
+          c.font = '6.5px "Space Mono", monospace'; c.textAlign = 'center';
+          s.name.split('\n').forEach((ln, li) => c.fillText(ln, cx + sw / 2, barY - 18 + li * 10));
+          c.fillText(s.cycles + 'cy', cx + sw / 2, barY + barH + 12); c.restore();
+          cx += sw;
+        });
+
+        /* latency label */
+        c.save(); c.fillStyle = th.accent; c.font = 'bold 8.5px "Space Mono", monospace';
+        c.textAlign = 'center'; c.fillText('5 CYCLES  ·  152 ps @ 33 GHz', w / 2, h - 7); c.restore();
+      },
+
+      /* THERMAL CONTROLLER — live temperature slope charts */
+      thermal: function (canvas, t) {
+        const { w, h } = setupCanvas(canvas);
+        const c = canvas.getContext('2d');
+        const th = getThemeColors();
+        c.clearRect(0, 0, w, h);
+
+        const tiles = 5;
+        const chartW = w - 50; const chartH = (h - 50) / tiles - 4;
+        const chartX = 40;
+
+        for (let ti = 0; ti < tiles; ti++) {
+          const cy2 = 14 + ti * (chartH + 4);
+          const speed = 0.018 + ti * 0.007;
+          const drift = ti === 3 ? 0.22 : 0; /* tile 3 overheats */
+
+          c.save(); c.strokeStyle = `rgba(${th.accentRgb},0.12)`; c.lineWidth = 0.7;
+          c.strokeRect(chartX, cy2, chartW, chartH); c.restore();
+
+          /* temperature curve */
+          const pts = 60;
+          c.save();
+          c.shadowColor = ti === 3 ? '#ff5555' : th.accent;
+          c.shadowBlur = ti === 3 ? 12 : 6;
+          c.strokeStyle = ti === 3 ? 'rgba(255,80,80,0.8)' : th.line;
+          c.lineWidth = 1.4;
+          c.beginPath();
+          for (let p = 0; p < pts; p++) {
+            const tx = chartX + (p / pts) * chartW;
+            const tv = drift * (p / pts) + 0.35 + 0.12 * Math.sin((t * speed) + p * 0.4 + ti * 2.1);
+            const ty = cy2 + chartH - tv * chartH;
+            p === 0 ? c.moveTo(tx, ty) : c.lineTo(tx, ty);
+          }
+          c.stroke(); c.restore();
+
+          /* danger threshold */
+          const threshY = cy2 + chartH * 0.25;
+          c.save(); c.strokeStyle = ti === 3 ? 'rgba(255,80,80,0.4)' : `rgba(${th.accentRgb},0.12)`;
+          c.setLineDash([4, 4]); c.lineWidth = 0.8;
+          c.beginPath(); c.moveTo(chartX, threshY); c.lineTo(chartX + chartW, threshY); c.stroke();
+          c.setLineDash([]); c.restore();
+
+          c.save(); c.fillStyle = ti === 3 ? 'rgba(255,80,80,0.9)' : th.text;
+          c.font = '6.5px "Space Mono", monospace'; c.textAlign = 'right';
+          c.fillText('T' + ti + (ti === 3 ? ' !' : ''), chartX - 4, cy2 + chartH / 2 + 2); c.restore();
+        }
+
+        /* warning label */
+        const warn = 0.5 + 0.5 * Math.sin(t * 0.12);
+        c.save(); c.fillStyle = `rgba(255,80,80,${0.6 + warn * 0.4})`;
+        c.font = 'bold 7.5px "Space Mono", monospace'; c.textAlign = 'right';
+        c.fillText('TILE 3 → MIGRATE', w - 10, h - 7); c.restore();
+      },
+
+      /* PRIORITY ENCODER — cascading tournament tree */
+      priority: function (canvas, t) {
+        const { w, h } = setupCanvas(canvas);
+        const c = canvas.getContext('2d');
+        const th = getThemeColors();
+        c.clearRect(0, 0, w, h);
+
+        const levels = 5; /* simplified: 16 leaves, 4 levels up to root */
+        const leafCount = 16;
+        const activeLeaf = Math.floor(((t * 0.012) % 1) * leafCount);
+
+        function nodeX(level, idx, count) {
+          return w * 0.05 + (w * 0.9) * (idx + 0.5) / count;
+        }
+        function nodeY(level) {
+          return h * 0.1 + (level / (levels - 1)) * h * 0.78;
+        }
+
+        /* draw levels bottom→top (leaves at bottom) */
+        for (let lvl = 0; lvl < levels - 1; lvl++) {
+          const count = leafCount >> lvl;
+          const countNext = count >> 1;
+          for (let i = 0; i < count; i++) {
+            const x1 = nodeX(lvl, i, count);
+            const y1 = nodeY(levels - 1 - lvl);
+            const parentI = Math.floor(i / 2);
+            const x2 = nodeX(lvl + 1, parentI, countNext);
+            const y2 = nodeY(levels - 1 - (lvl + 1));
+            /* determine if this path carries the active signal */
+            const on = Math.floor(activeLeaf / (1 << lvl)) === i || Math.floor(activeLeaf / (1 << lvl)) >> 1 === parentI;
+            glowLine(c, x1, y1, x2, y2, on ? th.line : `rgba(${th.accentRgb},0.15)`, on ? 1.5 : 0.8, on ? 10 : 3);
+          }
+        }
+
+        /* draw nodes */
+        for (let lvl = 0; lvl < levels; lvl++) {
+          const count = leafCount >> lvl;
+          for (let i = 0; i < count; i++) {
+            const x = nodeX(lvl, i, count);
+            const y = nodeY(levels - 1 - lvl);
+            const on = Math.floor(activeLeaf / (1 << lvl)) === i;
+            glowCircle(c, x, y, lvl === levels - 1 ? 6 : 4, on ? th.accent : `rgba(${th.accentRgb},0.3)`, on);
+          }
+        }
+
+        /* root label */
+        c.save(); c.fillStyle = th.accent; c.font = 'bold 8px "Space Mono", monospace';
+        c.textAlign = 'center'; c.fillText('INDEX: 0x' + activeLeaf.toString(16).padStart(2, '0').toUpperCase() + ' → 1 cycle · 30.3 ps', w / 2, h - 7); c.restore();
+      },
+
+      /* CLOCK GATING — tiles graying out, clock pulses through active only */
+      clock: function (canvas, t) {
+        const { w, h } = setupCanvas(canvas);
+        const c = canvas.getContext('2d');
+        const th = getThemeColors();
+        c.clearRect(0, 0, w, h);
+
+        const cols = 8, rows = 4;
+        const tileW = (w - 40) / cols - 4, tileH = (h - 36) / rows - 4;
+        const startX = 20, startY = 10;
+        /* k oscillates 1→8 over time */
+        const kPhase = (Math.sin(t * 0.016) + 1) / 2;
+        const k = Math.max(1, Math.round(kPhase * 7) + 1);
+        const activeTiles = k;
+
+        for (let r = 0; r < rows; r++) {
+          for (let col = 0; col < cols; col++) {
+            const idx = r * cols + col;
+            const isActive = idx < activeTiles;
+            const tx = startX + col * (tileW + 4);
+            const ty = startY + r * (tileH + 4);
+            const pulse = isActive ? 0.5 + 0.5 * Math.sin(t * 0.1 - idx * 0.3) : 0;
+
+            c.save();
+            c.fillStyle = isActive ? `rgba(${th.accentRgb},${0.08 + pulse * 0.12})` : 'rgba(128,128,128,0.04)';
+            c.fillRect(tx, ty, tileW, tileH);
+            c.strokeStyle = isActive ? `rgba(${th.accentRgb},${0.4 + pulse * 0.4})` : 'rgba(128,128,128,0.18)';
+            c.shadowColor = isActive ? th.accent : 'transparent';
+            c.shadowBlur = isActive ? pulse * 10 : 0;
+            c.lineWidth = isActive ? 1.3 : 0.7;
+            c.strokeRect(tx, ty, tileW, tileH); c.restore();
+
+            /* clock wave in active tile */
+            if (isActive) {
+              const waveX = tx + (((t * 2.5 + idx * 7) % (tileW + 10)) - 5);
+              if (waveX > tx && waveX < tx + tileW) {
+                const wGrad = c.createLinearGradient(waveX - 6, 0, waveX + 6, 0);
+                wGrad.addColorStop(0, 'rgba(0,0,0,0)');
+                wGrad.addColorStop(0.5, `rgba(${th.accentRgb},0.5)`);
+                wGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                c.fillStyle = wGrad; c.fillRect(waveX - 6, ty, 12, tileH);
+              }
+            }
+          }
+        }
+
+        /* labels */
+        const savedPct = Math.round(((32 - k) / 32) * 100);
+        c.save(); c.fillStyle = th.accent; c.font = 'bold 8px "Space Mono", monospace';
+        c.textAlign = 'center'; c.fillText('k=' + k + '  ACTIVE · ' + savedPct + '% POWER SAVED', w / 2, h - 7); c.restore();
+      },
+
+      /* FABRICATION — 3D isometric Z-stack */
+      fabrication: function (canvas, t) {
+        const { w, h } = setupCanvas(canvas);
+        const c = canvas.getContext('2d');
+        const th = getThemeColors();
+        c.clearRect(0, 0, w, h);
+
+        const cx2 = w / 2, cy2 = h / 2 + 8;
+        const dw = 130, dd = 44; /* die width, iso depth */
+        const dh = 22;  /* layer height */
+        const gap = 14; /* gap between layers */
+        const layers = [
+          { label: 'Si₃N₄ PHOTONICS', col: th.accent, y: -dh - gap },
+          { label: 'Cu-Cu D2D BOND', col: th.line.replace('0.6', '0.45'), y: 0 },
+          { label: 'CMOS LOGIC 33 GHz', col: `rgba(${th.accentRgb},0.5)`, y: dh + gap },
+        ];
+
+        const isoX = (x, z) => cx2 + x * 0.866 - z * 0.866;
+        const isoY = (x, y2, z) => cy2 - y2 + x * 0.5 + z * 0.5;
+
+        const drift = Math.sin(t * 0.012) * 3; /* slow bob */
+
+        layers.forEach((layer, li) => {
+          const ly = layer.y + drift * (li - 1);
+          const col = layer.col;
+          const pulse = 0.6 + 0.3 * Math.sin(t * 0.025 + li * 1.4);
+
+          c.save(); c.shadowColor = col; c.shadowBlur = pulse * 14;
+          /* top face */
+          c.beginPath();
+          c.moveTo(isoX(-dw / 2, -dd / 2), isoY(-dw / 2, ly, -dd / 2));
+          c.lineTo(isoX(dw / 2, -dd / 2), isoY(dw / 2, ly, -dd / 2));
+          c.lineTo(isoX(dw / 2, dd / 2), isoY(dw / 2, ly, dd / 2));
+          c.lineTo(isoX(-dw / 2, dd / 2), isoY(-dw / 2, ly, dd / 2));
+          c.closePath();
+          c.fillStyle = `rgba(${th.accentRgb},${0.06 + pulse * 0.06})`;
+          c.fill();
+          c.strokeStyle = col; c.lineWidth = 1.3; c.stroke();
+
+          /* front face */
+          c.beginPath();
+          c.moveTo(isoX(-dw / 2, -dd / 2), isoY(-dw / 2, ly, -dd / 2));
+          c.lineTo(isoX(dw / 2, -dd / 2), isoY(dw / 2, ly, -dd / 2));
+          c.lineTo(isoX(dw / 2, -dd / 2), isoY(dw / 2, ly - dh, -dd / 2));
+          c.lineTo(isoX(-dw / 2, -dd / 2), isoY(-dw / 2, ly - dh, -dd / 2));
+          c.closePath();
+          c.fillStyle = `rgba(${th.accentRgb},${0.04 + pulse * 0.04})`;
+          c.fill(); c.strokeStyle = col; c.lineWidth = 1; c.stroke();
+
+          /* right face */
+          c.beginPath();
+          c.moveTo(isoX(dw / 2, -dd / 2), isoY(dw / 2, ly, -dd / 2));
+          c.lineTo(isoX(dw / 2, dd / 2), isoY(dw / 2, ly, dd / 2));
+          c.lineTo(isoX(dw / 2, dd / 2), isoY(dw / 2, ly - dh, dd / 2));
+          c.lineTo(isoX(dw / 2, -dd / 2), isoY(dw / 2, ly - dh, -dd / 2));
+          c.closePath();
+          c.fillStyle = `rgba(${th.accentRgb},${0.03 + pulse * 0.03})`;
+          c.fill(); c.strokeStyle = col; c.lineWidth = 1; c.stroke(); c.restore();
+
+          /* label */
+          const lx = isoX(0, -dd / 2) + 6, lyyy = isoY(0, ly - dh / 2, -dd / 2) - 2;
+          c.save(); c.fillStyle = col; c.font = 'bold 7.5px "Space Mono", monospace';
+          c.textAlign = 'center'; c.fillText(layer.label, lx, lyyy); c.restore();
+        });
+
+        /* via sparkles between layer 0 and 1 */
+        for (let vi = 0; vi < 12; vi++) {
+          const vfrac = ((t * 0.04 + vi * 0.3) % 1);
+          const vx2 = isoX((Math.random() * 0.6 - 0.3) * dw, (Math.random() * 0.6 - 0.3) * dd);
+          const vy2 = isoY(0, layers[0].y + drift * (-1) + dh * vfrac, 0);
+          const va = Math.sin(vfrac * Math.PI);
+          c.save(); c.fillStyle = `rgba(${th.accentRgb},${va * 0.7})`;
+          c.shadowColor = th.accent; c.shadowBlur = va * 8;
+          c.beginPath(); c.arc(vx2, vy2, va * 2.5, 0, Math.PI * 2); c.fill(); c.restore();
+        }
+
+        c.save(); c.fillStyle = th.accent; c.font = 'bold 8px "Space Mono", monospace';
+        c.textAlign = 'center'; c.fillText('Cu-Cu D2D · 250k VIAS/mm² · HETEROGENEOUS 3D STACK', w / 2, h - 7); c.restore();
+      },
+
+    }; /* end JANUS_SCHEMATICS */
+
+    /* ── 3. DRAWER CONTROLLER ── */
+    const janusDrawer = document.getElementById('janusDrawer');
+    const drawerCloseBtn = document.getElementById('drawerCloseBtn');
+    const drawerTitle = document.getElementById('drawerTitle');
+    const drawerContent = document.getElementById('drawerContent');
+    const dCanvas = document.getElementById('drawerCanvas');
+
+    function openDrawer(section) {
+      const data = JANUS_CONTENT[section];
+      if (!data) return;
+
+      /* stop any running animation */
+      stopDrawerAnim();
+
+      /* update theme class */
+      janusDrawer.classList.toggle('drawer-dark', ST !== 'LIGHT');
+      janusDrawer.classList.toggle('drawer-light', ST === 'LIGHT');
+
+      /* inject content */
+      drawerContent.innerHTML = data.html;
+
+      /* open */
+      janusDrawer.classList.add('open');
+      janusDrawer.setAttribute('aria-hidden', 'false');
+
+      /* start schematic */
+      const schFn = JANUS_SCHEMATICS[section];
+      if (schFn && CFG.tier !== 'static') {
+        /* reset canvas */
+        dCanvas.width = 0; dCanvas.height = 0;
+        drawerT = 0;
+        function schLoop() {
+          drawerT++;
+          schFn(dCanvas, drawerT);
+          drawerAnimId = requestAnimationFrame(schLoop);
+        }
+        /* wait one frame so drawer layout is painted */
+        requestAnimationFrame(() => { schLoop(); });
+      }
+    }
+
+    function closeDrawer() {
+      stopDrawerAnim();
+      janusDrawer.classList.remove('open');
+      janusDrawer.setAttribute('aria-hidden', 'true');
+    }
+
+    /* wire up JANUS dropdown items */
+    document.querySelectorAll('#jDd .ddi[data-section]').forEach(el => {
+      el.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const section = this.dataset.section;
+        closeDds();
+        hideMenu();
+        openDrawer(section);
+      });
+    });
+
+    /* close button */
+    drawerCloseBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      closeDrawer();
+    });
+
+    /* close drawer on Escape key */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && janusDrawer.classList.contains('open')) closeDrawer();
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Theme Persistence Test</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    .test-section {
+      background: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 8px 15px;
+      margin: 5px;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 3px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .status {
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 3px;
+    }
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+  <h1>Theme Persistence Test for hi.html</h1>
+  
+  <div class="test-section">
+    <h2>Test 1: Set Dark Theme</h2>
+    <p>Click to set dark theme in localStorage, then open hi.html</p>
+    <button onclick="setDarkTheme()">Set Dark Theme & Open</button>
+    <div id="status1"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: Set Light Theme</h2>
+    <p>Click to set light theme in localStorage, then open hi.html</p>
+    <button onclick="setLightTheme()">Set Light Theme & Open</button>
+    <div id="status2"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 3: Clear Theme</h2>
+    <p>Click to clear localStorage and open hi.html in SPLIT mode</p>
+    <button onclick="clearTheme()">Clear Theme & Open</button>
+    <div id="status3"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Current localStorage State</h2>
+    <p><strong>janus-theme:</strong> <code id="currentTheme">Not set</code></p>
+    <button onclick="refreshStatus()">Refresh Status</button>
+  </div>
+
+  <script>
+    function setDarkTheme() {
+      localStorage.setItem('janus-theme', 'dark');
+      document.getElementById('status1').innerHTML = '<div class="status success">✓ Dark theme saved to localStorage</div>';
+      setTimeout(() => window.location.href = 'file:///C:/Users/hp/Desktop/Custom%20Webpage%20for%20Portfolio/hi.html', 1000);
+    }
+
+    function setLightTheme() {
+      localStorage.setItem('janus-theme', 'light');
+      document.getElementById('status2').innerHTML = '<div class="status success">✓ Light theme saved to localStorage</div>';
+      setTimeout(() => window.location.href = 'file:///C:/Users/hp/Desktop/Custom%20Webpage%20for%20Portfolio/hi.html', 1000);
+    }
+
+    function clearTheme() {
+      localStorage.removeItem('janus-theme');
+      document.getElementById('status3').innerHTML = '<div class="status success">✓ Theme cleared from localStorage</div>';
+      setTimeout(() => window.location.href = 'file:///C:/Users/hp/Desktop/Custom%20Webpage%20for%20Portfolio/hi.html', 1000);
+    }
+
+    function refreshStatus() {
+      const savedTheme = localStorage.getItem('janus-theme');
+      const display = savedTheme ? `"${savedTheme}"` : 'Not set';
+      document.getElementById('currentTheme').textContent = display;
+    }
+
+    // Initial status on page load
+    refreshStatus();
+  </script>
+</body>
+</html>
