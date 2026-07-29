@@ -45,4 +45,4 @@ Then navigate to `http://localhost:8000/hi.html`.
 
 If you are interested in discussing photonic computing, hardware design, or potential collaborations, please feel free to reach out.
 
-**Email**: *deepanshubhardwaj4115@gmail.com*(Please replace with actual email if necessary)*
+**Email**: *deepanshubhardwaj4115@gmail.com*
