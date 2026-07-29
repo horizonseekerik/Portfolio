@@ -1,0 +1,124 @@
+/* ── UNIVERSE OVERLAY — shared across hi.html's subpages ──
+   Relies on the --accent / --accent-rgb / --border custom properties
+   each subpage already defines on body[data-theme="dark"|"light"]. */
+
+#universe-bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Lift the page's own content above the particle canvas without
+   touching any property the page's inline <style> already sets. */
+.container {
+  position: relative;
+  z-index: 1;
+}
+
+#universe-hitbox {
+  position: fixed;
+  top: 2rem;
+  left: 2rem;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  z-index: 50;
+  opacity: 0.9;
+  transition: opacity .25s, transform .25s;
+}
+#universe-hitbox:hover { opacity: 1; transform: scale(1.06); }
+#universe-hitbox:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
+#universe-hitbox canvas { width: 100%; height: 100%; display: block; }
+
+#universe-menu {
+  position: fixed;
+  top: 5.4rem;
+  left: 2rem;
+  z-index: 49;
+  width: 240px;
+  max-height: 72vh;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.1rem;
+  font-family: 'Space Mono', monospace;
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity .3s ease, transform .3s ease;
+}
+#universe-menu.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+#universe-menu::-webkit-scrollbar { width: 6px; }
+#universe-menu::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.u-controls {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin-bottom: 1.1rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.u-toggle, .u-about, .u-item {
+  display: block;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid var(--border);
+  color: var(--accent);
+  font-family: inherit;
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-align: left;
+  padding: .55rem .8rem;
+  cursor: pointer;
+  opacity: .82;
+  transition: opacity .2s, box-shadow .3s;
+}
+.u-toggle:hover, .u-about:hover, .u-item:hover {
+  opacity: 1;
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), .35);
+}
+.u-toggle:focus-visible, .u-about:focus-visible, .u-item:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.u-group + .u-group { margin-top: 1rem; }
+.u-group-label {
+  font-size: .62rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  opacity: .55;
+  color: var(--accent);
+  margin-bottom: .5rem;
+}
+.u-group-links {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+}
+.u-item[aria-current="page"] {
+  opacity: 1;
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), .3);
+}
+
+@media (max-width: 600px) {
+  #universe-hitbox { top: 1.2rem; left: 1.2rem; width: 40px; height: 40px; }
+  #universe-menu { top: 4.4rem; left: 1.2rem; width: calc(100vw - 2.4rem); max-width: 280px; }
+}
