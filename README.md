@@ -1,4 +1,4 @@
-# Deepanshu Bhardwaj - Photonic Computing Portfolio
+# Deepanshu Bhardwaj - Portfolio
 
 Welcome to my portfolio! This repository contains a static, interactive website that showcases ideas and architectures in photonic computing. Rather than relying on heavy frameworks, this portfolio is built using pure HTML, CSS, and JavaScript, featuring highly customized, canvas-based animations to visually explain complex photonic and electronic hardware concepts.
 
@@ -45,4 +45,4 @@ Then navigate to `http://localhost:8000/hi.html`.
 
 If you are interested in discussing photonic computing, hardware design, or potential collaborations, please feel free to reach out.
 
-**Email**: deepanshu.sharma@example.com *(Please replace with actual email if necessary)*
+**Email**: *deepanshubhardwaj4115@gmail.com*(Please replace with actual email if necessary)*
