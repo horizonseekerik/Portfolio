@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @page {
+    size: A4;
+    margin: 22mm 18mm 22mm 18mm;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: #0b0f17;
+    color: #dbe2ee;
+    font-size: 10.3pt;
+    line-height: 1.55;
+  }
+  .cover {
+    height: 253mm;
+    page-break-after: always;
+    display: block;
+    position: relative;
+    background: linear-gradient(160deg, #0b0f17 0%, #0d1424 55%, #0b0f17 100%);
+    padding-top: 60mm;
+    text-align: center;
+  }
+  .cover .eyebrow {
+    color: #4fd1c5;
+    letter-spacing: 4px;
+    font-size: 11pt;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .cover h1 {
+    font-size: 34pt;
+    margin: 14px 0 6px 0;
+    color: #ffffff;
+    letter-spacing: 1px;
+  }
+  .cover h2 {
+    font-size: 14pt;
+    font-weight: 400;
+    color: #93a2bd;
+    margin: 0 auto;
+    max-width: 130mm;
+  }
+  .cover .divider {
+    width: 70mm;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #4fd1c5, transparent);
+    margin: 22px auto;
+  }
+  .cover .metabox {
+    margin-top: 40mm;
+    display: inline-block;
+    text-align: left;
+    background: rgba(79, 209, 197, 0.06);
+    border: 1px solid rgba(79, 209, 197, 0.25);
+    border-radius: 10px;
+    padding: 16px 28px;
+  }
+  .cover .metabox div { margin: 5px 0; font-size: 10pt; color: #a8b4c9; }
+  .cover .metabox b { color: #e7ecf5; }
+  .cover .footer-note {
+    position: absolute;
+    bottom: 18mm;
+    left: 0; right: 0;
+    color: #5a6478;
+    font-size: 8.5pt;
+    letter-spacing: 1px;
+  }
+
+  h1.section {
+    font-size: 17pt;
+    color: #ffffff;
+    border-left: 5px solid #4fd1c5;
+    padding: 6px 0 6px 14px;
+    margin: 0 0 14px 0;
+    background: linear-gradient(90deg, rgba(79,209,197,0.10), transparent);
+  }
+  h2.sub {
+    font-size: 12.5pt;
+    color: #7fe3d6;
+    margin: 22px 0 8px 0;
+    border-bottom: 1px solid rgba(127,227,214,0.25);
+    padding-bottom: 4px;
+  }
+  h3.subsub {
+    font-size: 11pt;
+    color: #cdd8ea;
+    margin: 14px 0 6px 0;
+  }
+  p { color: #c3cbdc; margin: 6px 0; }
+  strong, b { color: #f0f3fa; }
+  a { color: #4fd1c5; }
+
+  .page { page-break-before: always; padding-top: 4mm; }
+  .no-break-before { page-break-before: avoid; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 16px 0;
+    font-size: 9.3pt;
+  }
+  th {
+    background: #16202e;
+    color: #7fe3d6;
+    text-align: left;
+    padding: 7px 10px;
+    border-bottom: 2px solid #2a3a52;
+    font-weight: 600;
+  }
+  td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #1c2636;
+    color: #c3cbdc;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+
+  .headline-box {
+    background: linear-gradient(135deg, rgba(79,209,197,0.10), rgba(79,209,197,0.02));
+    border: 1px solid rgba(79,209,197,0.35);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 14px 0 20px 0;
+  }
+  .headline-box .big {
+    font-size: 22pt;
+    color: #4fd1c5;
+    font-weight: 700;
+  }
+  .headline-box .label { color: #93a2bd; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .badge-verified { background: rgba(72, 199, 116, 0.15); color: #48c774; border: 1px solid rgba(72,199,116,0.4); }
+  .badge-rejected { background: rgba(230, 90, 90, 0.15); color: #e65a5a; border: 1px solid rgba(230,90,90,0.4); }
+  .badge-open { background: rgba(240, 180, 60, 0.15); color: #f0b43c; border: 1px solid rgba(240,180,60,0.4); }
+  .badge-caution { background: rgba(240, 140, 60, 0.15); color: #f08c3c; border: 1px solid rgba(240,140,60,0.4); }
+
+  .card {
+    border: 1px solid #1c2636;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 10px 0;
+    background: rgba(255,255,255,0.012);
+  }
+  .card.rejected { border-left: 4px solid #e65a5a; }
+  .card.verified { border-left: 4px solid #48c774; }
+  .card.open { border-left: 4px solid #f0b43c; }
+
+  .kv-grid {
+    display: table;
+    width: 100%;
+    margin: 10px 0;
+  }
+  .kv-row { display: table-row; }
+  .kv-key {
+    display: table-cell;
+    color: #7fe3d6;
+    font-size: 9pt;
+    padding: 4px 12px 4px 0;
+    width: 45%;
+  }
+  .kv-val {
+    display: table-cell;
+    color: #f0f3fa;
+    font-weight: 600;
+    padding: 4px 0;
+  }
+
+  .footer-line {
+    margin-top: 30px;
+    padding-top: 10px;
+    border-top: 1px solid #1c2636;
+    color: #5a6478;
+    font-size: 8pt;
+  }
+
+  ul, ol { color: #c3cbdc; }
+  li { margin: 3px 0; }
+  code {
+    background: #131b28;
+    color: #7fe3d6;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 9pt;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<div class="cover">
+  <div class="eyebrow">JANUS &nbsp;·&nbsp; Design Verification Record</div>
+  <h1>Photonic Amplification<br>&amp; Fabrication Design Log</h1>
+  <h2>Si3N4 Ring Amplifier Verification, Noise Floor Derivation, and Complete Foundry Supply Chain — With Every Rejected Path and Open Item Preserved</h2>
+  <div class="divider"></div>
+  <div class="metabox">
+    <div><b>Project:</b> JANUS Photonic Computing Architecture</div>
+    <div><b>Patent Application No.:</b> 202611052791 (Patent Pending)</div>
+    <div><b>Author:</b> Deepanshu Bhardwaj</div>
+    <div><b>Compiled:</b> July 2026</div>
+    <div><b>Status:</b> Final amplifier configuration verified via coupled-mode simulation</div>
+  </div>
+  <div class="footer-note">EVERY FIGURE BELOW IS SIMULATED, CALCULATED, OR CITED — UNVERIFIED CLAIMS ARE EXPLICITLY FLAGGED</div>
+</div>
+
+<!-- ============ SECTION 1 ============ -->
+<div class="page">
+<h1 class="section">1&nbsp;&nbsp;·&nbsp;&nbsp;Final Verified Design — Si3N4 Ring Amplifier</h1>
+
+<div class="headline-box">
+  <span class="label">Verified Total Gain</span><br>
+  <span class="big">30.94 – 31.66 dB</span>
+  &nbsp;&nbsp;<span class="badge badge-verified">Simulation Confirmed</span>
+  <br><span class="label">Margin above real detector noise floor: +9.14 to +9.86 dB</span>
+</div>
+
+<div class="kv-grid">
+  <div class="kv-row"><div class="kv-key">Ring radius (R)</div><div class="kv-val">30 μm</div></div>
+  <div class="kv-row"><div class="kv-key">Loaded Q factor</div><div class="kv-val">3 × 10⁶</div></div>
+  <div class="kv-row"><div class="kv-key">Cascaded rings</div><div class="kv-val">11</div></div>
+  <div class="kv-row"><div class="kv-key">Pump power per ring</div><div class="kv-val">1.0 – 1.5 mW</div></div>
+  <div class="kv-row"><div class="kv-key">Total amplifier pump budget</div><div class="kv-val">11 – 16.5 mW</div></div>
+  <div class="kv-row"><div class="kv-key">Real ring input (post-split)</div><div class="kv-val">−39 dBm</div></div>
+  <div class="kv-row"><div class="kv-key">Final output signal</div><div class="kv-val">−8.06 dBm / −7.34 dBm</div></div>
+  <div class="kv-row"><div class="kv-key">Detector noise floor (100GHz)</div><div class="kv-val">−17.2 dBm</div></div>
+  <div class="kv-row"><div class="kv-key">Stability, all 11 stages</div><div class="kv-val">CV ≈ 0.00% · drift ≈ 0.00%</div></div>
+</div>
+
+<h2 class="sub">Verification Method</h2>
+<p>Three-mode coupled-mode theory (CMT) simulation — pump, signal, idler — numerically integrated
+(SciPy <code>solve_ivp</code>, RK45, rtol=1e-9). The threshold formula used was independently
+cross-validated against a real published measurement before being trusted for this design
+(SiC microring OPO: formula predicted 2.71 mW, paper measured 2.7 mW).</p>
+<p>Stability criterion required both: (1) signal photon number settling to under 5% coefficient
+of variation, AND (2) under 2% drift between two independent late-time windows. The second,
+stricter check was added specifically after a looser single-window check produced a false
+"stable" verdict that a longer integration run exposed as a bug.</p>
+
+<div class="card open">
+<b>Scope of this result:</b> this is a first-principles simulation, not measured hardware. It does
+not include thermal effects, free-carrier dynamics, or fabrication mismatch beyond a basic
+phase-error test. Treat as strong directional evidence — real device characterization is still
+required before committing to fabrication.
+</div>
+</div>
+
+<!-- ============ SECTION 2 ============ -->
+<div class="page">
+<h1 class="section">2&nbsp;&nbsp;·&nbsp;&nbsp;Why This Configuration — Rejected Paths</h1>
+
+<div class="card rejected">
+<h3 class="subsub">2.1&nbsp; Q = 20,000,000 (the original target) &nbsp;<span class="badge badge-rejected">Rejected</span></h3>
+<p>The original target used LIGENTEC's highest advertised platform Q (&gt;2×10⁷). Testing showed
+this Q is <b>too high, not too low</b>. A single ring at Q=20M, R=10μm — at any pump power from
+threshold (2.65μW, confirmed by two independent calculation methods) up to 200μW — either
+self-oscillated or, at the real signal level from the actual seed/split chain, <b>saturated to a
+fixed output ceiling around −32dBm</b>, regardless of how seed power or split ratio were
+rearranged. ~15dB short of the real noise floor, and unfixable by tuning.</p>
+</div>
+
+<div class="card rejected">
+<h3 class="subsub">2.2&nbsp; R=50μm, Q=1×10⁶ — 40.64dB, the highest gain found &nbsp;<span class="badge badge-rejected">Rejected</span></h3>
+<p>Technically passed the stability check at the exact point tested, but rejected for two reasons:</p>
+<ul>
+<li><b>Cliff-edge behavior:</b> 2.0mW→3.0mW pump (+50%) jumped gain from 14.6dB to 34.1dB — a
+19.3dB swing. Signature of operating beside a bifurcation, not a robust point.</li>
+<li><b>5× higher power cost:</b> 55mW total pump vs. 11–16.5mW for the chosen design.</li>
+</ul>
+</div>
+
+<div class="card rejected">
+<h3 class="subsub">2.3&nbsp; Single-ring 45dB claim from a real but misapplied paper &nbsp;<span class="badge badge-rejected">Rejected</span></h3>
+<p>arXiv 2209.05589 was cited claiming 45dB gain from ~125–166nW input at 9–11mW pump. Checked
+directly against the source: the 45dB figure is <b>simulated</b>, not demonstrated (real result:
+30dB at 9mW), and the paper states <b>gain saturation onset at 100pW</b> — the claimed input was
+~2000× above that point. The real 30dB/9mW figure was instead used only as a literature
+sanity-check for the CMT model.</p>
+</div>
+
+<div class="card rejected">
+<h3 class="subsub">2.4&nbsp; Q = 7×10⁷ &nbsp;<span class="badge badge-rejected">Rejected</span></h3>
+<p>Exceeds even the best published academic Damascene record anywhere (EPFL, ~3×10⁷) — not
+supported by any citation and not carried forward.</p>
+</div>
+
+<div class="card rejected">
+<h3 class="subsub">2.5&nbsp; "0.5mW solves it via energy conservation" &nbsp;<span class="badge badge-rejected">Rejected</span></h3>
+<p>Energy conservation (pump ≥ energy added to signal) is <b>necessary but not sufficient</b> —
+it does not confirm stable gain dynamics. At Q=20M/R=10μm, 0.5mW passed the energy check but the
+CMT simulation showed operation ~190× above threshold, in a self-oscillating regime.</p>
+</div>
+</div>
+
+<!-- ============ SECTION 3 ============ -->
+<div class="page">
+<h1 class="section">3&nbsp;&nbsp;·&nbsp;&nbsp;Noise Floor — Final Verified Number</h1>
+
+<table>
+<tr><th>Figure</th><th>Value</th><th>Status</th></tr>
+<tr><td><b>Real noise floor used (100GHz)</b></td><td><b>−17.2 dBm</b></td><td><span class="badge badge-verified">Verified</span></td></tr>
+<tr><td>JANUS paper's own claimed figure (33GHz)</td><td>−31.76 dBm</td><td>Original claim</td></tr>
+<tr><td>Naive bandwidth-scaling to 100GHz</td><td>~−27 dBm</td><td>First-pass estimate</td></tr>
+<tr><td>Rigorous recalculation, real detector data</td><td><b>−17.2 dBm</b></td><td><span class="badge badge-verified">Used</span></td></tr>
+</table>
+
+<p><b>Derivation:</b> thermal-noise-limited receiver, 50Ω load, T=300K, using the actual
+responsivity (0.3 A/W at 265GHz) from the real cited paper (Lischke et al., <i>Nature Photonics</i>
+2021 — JANUS's own reference [29]). Worse than the paper's original claim, likely because that
+figure assumed a higher effective transimpedance gain than is achievable at 100GHz — TIA gain and
+bandwidth trade off directly against each other, a real device constraint.</p>
+
+<h2 class="sub">Rejected Noise Floor Claims</h2>
+<div class="card rejected">
+<b>"Noise floor below −40dBm at 100GHz"</b> &nbsp;<span class="badge badge-rejected">Rejected</span>
+<p>Likely confusion between noise <i>spectral density</i> (dBm/Hz) and total <i>integrated</i> noise
+power (dBm) — or between a device's intrinsic bandwidth capability and its actual operating noise floor.</p>
+</div>
+<div class="card rejected">
+<b>~−46dBm from dark-current shot noise alone</b> &nbsp;<span class="badge badge-rejected">Rejected</span>
+<p>Arithmetically correct, but accounted for only one non-dominant noise term. Its own source
+material stated TIA thermal noise usually dominates — which is exactly the −17.2dBm figure used here.</p>
+</div>
+<div class="card rejected">
+<b>"265GHz gives a better noise floor than 100GHz"</b> &nbsp;<span class="badge badge-rejected">Rejected</span>
+<p>265GHz is the detector's intrinsic response speed, not a noise number. Higher operating
+bandwidth always costs more noise, never less.</p>
+</div>
+
+<div class="card open">
+<b>Real, unquantified mitigation:</b> matched-filter / integrate-and-dump receiver design
+(standard optimal receiver theory) — estimated <b>+2 to +4dB</b> improvement over the brick-wall
+estimate above. Real technique, not yet built into a simulation to confirm the exact number.
+</div>
+</div>
+
+<!-- ============ SECTION 4 ============ -->
+<div class="page">
+<h1 class="section">4&nbsp;&nbsp;·&nbsp;&nbsp;Foundry &amp; Supply Chain — Final State</h1>
+
+<h2 class="sub">4.1&nbsp; Si3N4 Photonic Backbone — LIGENTEC (Switzerland)</h2>
+<table>
+<tr><th>Item</th><th>Detail</th></tr>
+<tr><td>Process</td><td>AN800, LPCVD Si3N4, C-band optimized</td></tr>
+<tr><td>Current spec (2026)</td><td>Loss &lt;0.5 dB/m &nbsp;·&nbsp; Q &gt; 2×10⁷ &nbsp;·&nbsp; automotive-qualified 200mm line</td></tr>
+<tr><td>Access</td><td>Direct (ligentec.com) <b>or</b> via VLC Photonics (Spain) — official PDK co-developer, offers design assistance</td></tr>
+<tr><td>Europractice access</td><td><span class="badge badge-rejected">Not available</span> — confirmed absent from Europractice's live 2026 photonics partner list</td></tr>
+<tr><td>Pricing (~$350/mm²)</td><td><span class="badge badge-open">Unconfirmed</span> — get a direct quote before budgeting</td></tr>
+<tr><td>GST/PCM integration</td><td><span class="badge badge-rejected">Not offered</span> — confirmed absent from LIGENTEC LABS' advanced-integration menu</td></tr>
+</table>
+
+<h2 class="sub">4.2&nbsp; CMOS Layer — SCL Mohali / Dholera (India), via C2S</h2>
+<table>
+<tr><th>Item</th><th>Detail</th></tr>
+<tr><td>SCL Mohali live process</td><td><b>180nm</b> — not 90nm as originally assumed</td></tr>
+<tr><td>SCL modernization</td><td>Targeting 65/40/28nm; tender/land-dispute stage as of Aug 2025 — <span class="badge badge-open">2027 uncertain</span></td></tr>
+<tr><td>Dholera (Tata, new fab)</td><td>Targets 28–90nm; first silicon aimed Dec 2026 — more realistic for a 2027 90nm need, but early-stage</td></tr>
+<tr><td>Access route</td><td>C2S (Chips to Startup, India Semiconductor Mission) — subsidizes MPW cost, user-confirmed eligible</td></tr>
+<tr><td>Typical node via C2S</td><td>65nm most common at prototype stage; routes internationally when domestic node unavailable</td></tr>
+</table>
+
+<h2 class="sub">4.3&nbsp; GST / PCM Switches — LioniX International (Netherlands), via Europractice</h2>
+<table>
+<tr><th>Item</th><th>Detail</th></tr>
+<tr><td>Confirmed role</td><td>Heater structure on SiN waveguide (TriPleX) — <b>not</b> the GST material itself</td></tr>
+<tr><td>GST deposition</td><td>Separate post-process step, rented cleanroom, hired professionals — heterogeneous/BEOL addition</td></tr>
+<tr><td>"30% discount" claim</td><td><span class="badge badge-open">Unconfirmed</span> — get in writing before relying on it</td></tr>
+<tr><td>IMECAS (China) route</td><td><span class="badge badge-rejected">Rejected</span> — real published capability, deprioritized for export-control / IP custody concerns, not fully reviewed</td></tr>
+</table>
+<div class="card open">
+<b>Important corrected distinction:</b> IMECAS (Institute of Microelectronics, Chinese Academy of
+Sciences) and imec (Belgian institute, used for bonding below) are different organizations that
+share a similar acronym — this was a real source of confusion earlier in the process.
+</div>
+
+<h2 class="sub">4.4&nbsp; Die-to-Die Bonding — imec (Belgium)</h2>
+<table>
+<tr><th>Record</th><th>Pitch / Density</th><th>Regime</th><th>Applies to JANUS?</th></tr>
+<tr><td>imec + EVG, 2026</td><td>200nm / 25,000,000/mm²</td><td>Wafer-to-Wafer (W2W)</td><td><span class="badge badge-rejected">No — wrong regime</span></td></tr>
+<tr><td>imec, 2024</td><td>2μm / ~250,000/mm²</td><td>Die-to-Wafer (D2W)</td><td><span class="badge badge-caution">Optimistic ceiling only</span></td></tr>
+<tr><td>True Die-to-Die (D2D)</td><td>No published record found</td><td>JANUS's actual regime</td><td><span class="badge badge-open">Unverified — top priority to confirm</span></td></tr>
+</table>
+<p>The 900,000/mm² Cu-Cu dummy fill density proposed for thermal/mechanical bonding is
+achievable <i>for W2W</i>, but JANUS's real regime (D2D) realistically caps closer to the ~250,000/mm²
+D2W figure above — itself unconfirmed for true die-to-die.</p>
+
+<h2 class="sub">4.5&nbsp; Rejected Broker / Vendor Assumptions</h2>
+<ul>
+<li><b>Europractice as LIGENTEC's broker</b> — factually incorrect; corrected to VLC Photonics.</li>
+<li><b>"AMD" for heater attachment</b> — never resolved; likely a placeholder for an unrecalled vendor name. <span class="badge badge-open">Open item</span></li>
+<li><b>C2S naming collision</b> — a separate French CNFM service shares this acronym; the India Semiconductor Mission program is the one actually in use here.</li>
+</ul>
+</div>
+
+<!-- ============ SECTION 5 ============ -->
+<div class="page">
+<h1 class="section">5&nbsp;&nbsp;·&nbsp;&nbsp;Other Resolved Design Questions</h1>
+
+<div class="card verified">
+<h3 class="subsub">5.1&nbsp; 3-Tile GST Stacking — Kept, Not Reduced &nbsp;<span class="badge badge-verified">Resolved</span></h3>
+<p>Initial concern: thermal crosstalk between three vertically stacked active PCM layers during
+simultaneous writes — the least literature-supported risk in the design. Resolved via
+<b>write-scheduling, not a materials or geometry change</b>: since JANUS uses a "set once, run many
+times" model rather than continuous active switching, the fix is a controller-level rule — never
+write vertically-adjacent tiers simultaneously, insert a cooldown delay between same-position
+writes across tiers. Original 3-tile design retained.</p>
+</div>
+
+<div class="card verified">
+<h3 class="subsub">5.2&nbsp; 3D Bonding Terminology — Clarified</h3>
+<div class="kv-grid">
+  <div class="kv-row"><div class="kv-key">Wafer-to-Wafer (W2W)</div><div class="kv-val">Both sides full, undiced wafers at bond time</div></div>
+  <div class="kv-row"><div class="kv-key">Die-to-Wafer (D2W)</div><div class="kv-val">One side pre-diced, placed on an intact wafer</div></div>
+  <div class="kv-row"><div class="kv-key">Die-to-Die (D2D)</div><div class="kv-val"><b>JANUS's actual regime</b> — both sides pre-diced</div></div>
+</div>
+</div>
+
+<div class="card verified">
+<h3 class="subsub">5.3&nbsp; Laser Count / Splitting Architecture — Finalized</h3>
+<p>Seed laser → passive split → <b>Si3N4 ring cascade amplification (Section 1)</b> → further
+passive split → detection. Earlier proposals (large single-stage splits with no amplification, or
+amplification placed after a wasteful large split) were superseded once real energy-conservation
+and saturation checks were run against the actual signal chain.</p>
+</div>
+</div>
+
+<!-- ============ SECTION 6 ============ -->
+<div class="page">
+<h1 class="section">6&nbsp;&nbsp;·&nbsp;&nbsp;Open Items — Not Yet Resolved</h1>
+<p>These are genuinely unverified. They are listed explicitly rather than treated as settled.</p>
+
+<table>
+<tr><th>#</th><th>Item</th><th>Why It Matters</th></tr>
+<tr><td>1</td><td>imec's true D2D (not D2W) bonding pitch/yield</td><td>Largest unverified number in the fabrication chain — confirm directly with imec first</td></tr>
+<tr><td>2</td><td>GST thermal survival through post-bond Cu-Cu anneal</td><td>Different risk from switching-pulse crosstalk; not yet checked</td></tr>
+<tr><td>3</td><td>LIGENTEC MPW pricing (~$350/mm²)</td><td>Never independently verified against a live quote</td></tr>
+<tr><td>4</td><td>LioniX "30% discount"</td><td>No written source found</td></tr>
+<tr><td>5</td><td>Real vendor for heater/GST attachment cleanroom step</td><td>"AMD" was an unresolved placeholder</td></tr>
+<tr><td>6</td><td>SCL Mohali / Dholera 2027 node timeline</td><td>Genuinely uncertain from public information</td></tr>
+<tr><td>7</td><td>C2S eligibility for a non-university-affiliated project</td><td>Verbally confirmed; worth having in writing</td></tr>
+<tr><td>8</td><td>Multi-jurisdiction export control review</td><td>India, Switzerland, Netherlands, Belgium — never formally reviewed as one package</td></tr>
+<tr><td>9</td><td>Matched-filter receiver noise improvement (+2–4dB est.)</td><td>Real technique; not yet built into a simulation to confirm</td></tr>
+</table>
+
+<div class="footer-line">
+JANUS Photonic Amplification &amp; Fabrication Design Log &nbsp;·&nbsp; Compiled July 2026 &nbsp;·&nbsp;
+Patent Application No. 202611052791 (Patent Pending) &nbsp;·&nbsp; Internal working document — verify all open items before fabrication commitment.
+</div>
+</div>
+
+</body>
+</html>

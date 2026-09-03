@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JANUS — QRNS &amp; CRT Reconstruction</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/universe.css">
+  <script src="../shared/universe.js" defer></script>
+</head>
+<body>
+  <button class="return-btn" type="button">← Return to Universe</button>
+  
+  <div class="container">
+    <header>
+      <h1>PRNS &amp; CRT Reconstruction</h1>
+      <div class="subtitle">Exact 64-Bit Integer Arithmetic via Parallel &amp; Polynomial Optical RNS (PRNS) and Deterministic Chinese Remainder Reconstruction</div>
+      <canvas id="schematicCanvas"></canvas>
+    </header>
+    
+    <div class="content">
+      <p>Scaling optical Residue Number Systems to full 64-bit integer precision (INT64) presents a severe dynamic range dilemma under a flat RNS basis: drawing from pairwise coprime moduli bounded to 256 waveguides (m_i ≤ 256), a simple 16-modulus basis tops out at M₁₆ ≈ 2¹²⁴·¹⁷, falling short of the 128-bit range required for full 64-bit × 64-bit multiplication.</p>
+      
+      <p>JANUS resolves this without altering physical tile geometry by formulating a <strong>Polynomial and Parallel Residue Number System (PRNS)</strong> dual-cluster architecture. By partitioning 64-bit integers into 32-bit components and mapping into conjugate quadratic residue channels over the ring Z/(m_i), JANUS completely diagonalizes 4 complex cross-products into <strong>only two independent parallel optical streams</strong> executed across 16 tiles (2 clusters) in a single 10.0 ps optical cycle.</p>
+      
+      <div class="drawer-section-title">QRNS Mathematical Formulation</div>
+      <p>Any 64-bit operands X, Y ∈ [0, 2⁶⁴ − 1] are partitioned into 32-bit lower and upper half-words:</p>
+      <pre>X = X_H · 2³² + X_L,   Y = Y_H · 2³² + Y_L
+
+By selecting moduli m_i with prime factors ≡ 1 (mod 4), there exists j_i such that:
+j_i² ≡ −1 (mod m_i)
+
+CMOS projects into decoupled conjugate channels:
+X_i⁺ = (X_L + j_i X_H) mod m_i,   X_i⁻ = (X_L − j_i X_H) mod m_i
+Y_i⁺ = (Y_L + j_i Y_H) mod m_i,   Y_i⁻ = (Y_L − j_i Y_H) mod m_i
+
+Dual-Cluster Optical Streams:
+Cluster 0 (Tiles 0–7):   Z_i⁺ = (X_i⁺ · Y_i⁺) mod m_i
+Cluster 1 (Tiles 8–15):  Z_i⁻ = (X_i⁻ · Y_i⁻) mod m_i</pre>
+      
+      <div class="drawer-section-title">Official 8-Modulus QRNS Registry</div>
+      <table class="drawer-table">
+        <tr><th>Modulus (m_i)</th><th>Type / Factorization</th><th>Root j_i (j_i² ≡ −1 mod m_i)</th><th>Dynamic Range</th></tr>
+        <tr><td>m₁ = 241</td><td>Prime (4k + 1)</td><td>j₁ = 64</td><td>7.91 bits</td></tr>
+        <tr><td>m₂ = 233</td><td>Prime (4k + 1)</td><td>j₂ = 89</td><td>7.86 bits</td></tr>
+        <tr><td>m₃ = 229</td><td>Prime (4k + 1)</td><td>j₃ = 107</td><td>7.84 bits</td></tr>
+        <tr><td>m₄ = 221</td><td>Composite (13 × 17)</td><td>j₄ = 21</td><td>7.79 bits</td></tr>
+        <tr><td>m₅ = 205</td><td>Composite (5 × 41)</td><td>j₅ = 32</td><td>7.68 bits</td></tr>
+        <tr><td>m₆ = 197</td><td>Prime (4k + 1)</td><td>j₆ = 14</td><td>7.62 bits</td></tr>
+        <tr><td>m₇ = 193</td><td>Prime (4k + 1)</td><td>j₇ = 81</td><td>7.59 bits</td></tr>
+        <tr><td>m₈ = 181</td><td>Prime (4k + 1)</td><td>j₈ = 19</td><td>7.50 bits</td></tr>
+      </table>
+      <p>The cumulative dynamic range of each 8-tile cluster is M₈ = ∏ m_i = <strong>4,009,190,482,627,784,285 ≈ 2⁶¹·⁸⁰</strong>, strictly bounding signed 32-bit sub-products (≤ 2⁶²) against modular overflow.</p>
+      
+      <div class="drawer-section-title">CMOS Inverse Readout &amp; CRT Reconstruction</div>
+      <p>Following optical photodetection, the CMOS readout engine reconstructs the real and cross-terms:</p>
+      <pre>P_i,real = 2⁻¹ (Z_i⁺ + Z_i⁻) mod m_i ≡ (X_L Y_L − X_H Y_H) mod m_i
+P_i,cross = 2⁻¹ j_i⁻¹ (Z_i⁺ − Z_i⁻) mod m_i ≡ (X_L Y_H + X_H Y_L) mod m_i</pre>
+      
+      <p>Fast 8-channel Chinese Remainder Theorem (CRT) reconstruction reconstructs P_real and P_cross in <strong>210 ps</strong>, after which digital shift-and-add logic forms the uncorrupted 64-bit product inside an 80-bit carry-save accumulator tree.</p>
+      
+      <div class="drawer-section-title">CRT Arithmetic Fault Visibility</div>
+      <p>Conventional analog systems suffer from <em>silent epistemic corruption</em>, where small analog errors degrade output gracefully without notice. In JANUS, a single residue fault x_j → x_j + δ amplifies into a massive, discontinuous global anomaly:</p>
+      <pre>|X' − X| = δ M_j N_j mod M ≫ |δ|</pre>
+      <p>Because M_j = M/m_j is on the order of 10¹⁸, the reconstructed output projects violently out-of-range, triggering an immediate CRT consistency check failure (<strong>P_silent → 0</strong>) and explicit fault invalidation.</p>
+      
+      <div>
+        <span class="drawer-badge drawer-badge-blue">EXACT 64-BIT QRNS</span>
+        <span class="drawer-badge drawer-badge-green">2 PARALLEL CLUSTERS</span>
+        <span class="drawer-badge drawer-badge-amber">M₈ ≈ 4.01 × 10¹⁸</span>
+        <span class="drawer-badge drawer-badge-gold">P_SILENT → 0</span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const theme = new URLSearchParams(window.location.search).get('theme') || sessionStorage.getItem('janus-theme') || localStorage.getItem('janus-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    const isDark = theme === 'dark';
+    const accentColor = isDark ? '#5585ff' : '#b87010';
+    const accentRGB = isDark ? '85,133,255' : '184,112,16';
+    const textColor = isDark ? 'rgba(255,255,255,0.92)' : 'rgba(18,12,4,0.92)';
+    
+    const canvas = document.getElementById('schematicCanvas');
+    const ctx = canvas.getContext('2d');
+    let animId = null;
+    
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(230 * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    function drawQrnsPipeline(t) {
+      const w = canvas.clientWidth;
+      const h = 230;
+      ctx.clearRect(0, 0, w, h);
+      
+      const startX = 20;
+      const col1W = 100;
+      const col2W = 145;
+      const col3W = 125;
+      const outW = w - (startX + col1W + 35 + col2W + 35 + col3W + 20);
+      
+      // Col 1: 64-Bit Input
+      ctx.fillStyle = `rgba(${accentRGB},0.1)`;
+      ctx.strokeStyle = `rgba(${accentRGB},0.45)`;
+      ctx.lineWidth = 1.4;
+      ctx.fillRect(startX, h / 2 - 30, col1W, 60);
+      ctx.strokeRect(startX, h / 2 - 30, col1W, 60);
+      
+      ctx.fillStyle = textColor;
+      ctx.font = 'bold 8.5px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('64-BIT INPUTS', startX + col1W / 2, h / 2 - 10);
+      ctx.fillStyle = accentColor;
+      ctx.fillText('X_L, X_H, Y_L, Y_H', startX + col1W / 2, h / 2 + 8);
+      ctx.fillText('(32-bit halves)', startX + col1W / 2, h / 2 + 20);
+      
+      // Col 2: Cluster 0 & 1
+      const c2X = startX + col1W + 35;
+      const pulse0 = 0.5 + 0.5 * Math.sin(t * 2.5);
+      const pulse1 = 0.5 + 0.5 * Math.sin(t * 2.5 + Math.PI);
+      
+      // Cluster 0
+      ctx.save();
+      ctx.shadowColor = accentColor;
+      ctx.shadowBlur = pulse0 * 8;
+      ctx.fillStyle = `rgba(${accentRGB},${0.08 + pulse0 * 0.12})`;
+      ctx.fillRect(c2X, 26, col2W, 56);
+      ctx.strokeStyle = `rgba(${accentRGB},${0.5 + pulse0 * 0.4})`;
+      ctx.strokeRect(c2X, 26, col2W, 56);
+      ctx.restore();
+      
+      ctx.fillStyle = textColor;
+      ctx.font = 'bold 8.5px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('CLUSTER 0 (Tiles 0–7)', c2X + col2W / 2, 48);
+      ctx.fillStyle = accentColor;
+      ctx.fillText('Z⁺ = X⁺ · Y⁺ mod m_i', c2X + col2W / 2, 66);
+      
+      // Cluster 1
+      ctx.save();
+      ctx.shadowColor = accentColor;
+      ctx.shadowBlur = pulse1 * 8;
+      ctx.fillStyle = `rgba(${accentRGB},${0.08 + pulse1 * 0.12})`;
+      ctx.fillRect(c2X, 146, col2W, 56);
+      ctx.strokeStyle = `rgba(${accentRGB},${0.5 + pulse1 * 0.4})`;
+      ctx.strokeRect(c2X, 146, col2W, 56);
+      ctx.restore();
+      
+      ctx.fillStyle = textColor;
+      ctx.fillText('CLUSTER 1 (Tiles 8–15)', c2X + col2W / 2, 168);
+      ctx.fillStyle = accentColor;
+      ctx.fillText('Z⁻ = X⁻ · Y⁻ mod m_i', c2X + col2W / 2, 186);
+      
+      // Col 3: CMOS CRT Recon
+      const c3X = c2X + col2W + 35;
+      ctx.fillStyle = `rgba(${accentRGB},0.12)`;
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 1.6;
+      ctx.fillRect(c3X, h / 2 - 38, col3W, 76);
+      ctx.strokeRect(c3X, h / 2 - 38, col3W, 76);
+      
+      ctx.fillStyle = textColor;
+      ctx.font = 'bold 8.5px "Space Mono", monospace';
+      ctx.fillText('CMOS CRT &amp; QRNS', c3X + col3W / 2, h / 2 - 14);
+      ctx.fillStyle = accentColor;
+      ctx.fillText('P_real &amp; P_cross', c3X + col3W / 2, h / 2 + 4);
+      ctx.fillStyle = textColor;
+      ctx.font = '8px "Space Mono", monospace';
+      ctx.fillText('t_CRT = 210 ps', c3X + col3W / 2, h / 2 + 22);
+      
+      // Connectors
+      ctx.strokeStyle = `rgba(${accentRGB},0.6)`;
+      ctx.lineWidth = 1.5;
+      
+      ctx.beginPath();
+      ctx.moveTo(startX + col1W, h / 2 - 10);
+      ctx.lineTo(c2X, 54);
+      ctx.moveTo(startX + col1W, h / 2 + 10);
+      ctx.lineTo(c2X, 174);
+      
+      ctx.moveTo(c2X + col2W, 54);
+      ctx.lineTo(c3X, h / 2 - 10);
+      ctx.moveTo(c2X + col2W, 174);
+      ctx.lineTo(c3X, h / 2 + 10);
+      
+      ctx.moveTo(c3X + col3W, h / 2);
+      ctx.lineTo(w - 20, h / 2);
+      ctx.stroke();
+      
+      // Output Result Text
+      ctx.fillStyle = accentColor;
+      ctx.font = 'bold 9px "Space Mono", monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('64-BIT MAC', c3X + col3W + 8, h / 2 - 6);
+    }
+    
+    function animate() {
+      const t = (Date.now() % 10000) / 1000;
+      drawQrnsPipeline(t);
+      animId = requestAnimationFrame(animate);
+    }
+    animate();
+    
+    window.addEventListener('pagehide', () => {
+      if (animId !== null) cancelAnimationFrame(animId);
+    });
+  </script>
+</body>
+</html>

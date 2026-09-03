@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JANUS — JIR Controller &amp; RRNS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/universe.css">
+  <script src="../shared/universe.js" defer></script>
+</head>
+<body>
+  <button class="return-btn" type="button">← Return to Universe</button>
+  
+  <div class="container">
+    <header>
+      <h1>JIR Controller &amp; RRNS</h1>
+      <div class="subtitle">Tile Orchestration, Real-Time Sensor Slope Tracking, and Zero-Overhead Weight Reconfiguration</div>
+      <canvas id="schematicCanvas"></canvas>
+    </header>
+    
+    <div class="content">
+      <p>The <strong>JIR (JANUS Interface Representator)</strong> is the central tile-management and scheduling controller in the CMOS backend. Operating over periodic <strong>τ_JIR = 5 µs monitoring cycles</strong>, the JIR manages optical packet ingestion, tile allocation, power gating, and dynamic thermal trend tracking across all 32 optical tiles.</p>
+      
+      <p>Unlike conventional systems that react only after arithmetic errors corrupt computation, the JIR implements <strong>Predictive Redundant RNS (RRNS) Engagement</strong>. By continuously monitoring on-die temperature slopes (dT/dt), the JIR dynamically engages RRNS parity channels <em>before</em> thermal phase-drift can cause optical false activations, restoring nominal operation once local temperatures stabilize.</p>
+      
+      <div class="drawer-section-title">Predictive RRNS Throughput Trade-Off (Datacenter Tier)</div>
+      <p>Under nominal conditions, all 32 tiles operate as active compute engines. When local thermal sensors detect rising gradients, tiles are dynamically repurposed for RRNS fault detection:</p>
+      <table class="drawer-table">
+        <tr><th>Thermal Operating Mode</th><th>Compute Tiles Active</th><th>Parity Channels</th><th>Sustained INT4 Throughput</th><th>Impact on Baseline</th></tr>
+        <tr><td>Nominal Baseline (All tiles nominal)</td><td>32 Compute Engines</td><td>0 RRNS Pairs</td><td>44,564.5 TMAC/s</td><td>100.0% (Zero Overhead)</td></tr>
+        <tr><td>Mild Thermal Elevation (1 tile warm)</td><td>31 Compute Engines</td><td>1 RRNS Pair</td><td>43,171.8 TMAC/s</td><td>96.9% (−3.1%)</td></tr>
+        <tr><td>Severe Thermal Watch (4 tiles warm)</td><td>28 Compute Engines</td><td>4 RRNS Pairs</td><td>38,993.9 TMAC/s</td><td>87.5% (−12.5%)</td></tr>
+      </table>
+      
+      <div class="drawer-section-title">Zero-Overhead Parallel Weight Reprogramming (0.1 ms Window)</div>
+      <p>A critical advantage of non-volatile Sb₂Se₃ phase-change routing is parallel weight loading without sequential scan-chain delays:</p>
+      <ul class="drawer-list">
+        <li><strong>Parallel Electro-Thermal Addressing:</strong> Up to 1,006,632,960 PCM switches across 32 tiles can be reprogrammed in a single <strong>0.1 ms write window</strong> via underlying CMOS driver arrays and vertical Cu–Cu interconnects.</li>
+        <li><strong>Transient Energy Budget:</strong> At ≈ 10–50 pJ per switch (Tier 3 conservative upper bound: 10 mJ total), the peak transient electrical power is bounded to <strong>100 W across the 300 mm² die</strong> (0.33 W/mm² power density, well below the 1 W/mm² flip-chip threshold).</li>
+        <li><strong>Zero CMOS Pipeline Stall:</strong> The 0.1 ms weight-programming window overlaps completely with the final CRT reconstruction backlog from the previous epoch. The CMOS backend is never idle, sustaining an overall operational utilization factor of <strong>η = 0.85</strong>.</li>
+        <li><strong>Sparse Reconfiguration:</strong> For typical fine-tuning workloads updating &lt; 1% of weights (f_Δ &lt; 1%), reconfiguration energy drops to &lt; 0.1 mJ, making update overhead negligible.</li>
+      </ul>
+      
+      <div>
+        <span class="drawer-badge drawer-badge-blue">τ_JIR = 5 µs POLLING</span>
+        <span class="drawer-badge drawer-badge-green">PREDICTIVE RRNS</span>
+        <span class="drawer-badge drawer-badge-amber">0.1 ms WEIGHT LOAD</span>
+        <span class="drawer-badge drawer-badge-gold">η = 0.85 SUSTAINED</span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const theme = new URLSearchParams(window.location.search).get('theme') || sessionStorage.getItem('janus-theme') || localStorage.getItem('janus-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    const isDark = theme === 'dark';
+    const accentColor = isDark ? '#5585ff' : '#b87010';
+    const accentRGB = isDark ? '85,133,255' : '184,112,16';
+    const textColor = isDark ? 'rgba(255,255,255,0.92)' : 'rgba(18,12,4,0.92)';
+    
+    const canvas = document.getElementById('schematicCanvas');
+    const ctx = canvas.getContext('2d');
+    let animId = null;
+    
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(230 * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    function drawJirScheduler(t) {
+      const w = canvas.clientWidth;
+      const h = 230;
+      ctx.clearRect(0, 0, w, h);
+      
+      const numTiles = 8;
+      const padX = 20;
+      const tileW = (w - padX * 2) / numTiles;
+      const tileH = 55;
+      const startX = padX, startY = 32;
+      
+      const activeThermalTile = Math.floor((t * 0.4) % numTiles);
+      
+      for (let i = 0; i < numTiles; i++) {
+        const x = startX + i * tileW;
+        const isWarm = i === activeThermalTile;
+        
+        ctx.save();
+        if (isWarm) {
+          ctx.fillStyle = isDark ? 'rgba(240,140,60,0.18)' : 'rgba(230,126,34,0.18)';
+          ctx.strokeStyle = isDark ? '#f08c3c' : '#d35400';
+          ctx.lineWidth = 1.8;
+          ctx.shadowColor = isDark ? '#f08c3c' : '#d35400';
+          ctx.shadowBlur = 8;
+        } else {
+          ctx.fillStyle = `rgba(${accentRGB},0.08)`;
+          ctx.strokeStyle = `rgba(${accentRGB},0.45)`;
+          ctx.lineWidth = 1.2;
+        }
+        ctx.fillRect(x + 2, startY, tileW - 4, tileH);
+        ctx.strokeRect(x + 2, startY, tileW - 4, tileH);
+        ctx.restore();
+        
+        ctx.fillStyle = isWarm ? (isDark ? '#f08c3c' : '#d35400') : textColor;
+        ctx.font = 'bold 8.5px "Space Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`TILE ${i}`, x + tileW / 2, startY + 22);
+        ctx.font = '7.5px "Space Mono", monospace';
+        ctx.fillText(isWarm ? 'RRNS PARITY' : 'COMPUTE', x + tileW / 2, startY + 40);
+      }
+      
+      // JIR Controller Box
+      const jw = Math.min(260, w - 60), jh = 46;
+      const jx = (w - jw) / 2, jy = 145;
+      
+      ctx.save();
+      ctx.fillStyle = `rgba(${accentRGB},0.12)`;
+      ctx.fillRect(jx, jy, jw, jh);
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 1.5;
+      ctx.shadowColor = accentColor;
+      ctx.shadowBlur = 6;
+      ctx.strokeRect(jx, jy, jw, jh);
+      ctx.restore();
+      
+      ctx.fillStyle = textColor;
+      ctx.font = 'bold 8.5px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('JIR CONTROLLER (τ_JIR = 5 µs)', jx + jw / 2, jy + 20);
+      ctx.fillStyle = accentColor;
+      ctx.font = '8px "Space Mono", monospace';
+      ctx.fillText('dT/dt SLOPE PREDICTOR &amp; TILE ORCHESTRATOR', jx + jw / 2, jy + 34);
+      
+      ctx.strokeStyle = `rgba(${accentRGB},0.4)`;
+      ctx.lineWidth = 1.2;
+      for (let i = 0; i < numTiles; i++) {
+        const x = startX + i * tileW + tileW / 2;
+        ctx.beginPath();
+        ctx.moveTo(x, startY + tileH);
+        ctx.lineTo(jx + jw / 2, jy);
+        ctx.stroke();
+      }
+    }
+    
+    function animate() {
+      const t = (Date.now() % 10000) / 1000;
+      drawJirScheduler(t);
+      animId = requestAnimationFrame(animate);
+    }
+    animate();
+    
+    window.addEventListener('pagehide', () => {
+      if (animId !== null) cancelAnimationFrame(animId);
+    });
+  </script>
+</body>
+</html>

@@ -22,11 +22,15 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #050508
+      background: #050508;
+      font-variant-numeric: lining-nums proportional-nums;
+      font-feature-settings: "lnum" 1, "pnum" 1;
     }
 
     body {
-      -webkit-font-smoothing: antialiased
+      -webkit-font-smoothing: antialiased;
+      font-variant-numeric: lining-nums proportional-nums;
+      font-feature-settings: "lnum" 1, "pnum" 1;
     }
 
     #app {
@@ -349,6 +353,12 @@
       font-size: .75rem
     }
 
+    #hB {
+      bottom: 7.8rem;
+      right: 2.5rem;
+      font-size: .75rem
+    }
+
     #app.dark-ui #aB {
       top: auto;
       right: 2.5rem;
@@ -363,6 +373,13 @@
       left: auto
     }
 
+    #app.dark-ui #hB {
+      top: 4.4rem;
+      right: 2.5rem;
+      bottom: auto;
+      left: auto
+    }
+
     #app.light-ui #aB {
       top: auto;
       right: auto;
@@ -372,6 +389,13 @@
 
     #app.light-ui #sB {
       top: 2rem;
+      right: auto;
+      bottom: auto;
+      left: 2.5rem
+    }
+
+    #app.light-ui #hB {
+      top: 4.4rem;
       right: auto;
       bottom: auto;
       left: 2.5rem
@@ -551,7 +575,25 @@
         gap: .75rem
       }
     }
-  </style>
+
+  .drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(480px, 92vw);
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  z-index: 2000;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.35);
+  }
+
+  .drawer.open {
+  transform: translateX(0);
+  }
 
   .drawer-dark {
   background: rgba(8, 8, 12, 0.88);
@@ -597,7 +639,10 @@
   }
 
   .drawer-header {
+  position: relative;
+  padding: 1.8rem 2rem 0 2rem;
   margin-bottom: 2rem;
+  flex-shrink: 0;
   }
 
   .drawer-eyebrow {
@@ -773,6 +818,334 @@
   padding: 1.8rem 1.4rem;
   }
   }
+
+  /* ═══════════════════════════════════════════════
+     INTERACTIVE FIRST-TIME ONBOARDING / GUIDE
+     ═══════════════════════════════════════════════ */
+  .guide-trigger-btn {
+    position: fixed;
+    bottom: 1.6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    background: rgba(10, 14, 26, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1.5px solid #5585ff;
+    color: #ffffff;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.55rem 1.3rem;
+    border-radius: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.28s ease;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.7), 0 0 20px rgba(85, 133, 255, 0.4);
+  }
+
+  .guide-trigger-btn:hover {
+    background: rgba(85, 133, 255, 0.3);
+    border-color: #7da7ff;
+    box-shadow: 0 0 28px rgba(85, 133, 255, 0.8);
+    transform: translateX(-50%) translateY(-2px);
+  }
+
+  .guide-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .guide-overlay.hidden {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .guide-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(2, 4, 10, 0.88);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+  }
+
+  .guide-container {
+    position: relative;
+    z-index: 2;
+    width: 92%;
+    max-width: 600px;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    animation: guideCardPop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes guideCardPop {
+    from { transform: scale(0.95) translateY(10px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  .guide-card {
+    background: rgba(10, 14, 26, 0.96);
+    border: 1px solid rgba(85, 133, 255, 0.38);
+    border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(85, 133, 255, 0.25);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    color: rgba(255, 255, 255, 0.92);
+    font-variant-numeric: lining-nums proportional-nums;
+  }
+
+  .guide-header {
+    padding: 1.2rem 1.5rem 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(85, 133, 255, 0.15);
+    position: relative;
+  }
+
+  .guide-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: #8cb3ff;
+    text-transform: uppercase;
+    background: rgba(85, 133, 255, 0.15);
+    border: 1px solid rgba(85, 133, 255, 0.35);
+    padding: 0.22rem 0.6rem;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .guide-main-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.45rem;
+    font-weight: 400;
+    font-style: italic;
+    letter-spacing: 0.02em;
+    margin: 0;
+    color: #ffffff;
+    flex-grow: 1;
+    margin-left: 0.9rem;
+  }
+
+  .guide-close-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    line-height: 1;
+    transition: all 0.2s ease;
+  }
+
+  .guide-close-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .guide-carousel {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .guide-slide {
+    width: 100%;
+    padding: 1.2rem 1.6rem 0.8rem;
+    display: none;
+    flex-direction: column;
+    opacity: 0;
+    transform: translateX(18px);
+    transition: opacity 0.28s ease, transform 0.28s ease;
+  }
+
+  .guide-slide.active {
+    display: flex;
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .guide-visual {
+    width: 100%;
+    height: 175px;
+    background: rgba(5, 8, 16, 0.6);
+    border: 1px solid rgba(85, 133, 255, 0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 1.1rem;
+  }
+
+  .guide-svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .guide-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .guide-step-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #8cb3ff;
+    letter-spacing: 0.05em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .guide-step-desc {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.82);
+    margin: 0;
+  }
+
+  .guide-step-desc strong {
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .guide-footer {
+    padding: 0.9rem 1.6rem 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid rgba(85, 133, 255, 0.15);
+    background: rgba(6, 9, 18, 0.6);
+  }
+
+  .guide-dots {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .guide-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.22);
+    border: 1px solid rgba(85, 133, 255, 0.3);
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.25s ease;
+  }
+
+  .guide-dot.active {
+    width: 22px;
+    border-radius: 4px;
+    background: #5585ff;
+    box-shadow: 0 0 10px rgba(85, 133, 255, 0.7);
+  }
+
+  .guide-actions {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+  }
+
+  .guide-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.5rem 0.95rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .guide-btn-secondary {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .guide-btn-secondary:hover {
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .guide-btn-primary {
+    background: rgba(85, 133, 255, 0.2);
+    border: 1px solid #5585ff;
+    color: #ffffff;
+    box-shadow: 0 0 14px rgba(85, 133, 255, 0.3);
+  }
+
+  .guide-btn-primary:hover {
+    background: #5585ff;
+    box-shadow: 0 0 20px rgba(85, 133, 255, 0.6);
+    transform: translateY(-1px);
+  }
+
+  /* Embedded SVG animations */
+  @keyframes pulseGuide {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.18); opacity: 1; }
+  }
+
+  @keyframes bounceGuideWheel {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(5px); }
+  }
+
+  .anim-pulse {
+    transform-origin: center;
+    animation: pulseGuide 2.2s infinite ease-in-out;
+  }
+
+  .anim-bounce {
+    animation: bounceGuideWheel 1.5s infinite ease-in-out;
+  }
+
+  @media (max-width: 640px) {
+    .guide-main-title { font-size: 1.15rem; }
+    .guide-card { max-height: 88vh; }
+    .guide-visual { height: 140px; }
+    .guide-slide { padding: 0.8rem 1rem; }
+    .guide-header { padding: 0.9rem 1rem 0.6rem; }
+    .guide-footer { padding: 0.7rem 1rem 0.9rem; }
+    .guide-trigger-btn { bottom: 1rem; left: 1rem; font-size: 0.65rem; padding: 0.35rem 0.6rem; }
+  }
   </style>
 </head>
 
@@ -861,22 +1234,24 @@
     <div id="nav">
       <button class="ni dc" id="aB" type="button"><span class="pring"></span><span>About</span></button>
       <button class="ni dc" id="sB" type="button"><span>Light Universe</span></button>
+      <button class="ni dc" id="hB" type="button"><span>Split View</span></button>
       <button class="ni dc" id="jB" type="button">
         <span>JANUS</span>
         <span class="dd" id="jDd">
           <a class="ddi" href="Janus/overview.html" data-janus-page="Janus/overview.html">Architecture Overview</a>
-          <a class="ddi" href="Janus/routing.html" data-janus-page="Janus/routing.html">Bene&#353; Routing &amp; PCM
-            Switching</a>
+          <a class="ddi" href="Janus/constraints.html" data-janus-page="Janus/constraints.html">Physical Constraint Landscape</a>
           <a class="ddi" href="Janus/onehot.html" data-janus-page="Janus/onehot.html">One-Hot Optical RNS</a>
-          <a class="ddi" href="Janus/cmos.html" data-janus-page="Janus/cmos.html">CMOS Backend</a>
-          <a class="ddi" href="Janus/compiler.html" data-janus-page="Janus/compiler.html">JIR Compiler &amp; Register
-            File</a>
-          <a class="ddi" href="Janus/garner.html" data-janus-page="Janus/garner.html">CRT Garner Pipeline</a>
-          <a class="ddi" href="Janus/thermal.html" data-janus-page="Janus/thermal.html">Thermal Controller</a>
-          <a class="ddi" href="Janus/priority.html" data-janus-page="Janus/priority.html">One-Hot Priority Encoder</a>
-          <a class="ddi" href="Janus/clock.html" data-janus-page="Janus/clock.html">Predictive Clock Gating</a>
-          <a class="ddi" href="Janus/fabrication.html" data-janus-page="Janus/fabrication.html">Fabrication &amp; Yield
-            Analysis</a>
+          <a class="ddi" href="Janus/benes_routing.html" data-janus-page="Janus/benes_routing.html">Dilated Bene&#353; Routing</a>
+          <a class="ddi" href="Janus/fanout_apd.html" data-janus-page="Janus/fanout_apd.html">Passive Fan-Out &amp; APD Array</a>
+          <a class="ddi" href="Janus/single_wave.html" data-janus-page="Janus/single_wave.html">Single-Wavelength Injection</a>
+          <a class="ddi" href="Janus/qrns_crt.html" data-janus-page="Janus/qrns_crt.html">PRNS &amp; CRT Reconstruction</a>
+          <a class="ddi" href="Janus/strongarm_readout.html" data-janus-page="Janus/strongarm_readout.html">StrongARM Dynamic Readout</a>
+          <a class="ddi" href="Janus/cmos_backend.html" data-janus-page="Janus/cmos_backend.html">CMOS Digital Backend</a>
+          <a class="ddi" href="Janus/jir_controller.html" data-janus-page="Janus/jir_controller.html">JIR Controller &amp; RRNS</a>
+          <a class="ddi" href="Janus/wave_pipelining.html" data-janus-page="Janus/wave_pipelining.html">100 GHz Wave-Pipelining</a>
+          <a class="ddi" href="Janus/thermal_stack.html" data-janus-page="Janus/thermal_stack.html">3D Z-Axis Thermal Stack</a>
+          <a class="ddi" href="Janus/power_throughput.html" data-janus-page="Janus/power_throughput.html">Power &amp; Throughput Profiles</a>
+          <a class="ddi" href="Janus/fabrication.html" data-janus-page="Janus/fabrication.html">3D Packaging &amp; Open Challenges</a>
         </span>
       </button>
       <button class="ni lc" id="oB" type="button">
@@ -926,20 +1301,233 @@
 
   </div>
 
+  <!-- Onboarding Guide Trigger Button -->
+  <button class="guide-trigger-btn" id="guideTriggerBtn" type="button" aria-label="Open Navigation Instructions">
+    <span>ℹ Instructions</span>
+  </button>
+
+  <!-- Onboarding / First-Time Instructions Modal (Open by default on split screen) -->
+  <div id="guideModal" class="guide-overlay open" style="display: flex;" aria-hidden="false" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+    <div class="guide-backdrop" id="guideBackdrop"></div>
+    <div class="guide-container">
+      <div class="guide-card">
+        <div class="guide-header">
+          <div class="guide-badge">SYSTEM DIRECTIVE</div>
+          <h2 id="guideTitle" class="guide-main-title">How to Navigate the Dual Universes</h2>
+          <button class="guide-close-btn" id="guideCloseBtn" type="button" aria-label="Close Guide">✕</button>
+        </div>
+
+        <div class="guide-carousel" id="guideCarousel">
+          <!-- Slide 1: Choose Your Reality -->
+          <div class="guide-slide active" data-step="0">
+            <div class="guide-visual">
+              <svg viewBox="0 0 400 180" class="guide-svg">
+                <defs>
+                  <radialGradient id="bhGlowGuide" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#5585ff" stop-opacity="0.8"/>
+                    <stop offset="60%" stop-color="#1a2d6d" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+                  </radialGradient>
+                  <radialGradient id="sunGlowGuide" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#ffe484" stop-opacity="0.9"/>
+                    <stop offset="50%" stop-color="#f59e0b" stop-opacity="0.4"/>
+                    <stop offset="100%" stop-color="#b45309" stop-opacity="0"/>
+                  </radialGradient>
+                </defs>
+                <!-- Left: Dark Universe -->
+                <g id="guidePickDark" style="cursor: pointer;">
+                  <rect x="10" y="10" width="185" height="160" rx="8" fill="rgba(8,12,24,0.9)" stroke="rgba(85,133,255,0.4)" stroke-width="1.5" />
+                  <circle cx="102" cy="75" r="32" fill="url(#bhGlowGuide)"/>
+                  <circle cx="102" cy="75" r="16" fill="#000" stroke="#5585ff" stroke-width="1.5"/>
+                  <ellipse cx="102" cy="75" rx="28" ry="8" fill="none" stroke="#7da7ff" stroke-width="1.2" transform="rotate(-15 102 75)"/>
+                  <text x="102" y="130" text-anchor="middle" fill="#8cb3ff" font-family="'Space Mono', monospace" font-size="10" font-weight="700" letter-spacing="1">DARK UNIVERSE</text>
+                  <text x="102" y="146" text-anchor="middle" fill="#5585ff" font-family="'Space Mono', monospace" font-size="8">Discrete Photonic RNS [Click]</text>
+                  <circle cx="102" cy="75" r="24" fill="none" stroke="#fff" stroke-width="1" stroke-dasharray="2,2" class="anim-pulse" opacity="0.7"/>
+                </g>
+
+                <!-- Divider -->
+                <line x1="200" y1="10" x2="200" y2="170" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-dasharray="4,4" />
+
+                <!-- Right: Light Universe -->
+                <g id="guidePickLight" style="cursor: pointer;">
+                  <rect x="205" y="10" width="185" height="160" rx="8" fill="rgba(245,238,222,0.92)" stroke="rgba(184,112,16,0.4)" stroke-width="1.5" />
+                  <circle cx="298" cy="75" r="34" fill="url(#sunGlowGuide)"/>
+                  <circle cx="298" cy="75" r="16" fill="#fffbe8" stroke="#d97706" stroke-width="1.5"/>
+                  <text x="298" y="130" text-anchor="middle" fill="#78350f" font-family="'Space Mono', monospace" font-size="10" font-weight="700" letter-spacing="1">LIGHT UNIVERSE</text>
+                  <text x="298" y="146" text-anchor="middle" fill="#b45309" font-family="'Space Mono', monospace" font-size="8">Continuous Optical Waves [Click]</text>
+                  <circle cx="298" cy="75" r="24" fill="none" stroke="#b45309" stroke-width="1" stroke-dasharray="2,2" class="anim-pulse" opacity="0.7"/>
+                </g>
+              </svg>
+            </div>
+            <div class="guide-text">
+              <h3 class="guide-step-title">1. Choose Your Reality</h3>
+              <p class="guide-step-desc">The homepage is divided into two photonic domains. <strong>Click anywhere on the left half</strong> to enter the Dark Universe (discrete quantum RNS), or <strong>click on the right half</strong> to enter the Light Universe (continuous wave optics).</p>
+            </div>
+          </div>
+
+          <!-- Slide 2: Interactive Scrollytelling -->
+          <div class="guide-slide" data-step="1">
+            <div class="guide-visual">
+              <svg viewBox="0 0 400 180" class="guide-svg">
+                <!-- Scrollytelling Graphic -->
+                <rect x="20" y="10" width="360" height="160" rx="8" fill="rgba(10,14,26,0.9)" stroke="rgba(85,133,255,0.3)" />
+                <!-- Text blocks representation -->
+                <rect x="40" y="30" width="120" height="8" rx="2" fill="#5585ff" opacity="0.8"/>
+                <rect x="40" y="44" width="95" height="5" rx="2" fill="#8cb3ff" opacity="0.5"/>
+                <rect x="40" y="54" width="110" height="5" rx="2" fill="#8cb3ff" opacity="0.5"/>
+                <text x="40" y="80" fill="#a5c4ff" font-family="'Cormorant Garamond', serif" font-style="italic" font-size="12">"Light bends through silicon..."</text>
+
+                <!-- Morphing Arrow -->
+                <path d="M175 55 L205 55 M198 48 L205 55 L198 62" stroke="#8cb3ff" stroke-width="1.5" stroke-linecap="round"/>
+
+                <!-- Technical Facts block -->
+                <rect x="220" y="24" width="145" height="108" rx="6" fill="rgba(18,28,52,0.85)" stroke="rgba(85,133,255,0.4)"/>
+                <text x="232" y="42" fill="#5585ff" font-family="'Space Mono', monospace" font-size="8" font-weight="700">ARCHITECTURAL DATA</text>
+                <rect x="232" y="50" width="120" height="4" rx="2" fill="#8cb3ff" opacity="0.7"/>
+                <rect x="232" y="58" width="105" height="4" rx="2" fill="#8cb3ff" opacity="0.7"/>
+                <rect x="232" y="66" width="90" height="4" rx="2" fill="#8cb3ff" opacity="0.7"/>
+                <rect x="232" y="78" width="120" height="4" rx="2" fill="#8cb3ff" opacity="0.7"/>
+                <rect x="232" y="86" width="80" height="4" rx="2" fill="#8cb3ff" opacity="0.7"/>
+
+                <!-- Mouse Scroll / Touch Swipe Icon -->
+                <g transform="translate(190, 100)">
+                  <rect x="-10" y="0" width="20" height="30" rx="10" fill="none" stroke="#fff" stroke-width="1.5"/>
+                  <line x1="0" y1="5" x2="0" y2="11" stroke="#5585ff" stroke-width="2" stroke-linecap="round" class="anim-bounce"/>
+                  <path d="M-4 36 L0 40 L4 36" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+                </g>
+                <text x="200" y="156" text-anchor="middle" fill="#8cb3ff" font-family="'Space Mono', monospace" font-size="8" letter-spacing="1">SCROLL / SWIPE TO MORPH TEXT &amp; PARTICLES</text>
+              </svg>
+            </div>
+            <div class="guide-text">
+              <h3 class="guide-step-title">2. Scroll to Unfold the Architecture</h3>
+              <p class="guide-step-desc">Once inside a universe, <strong>scroll down or swipe</strong> to experience the scrollytelling transition. The philosophical verses gracefully disintegrate into thousands of photons and re-assemble into hard scientific facts and material parameters.</p>
+            </div>
+          </div>
+
+          <!-- Slide 3: Celestial Menu Hitbox -->
+          <div class="guide-slide" data-step="2">
+            <div class="guide-visual">
+              <svg viewBox="0 0 400 180" class="guide-svg">
+                <defs>
+                  <radialGradient id="bhGlowGuide3" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#5585ff" stop-opacity="0.8"/>
+                    <stop offset="60%" stop-color="#1a2d6d" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+                  </radialGradient>
+                </defs>
+                <!-- Celestial Menu Graphic -->
+                <rect x="20" y="10" width="360" height="160" rx="8" fill="rgba(8,10,18,0.9)" stroke="rgba(85,133,255,0.3)"/>
+                <!-- Corner Celestial Body -->
+                <g id="guideDemoMenuHitbox" style="cursor: pointer;">
+                  <circle cx="65" cy="50" r="30" fill="url(#bhGlowGuide3)"/>
+                  <circle cx="65" cy="50" r="16" fill="#000" stroke="#5585ff" stroke-width="2"/>
+                  <ellipse cx="65" cy="50" rx="28" ry="7" fill="none" stroke="#7da7ff" stroke-width="1.5" transform="rotate(-15 65 50)"/>
+                  <text x="65" y="96" text-anchor="middle" fill="#fff" font-family="'Space Mono', monospace" font-size="8" font-weight="700">CLICK OBJECT</text>
+                  <circle cx="65" cy="50" r="38" fill="none" stroke="#5585ff" stroke-width="1.2" stroke-dasharray="3,3" class="anim-pulse"/>
+                </g>
+
+                <!-- Menu Dropdown -->
+                <g transform="translate(130, 20)">
+                  <rect x="0" y="0" width="230" height="135" rx="6" fill="rgba(14,20,38,0.95)" stroke="rgba(85,133,255,0.5)" stroke-width="1.2"/>
+                  <rect x="15" y="12" width="200" height="20" rx="4" fill="rgba(85,133,255,0.15)" stroke="rgba(85,133,255,0.3)"/>
+                  <text x="25" y="25" fill="#fff" font-family="'Space Mono', monospace" font-size="8" font-weight="700">ABOUT / OVERVIEW</text>
+
+                  <rect x="15" y="38" width="200" height="20" rx="4" fill="rgba(85,133,255,0.15)" stroke="rgba(85,133,255,0.3)"/>
+                  <text x="25" y="51" fill="#fff" font-family="'Space Mono', monospace" font-size="8" font-weight="700">SWITCH UNIVERSE</text>
+
+                  <rect x="15" y="64" width="200" height="20" rx="4" fill="rgba(85,133,255,0.25)" stroke="#5585ff" stroke-width="1.5"/>
+                  <text x="25" y="77" fill="#fff" font-family="'Space Mono', monospace" font-size="8" font-weight="700">JANUS (14 SUBSYSTEMS) ▶</text>
+
+                  <rect x="15" y="90" width="200" height="20" rx="4" fill="rgba(85,133,255,0.15)" stroke="rgba(85,133,255,0.3)"/>
+                  <text x="25" y="103" fill="#fff" font-family="'Space Mono', monospace" font-size="8" font-weight="700">SPLIT VIEW (HOMEPAGE)</text>
+                </g>
+              </svg>
+            </div>
+            <div class="guide-text">
+              <h3 class="guide-step-title">3. Click the Celestial Body to Open Menu</h3>
+              <p class="guide-step-desc">In the corner of your screen, <strong>click the Black Hole</strong> (top-left) or <strong>Sun</strong> (top-right) at any time. It acts as an interactive portal, unfolding the navigation menu with all hardware subsystems and controls.</p>
+            </div>
+          </div>
+
+          <!-- Slide 4: Deep Dives, OptiBranch & Split View -->
+          <div class="guide-slide" data-step="3">
+            <div class="guide-visual">
+              <svg viewBox="0 0 400 180" class="guide-svg">
+                <!-- Subsystem Suite Graphic -->
+                <rect x="20" y="10" width="360" height="160" rx="8" fill="rgba(8,10,18,0.9)" stroke="rgba(85,133,255,0.3)"/>
+                <!-- Grid of 14 subsystems representation -->
+                <g transform="translate(35, 20)">
+                  <rect x="0" y="0" width="95" height="38" rx="4" fill="rgba(85,133,255,0.12)" stroke="rgba(85,133,255,0.4)"/>
+                  <text x="8" y="14" fill="#8cb3ff" font-family="'Space Mono', monospace" font-size="7" font-weight="700">100 GHz TIMING</text>
+                  <text x="8" y="26" fill="#fff" font-family="'Space Mono', monospace" font-size="6">Wave Pipelining</text>
+
+                  <rect x="110" y="0" width="95" height="38" rx="4" fill="rgba(85,133,255,0.12)" stroke="rgba(85,133,255,0.4)"/>
+                  <text x="118" y="14" fill="#8cb3ff" font-family="'Space Mono', monospace" font-size="7" font-weight="700">ONE-HOT RNS</text>
+                  <text x="118" y="26" fill="#fff" font-family="'Space Mono', monospace" font-size="6">256-Waveguides</text>
+
+                  <rect x="220" y="0" width="105" height="38" rx="4" fill="rgba(85,133,255,0.12)" stroke="rgba(85,133,255,0.4)"/>
+                  <text x="228" y="14" fill="#8cb3ff" font-family="'Space Mono', monospace" font-size="7" font-weight="700">BENEŠ ROUTING</text>
+                  <text x="228" y="26" fill="#fff" font-family="'Space Mono', monospace" font-size="6">Sb₂Se₃ Switches</text>
+
+                  <rect x="0" y="46" width="95" height="38" rx="4" fill="rgba(85,133,255,0.12)" stroke="rgba(85,133,255,0.4)"/>
+                  <text x="8" y="60" fill="#8cb3ff" font-family="'Space Mono', monospace" font-size="7" font-weight="700">PRNS &amp; CRT</text>
+                  <text x="8" y="72" fill="#fff" font-family="'Space Mono', monospace" font-size="6">64-Bit Exact</text>
+
+                  <rect x="110" y="46" width="95" height="38" rx="4" fill="rgba(85,133,255,0.12)" stroke="rgba(85,133,255,0.4)"/>
+                  <text x="118" y="60" fill="#8cb3ff" font-family="'Space Mono', monospace" font-size="7" font-weight="700">APD READOUT</text>
+                  <text x="118" y="72" fill="#fff" font-family="'Space Mono', monospace" font-size="6">StrongARM Latches</text>
+
+                  <rect x="220" y="46" width="105" height="38" rx="4" fill="rgba(85,133,255,0.12)" stroke="rgba(85,133,255,0.4)"/>
+                  <text x="228" y="60" fill="#8cb3ff" font-family="'Space Mono', monospace" font-size="7" font-weight="700">3D Z-AXIS STACK</text>
+                  <text x="228" y="72" fill="#fff" font-family="'Space Mono', monospace" font-size="6">Thermal Decoupling</text>
+                </g>
+
+                <!-- Split View Return Bar -->
+                <g id="guideDemoSplitBar" style="cursor: pointer;">
+                  <rect x="35" y="128" width="325" height="24" rx="4" fill="rgba(85,133,255,0.2)" stroke="#5585ff" stroke-width="1.2"/>
+                  <text x="197" y="144" text-anchor="middle" fill="#fff" font-family="'Space Mono', monospace" font-size="8" font-weight="700" letter-spacing="1">◫ RETURN TO SPLIT VIEW HOMEPAGE AT ANY TIME</text>
+                </g>
+              </svg>
+            </div>
+            <div class="guide-text">
+              <h3 class="guide-step-title">4. Deep Dives &amp; Split Screen Return</h3>
+              <p class="guide-step-desc">From the menu, delve into all <strong>14 standalone research subsystem explorations</strong> featuring real-time animated schematic diagrams. Use the <strong>Split View</strong> button to return to the dual-universe homepage at any time.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Navigation Controls -->
+        <div class="guide-footer">
+          <div class="guide-dots" id="guideDots">
+            <button class="guide-dot active" data-step="0" type="button" aria-label="Step 1"></button>
+            <button class="guide-dot" data-step="1" type="button" aria-label="Step 2"></button>
+            <button class="guide-dot" data-step="2" type="button" aria-label="Step 3"></button>
+            <button class="guide-dot" data-step="3" type="button" aria-label="Step 4"></button>
+          </div>
+          <div class="guide-actions">
+            <button class="guide-btn guide-btn-secondary" id="guidePrevBtn" type="button">Back</button>
+            <button class="guide-btn guide-btn-secondary" id="guideSkipBtn" type="button">Skip</button>
+            <button class="guide-btn guide-btn-primary" id="guideNextBtn" type="button">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
 
   <script>
     (() => {
       'use strict';
-      // ═══════════════════════════════════════════════
-      // THEME PERSISTENCE — sessionStorage sync
-      // ═══════════════════════════════════════════════
       localStorage.removeItem('janus-theme');
-      const savedTheme = sessionStorage.getItem('janus-theme');
+      sessionStorage.removeItem('janus-theme');
+      const urlParams = new URLSearchParams(window.location.search);
+      const isSplitParam = urlParams.get('split') === '1';
+      const themeParam = urlParams.get('theme');
       let initTheme = null;
-      if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        initTheme = savedTheme === 'dark' ? 'DARK' : 'LIGHT';
+      if (themeParam === 'dark' || themeParam === 'light') {
+        initTheme = themeParam === 'dark' ? 'DARK' : 'LIGHT';
+        document.documentElement.setAttribute('data-theme', themeParam);
       }
 
       // ═══════════════════════════════════════════════
@@ -1131,7 +1719,7 @@
       let bha = 1, sta = 1;
 
       function navIds() {
-        return ST === 'SPLIT' || ST === 'CHOOSING' ? ['aB', 'jB', 'oB'] : ['aB', 'sB', 'jB', 'oB'];
+        return ST === 'SPLIT' || ST === 'CHOOSING' ? ['aB', 'jB', 'oB'] : ['aB', 'sB', 'hB', 'jB', 'oB'];
       }
 
       // ═══════════════════════════════════════════════
@@ -1561,8 +2149,8 @@
         // recolors them to match the chosen universe, but a natural page load with a
         // saved theme skipped that step — leaving OptiBranch dark-on-dark in the DARK
         // universe and JANUS light-on-light in the LIGHT universe. Match that fix here.
-        const jb0 = document.getElementById('jB'), ob0 = document.getElementById('oB'), ab0 = document.getElementById('aB'), sb0 = document.getElementById('sB');
-        [jb0, ob0, ab0, sb0].forEach(el => {
+        const jb0 = document.getElementById('jB'), ob0 = document.getElementById('oB'), ab0 = document.getElementById('aB'), sb0 = document.getElementById('sB'), hb0 = document.getElementById('hB');
+        [jb0, ob0, ab0, sb0, hb0].forEach(el => {
           if (!el) return;
           el.classList.toggle('dc', ST === 'DARK');
           el.classList.toggle('lc', ST !== 'DARK');
@@ -2340,7 +2928,7 @@
         } else {
           app.classList.remove('menu-open');
           app.classList.remove('menu-open-split');
-          ['aB', 'sB', 'jB', 'oB'].forEach(id => document.getElementById(id).classList.remove('on'));
+          ['aB', 'sB', 'hB', 'jB', 'oB'].forEach(id => document.getElementById(id).classList.remove('on'));
           closeDds();
         }
       }
@@ -2381,7 +2969,7 @@
       function hideMenu() {
         menuOn = false;
         document.getElementById('app').classList.remove('menu-open', 'menu-open-split');
-        ['aB', 'sB', 'jB', 'oB'].forEach(id => document.getElementById(id).classList.remove('on'));
+        ['aB', 'sB', 'hB', 'jB', 'oB'].forEach(id => document.getElementById(id).classList.remove('on'));
         closeDds();
       }
 
@@ -2417,6 +3005,64 @@
         switchUniverse(ST === 'DARK' ? 'l' : 'd');
       });
 
+      document.getElementById('hB').addEventListener('click', e => {
+        e.stopPropagation();
+        if (ST === 'SPLIT') return;
+        returnToSplit();
+      });
+
+      function returnToSplit() {
+        hideMenu();
+        sessionStorage.removeItem('janus-theme');
+        localStorage.removeItem('janus-theme');
+        ST = 'SPLIT';
+        selDir = 0;
+        document.getElementById('app').classList.remove('dark-ui', 'light-ui');
+        document.getElementById('ts').style.opacity = '1';
+        applyEdge(rawEdge);
+
+        const jb = document.getElementById('jB'), ob = document.getElementById('oB'), ab = document.getElementById('aB'), sb = document.getElementById('sB'), hbEl = document.getElementById('hB');
+        [jb, ob, ab, sb, hbEl].forEach(el => {
+          if (!el) return;
+          el.classList.remove('on');
+        });
+        jb.className = 'ni dc';
+        ob.className = 'ni lc';
+        ab.className = 'ni dc';
+        sb.className = 'ni dc';
+        hbEl.className = 'ni dc';
+
+        jb.classList.remove('to-ml', 'to-mr');
+        ob.classList.remove('to-ml', 'to-mr');
+
+        document.querySelector('.dp').classList.remove('centered');
+        document.querySelector('.lp').classList.remove('centered');
+
+        ox = vw / 2;
+        oy = vh / 2;
+        oR = 52;
+        bha = 1;
+        sta = 1;
+
+        parts.forEach((p, i) => {
+          p.s = i < NP / 2 ? 'd' : 'l';
+          p.spawn();
+          p.a = p.ba * 0.5;
+        });
+
+        const hb = document.getElementById('hbx');
+        hb.style.width = '260px';
+        hb.style.height = '260px';
+        hb.style.setProperty('--hbx-x', ox + 'px');
+        hb.style.setProperty('--hbx-y', oy + 'px');
+
+        if (typeof scrollyEngine !== 'undefined' && scrollyEngine && scrollyEngine.deactivate) {
+          scrollyEngine.deactivate();
+        }
+
+        if (TIER === 'static') paintStatic();
+      }
+
       document.getElementById('dH').addEventListener('click', e => {
         if (e.target.closest('.tbtn') || e.target.closest('.itrp')) return;
         // Hitbox optimization: ignore clicks within 90px of center border or outside main interactive zone
@@ -2437,7 +3083,7 @@
         ST = 'CHOOSING'; selDir = ch === 'd' ? 1 : -1; selT0 = Date.now();
         menuOn = false;
         document.getElementById('app').classList.remove('menu-open', 'menu-open-split', 'dark-ui', 'light-ui');
-        ['aB', 'sB', 'jB', 'oB'].forEach(id => document.getElementById(id).classList.remove('on'));
+        ['aB', 'sB', 'hB', 'jB', 'oB'].forEach(id => document.getElementById(id).classList.remove('on'));
         closeDds();
         setTimeout(() => migObj(ch), 180);
         setTimeout(() => finalize(ch), 960);
@@ -2477,8 +3123,8 @@
         document.getElementById('ts').style.opacity = '0';
         updateUniverseMenuLayout();
 
-        const jb = document.getElementById('jB'), ob = document.getElementById('oB'), ab = document.getElementById('aB'), sb = document.getElementById('sB');
-        [jb, ob, ab, sb].forEach(el => {
+        const jb = document.getElementById('jB'), ob = document.getElementById('oB'), ab = document.getElementById('aB'), sb = document.getElementById('sB'), hbEl = document.getElementById('hB');
+        [jb, ob, ab, sb, hbEl].forEach(el => {
           el.classList.toggle('dc', ch === 'd');
           el.classList.toggle('lc', ch !== 'd');
           el.classList.remove('on');
@@ -2523,8 +3169,8 @@
         saveTheme();
         updateUniverseMenuLayout();
 
-        const jb = document.getElementById('jB'), ob = document.getElementById('oB'), ab = document.getElementById('aB'), sb = document.getElementById('sB');
-        [jb, ob, ab, sb].forEach(el => {
+        const jb = document.getElementById('jB'), ob = document.getElementById('oB'), ab = document.getElementById('aB'), sb = document.getElementById('sB'), hbEl = document.getElementById('hB');
+        [jb, ob, ab, sb, hbEl].forEach(el => {
           el.classList.toggle('dc', ch === 'd');
           el.classList.toggle('lc', ch !== 'd');
           el.classList.remove('on');
@@ -2559,8 +3205,8 @@
         saveTheme();
         document.getElementById('ts').style.opacity = '0';
         updateUniverseMenuLayout();
-        const jb = document.getElementById('jB'), ob = document.getElementById('oB'), ab = document.getElementById('aB'), sb = document.getElementById('sB');
-        const allNi = [jb, ob, ab, sb];
+        const jb = document.getElementById('jB'), ob = document.getElementById('oB'), ab = document.getElementById('aB'), sb = document.getElementById('sB'), hbEl = document.getElementById('hB');
+        const allNi = [jb, ob, ab, sb, hbEl];
 
         // Set color theme
         if (ch === 'd') {
@@ -2625,298 +3271,405 @@
         });
       });
 
-    })();
+      // ═══════════════════════════════════════════════
+      // FIRST-TIME ONBOARDING & INTERACTIVE GUIDE
+      // ═══════════════════════════════════════════════
+      const guideModal = document.getElementById('guideModal');
+      const guideTriggerBtn = document.getElementById('guideTriggerBtn');
+      const guideCloseBtn = document.getElementById('guideCloseBtn');
+      const guideBackdrop = document.getElementById('guideBackdrop');
+      const guideNextBtn = document.getElementById('guideNextBtn');
+      const guidePrevBtn = document.getElementById('guidePrevBtn');
+      const guideSkipBtn = document.getElementById('guideSkipBtn');
+      const guideSlides = Array.from(document.querySelectorAll('#guideCarousel .guide-slide'));
+      const guideDots = Array.from(document.querySelectorAll('#guideDots .guide-dot'));
+      let guideStep = 0;
+      const totalGuideSteps = guideSlides.length;
 
-    /* ── 1. CONTENT DATABASE ── */
+      function updateGuideSlide(newStep) {
+        guideStep = Math.max(0, Math.min(newStep, totalGuideSteps - 1));
+        guideSlides.forEach((slide, idx) => {
+          slide.classList.toggle('active', idx === guideStep);
+        });
+        guideDots.forEach((dot, idx) => {
+          dot.classList.toggle('active', idx === guideStep);
+        });
+
+        if (guidePrevBtn) {
+          guidePrevBtn.style.display = guideStep === 0 ? 'none' : 'inline-block';
+        }
+        if (guideNextBtn) {
+          guideNextBtn.textContent = guideStep === totalGuideSteps - 1 ? 'Begin Journey ✦' : 'Next →';
+        }
+      }
+
+      function openGuide(step = 0) {
+        if (!guideModal) return;
+        guideModal.style.setProperty('display', 'flex', 'important');
+        guideModal.classList.add('open');
+        guideModal.setAttribute('aria-hidden', 'false');
+        updateGuideSlide(step);
+      }
+
+      function closeGuide(markSeen = true) {
+        if (!guideModal) return;
+        guideModal.classList.remove('open');
+        guideModal.style.setProperty('display', 'none', 'important');
+        guideModal.setAttribute('aria-hidden', 'true');
+        if (markSeen) {
+          try {
+            sessionStorage.setItem('janus-guide-seen', 'true');
+            localStorage.setItem('janus-guide-seen', 'true');
+          } catch (e) {}
+        }
+      }
+
+      if (guideTriggerBtn) {
+        guideTriggerBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          openGuide(0);
+        });
+      }
+
+      if (guideCloseBtn) {
+        guideCloseBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          closeGuide(true);
+        });
+      }
+
+      if (guideBackdrop) {
+        guideBackdrop.addEventListener('click', () => {
+          closeGuide(true);
+        });
+      }
+
+      if (guideNextBtn) {
+        guideNextBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          if (guideStep >= totalGuideSteps - 1) {
+            closeGuide(true);
+          } else {
+            updateGuideSlide(guideStep + 1);
+          }
+        });
+      }
+
+      if (guidePrevBtn) {
+        guidePrevBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          updateGuideSlide(guideStep - 1);
+        });
+      }
+
+      if (guideSkipBtn) {
+        guideSkipBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          closeGuide(true);
+        });
+      }
+
+      guideDots.forEach((dot, idx) => {
+        dot.addEventListener('click', e => {
+          e.stopPropagation();
+          updateGuideSlide(idx);
+        });
+      });
+
+      // Interactive Click Targets inside Guide
+      const guidePickDark = document.getElementById('guidePickDark');
+      if (guidePickDark) {
+        guidePickDark.addEventListener('click', e => {
+          e.stopPropagation();
+          closeGuide(true);
+          setTimeout(() => {
+            TIER === 'static' ? instantChoose('d') : pick('d');
+          }, 150);
+        });
+      }
+
+      const guidePickLight = document.getElementById('guidePickLight');
+      if (guidePickLight) {
+        guidePickLight.addEventListener('click', e => {
+          e.stopPropagation();
+          closeGuide(true);
+          setTimeout(() => {
+            TIER === 'static' ? instantChoose('l') : pick('l');
+          }, 150);
+        });
+      }
+
+      const guideDemoSplitBar = document.getElementById('guideDemoSplitBar');
+      if (guideDemoSplitBar) {
+        guideDemoSplitBar.addEventListener('click', e => {
+          e.stopPropagation();
+          closeGuide(true);
+          returnToSplit();
+        });
+      }
+
+      document.addEventListener('keydown', e => {
+        if (!guideModal || !guideModal.classList.contains('open')) return;
+        if (e.key === 'Escape') {
+          closeGuide(true);
+        } else if (e.key === 'ArrowRight') {
+          if (guideStep < totalGuideSteps - 1) updateGuideSlide(guideStep + 1);
+        } else if (e.key === 'ArrowLeft') {
+          if (guideStep > 0) updateGuideSlide(guideStep - 1);
+        }
+      });
+
+      // Auto-open guide on page load
+      setTimeout(() => {
+        openGuide(0);
+      }, 300);
+
+    /* ── 1. CONTENT DATABASE (VERIFIED FROM RESEARCH PAPER / PATENT APPLICATION NO. 202611052791) ── */
     const JANUS_CONTENT = {
       overview: {
-        title: 'Architecture Overview',
+        title: 'Architecture Overview & Constraint-Bounded Design',
         html: `
             <div class="drawer-desc">
-              <p>JANUS is a <strong>hybrid photonic-electronic processor</strong> built on the Chinese Remainder Theorem.
-              A 64-bit integer is decomposed into residues modulo ten small co-prime moduli and each residue is encoded
-              as a unique optical waveguide position — no arithmetic, only light routing.</p>
-              <p>Multiplications that would take hundreds of CMOS cycles collapse into a single waveguide-crossing.
-              The CMOS backend reconstructs the full 64-bit result in ≤ 5 clock cycles via the Garner Pipeline.</p>
+              <p>JANUS is a <strong>constraint-aware hybrid photonic-electronic processor</strong> (Patent App. 202611052791)
+              designed for large-scale exact AI acceleration. By reformulating computation from continuous analog amplitude accumulation
+              (which requires an impossible 138.4 dB SNR at scale) into <strong>One-Hot spatial waveguide localization</strong>,
+              JANUS reduces photodetection to a binary threshold decision with deterministic integer precision.</p>
+              <p>Multiplications are physically executed as spatial permutations across a 15-stage dilated Sb₂Se₃ phase-change Beneš fabric at
+              <strong>0 W static hold power</strong>, with exact 64-bit integer outputs reconstructed in a single 10.0 ps wave-pipelined cycle (100 GHz).</p>
             </div>
-            <div class="drawer-section-title">System Flow</div>
+            <div class="drawer-section-title">System Pipeline</div>
             <ul class="drawer-list">
-              <li><strong>Input</strong> — 64-bit integer decomposed into k residues (mod m₀…m₉)</li>
-              <li><strong>One-Hot Encoding</strong> — each residue selects 1 of 256 Si₃N₄ waveguides</li>
-              <li><strong>Beneš Routing</strong> — dilated GST-467 PCM crossbar performs modular multiply-in-place</li>
-              <li><strong>Photodetection</strong> — binary spatial detector array (light vs. no-light)</li>
-              <li><strong>CRT Reconstruction</strong> — 5-stage Garner Pipeline in 152 ps at 33 GHz</li>
+              <li><strong>Optical Source</strong> — 100 W CW 1064 nm Ytterbium-fiber laser (&gt; 75% WPE, 8.3% quantum defect)</li>
+              <li><strong>Passive Fan-Out</strong> — 1 : 2¹⁸ MMI splitting tree (262,144 output ports) with +4.61 dB detection margin &amp; zero ASE noise</li>
+              <li><strong>One-Hot Input Injection</strong> — 1 × 256 active LiTaO₃ Pockels electro-optic routers (50 aJ/switch at 100 GHz)</li>
+              <li><strong>Beneš Routing Mesh</strong> — 15-stage dilated non-volatile Sb₂Se₃ PCM fabric in a 3D vertical reservoir geometry (1.006B switches)</li>
+              <li><strong>TIA-Less High-Speed Readout</strong> — 105 GHz Ge/Si SAC²M avalanche photodetectors + StrongARM regenerative latches (100 aJ/decision)</li>
+              <li><strong>CMOS Digital Backend</strong> — Dual-cluster Polynomial &amp; Parallel Residue Number System (PRNS) and 80-bit carry-save accumulator trees</li>
             </ul>
-            <div class="drawer-section-title">Key Metrics</div>
+            <div class="drawer-section-title">Key Verified Metrics (Datacenter Tier)</div>
             <table class="drawer-table">
               <tr><th>Parameter</th><th>Value</th></tr>
-              <tr><td>Moduli used</td><td>k = 1…8 (configurable)</td></tr>
-              <tr><td>Waveguide count</td><td>256 per modulus lane</td></tr>
-              <tr><td>Max throughput</td><td>33 GHz FSM clock</td></tr>
-              <tr><td>Reconstruction latency</td><td>152 ps (5 cycles)</td></tr>
-              <tr><td>Optical layer</td><td>Ligentec Si₃N₄ + LioniX heaters</td></tr>
-              <tr><td>CMOS die</td><td>SCL Mohali / imec Cu-Cu D2D</td></tr>
+              <tr><td>Clock Frequency</td><td>100 GHz (10.0 ps wave-pipelined cycle)</td></tr>
+              <tr><td>Single-Op Latency</td><td>963 ps (≈ 96 in-flight stages)</td></tr>
+              <tr><td>Total PCM Switches</td><td>1,006,632,960 (1.006 Billion Sb₂Se₃)</td></tr>
+              <tr><td>Static Hold Power</td><td>0 W (vs. 100.67 kW thermo-optic)</td></tr>
+              <tr><td>Sustained 64-Bit Throughput</td><td>2,785.3 TMAC/s (14.91 TMAC/s/W)</td></tr>
+              <tr><td>Peak INT4 Throughput</td><td>52,428.8 TMAC/s (44,564.5 TMAC/s sustained)</td></tr>
+              <tr><td>Package Height</td><td>0.64 mm (3D HBM stack compatible)</td></tr>
             </table>
-            <span class="drawer-badge drawer-badge-blue">PHOTONIC</span>&nbsp;
-            <span class="drawer-badge drawer-badge-green">RNS COMPUTE</span>&nbsp;
-            <span class="drawer-badge drawer-badge-amber">33 GHz FSM</span>
+            <span class="drawer-badge drawer-badge-blue">100 GHz FSM</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">EXACT 64-BIT PRNS</span>&nbsp;
+            <span class="drawer-badge drawer-badge-amber">1.006B Sb₂Se₃ SWITCHES</span>
           `
       },
       routing: {
-        title: 'Beneš Routing & PCM Switching',
+        title: 'Dilated Beneš Routing & Non-Volatile Sb₂Se₃ Switching',
         html: `
             <div class="drawer-desc">
-              <p>The optical crossbar is a <strong>dilated non-volatile Beneš network</strong> built on
-              Ge₂Sb₂Se₄Te₁ (GST-467) phase-change cells over Si₃N₄ waveguides. Each cell toggles
-              between amorphous (transparent) and crystalline (reflective) states on nanosecond timescales
-              without holding power — a fully non-volatile routing state.</p>
-              <p>Mechanical reliability is achieved through a <strong>vertical reservoir design</strong>:
-              a sacrificial GST migration sink sits atop each active cell, absorbing elemental drift
-              across 10⁶–10⁸ switching cycles. Void-gap isolation rings prevent delamination stress
-              from propagating across adjacent waveguide crossings.</p>
+              <p>The optical routing crossbar is a <strong>15-stage dilated non-volatile Beneš network</strong> constructed from
+              Antimony Selenide (Sb₂Se₃) low-loss phase-change material (PCM) switches in a 3D vertical reservoir geometry over Si₃N₄ waveguides.
+              Unlike GST alloys, Sb₂Se₃ exhibits near-zero optical absorption loss (Δk ≈ 0 at 1064 nm), enabling low-loss phase routing.
+              The optical state is latched non-volatilely after electrical programming pulses (10–50 pJ/switch), achieving
+              <strong>0 W static hold power</strong> and eliminating over 100 kW of continuous heater dissipation compared to thermo-optic MZIs.</p>
+              <p>Mechanical reliability and endurance (> 10⁶–10⁸ cycles) are achieved through a <strong>3D Vertical Reservoir Switch Geometry</strong>:
+              a nanoscale void gap (~25 nm) physically separates the active optical interaction layer from an upper thermal reservoir,
+              acting as a 54× thermal barrier and volumetric expansion buffer.</p>
             </div>
             <div class="drawer-section-title">PCM Switch Specs</div>
             <table class="drawer-table">
               <tr><th>Property</th><th>Value</th></tr>
-              <tr><td>Material</td><td>GST-467 on Si₃N₄</td></tr>
-              <tr><td>Insertion loss (ON)</td><td>&lt; 0.5 dB</td></tr>
-              <tr><td>Extinction ratio</td><td>&gt; 20 dB</td></tr>
-              <tr><td>Switching energy</td><td>~10 pJ per cell</td></tr>
-              <tr><td>Non-volatile retention</td><td>&gt; 10 years @ 85°C</td></tr>
-              <tr><td>Cycle endurance</td><td>10⁶ – 10⁸ cycles</td></tr>
+              <tr><td>Material</td><td>Antimony Selenide (Sb₂Se₃) on Si₃N₄ (Low Absorption Loss)</td></tr>
+              <tr><td>Switch Geometry</td><td>3D Vertical Reservoir with ~25 nm void gap</td></tr>
+              <tr><td>Static Hold Power</td><td>0 W (Non-Volatile)</td></tr>
+              <tr><td>Total Switches (Datacenter)</td><td>1,006,632,960 switches (524,288 Beneš fabrics)</td></tr>
+              <tr><td>Dynamic Switching Energy</td><td>≈ 10 – 50 pJ per switch</td></tr>
+              <tr><td>Endurance Ceiling</td><td>10⁶ – 10⁸ operational cycles</td></tr>
+              <tr><td>Routing Loss (15 stages)</td><td>7.50 dB (15 × 0.50 dB/stage)</td></tr>
             </table>
-            <div class="drawer-section-title">Reliability Features</div>
+            <div class="drawer-section-title">Crosstalk Suppression</div>
             <ul class="drawer-list">
-              <li>Vertical GST reservoir absorbs migration drift without active correction</li>
-              <li>Void-gap isolation rings decouple mechanical stress between adjacent cells</li>
-              <li>Dilated topology — each logical switch has 2× physical switch redundancy</li>
+              <li>Dilated topology ensures active and dummy paths are physically disjoint (Active ∩ Dummy = ∅)</li>
+              <li>Simultaneously routed channels never share switches, structurally preventing coherent crosstalk accumulation</li>
             </ul>
-            <span class="drawer-badge drawer-badge-blue">GST-467 PCM</span>&nbsp;
-            <span class="drawer-badge drawer-badge-green">NON-VOLATILE</span>
+            <span class="drawer-badge drawer-badge-blue">Sb₂Se₃ VOID-GAP</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">0 W STATIC POWER</span>
           `
       },
       rns: {
-        title: 'One-Hot Optical RNS Encoding',
+        title: 'One-Hot Optical RNS & Spatial Permutation',
         html: `
             <div class="drawer-desc">
-              <p>Conventional RNS processors sample optical <em>intensity</em> — requiring SNR &gt; 138 dB for
-              8-bit precision. JANUS sidesteps this entirely: each residue value is encoded as a
-              <strong>spatial waveguide index</strong>, not a signal amplitude.</p>
-              <p>A residue of value v selects exactly waveguide v (out of 256). The detector only asks
-              "is there light or not?" — a binary presence test. This collapses the SNR requirement from
-              138 dB down to <strong>&gt; 0 dB</strong>, making the system immune to optical noise at
-              the arithmetic level.</p>
+              <p>Conventional optical neural networks accumulate analog optical amplitudes, requiring SNR &gt; 138.4 dB for
+              exact 128×128 INT8 recovery. JANUS eliminates analog accumulation entirely: each residue value is encoded as a
+              <strong>spatial waveguide index</strong> across 256 physical waveguides (x → e_x).</p>
+              <p>The detector answers a binary presence question: <em>"Does waveguide k contain light?"</em>
+              This collapses the detection condition from 138.4 dB down to <strong>binary SNR &gt; 0 dB</strong> (decision threshold
+              P_th ≈ −23.20 dBm ≈ 4.79 µW), rendering computation immune to analog noise.</p>
             </div>
             <div class="drawer-section-title">Encoding Comparison</div>
             <table class="drawer-table">
-              <tr><th>Scheme</th><th>SNR Required</th><th>Bits</th></tr>
-              <tr><td>Intensity (conventional)</td><td>138 dB</td><td>8-bit</td></tr>
-              <tr><td>One-Hot Spatial (JANUS)</td><td>&gt; 0 dB</td><td>8-bit</td></tr>
+              <tr><th>Scheme</th><th>SNR Required</th><th>Detection Decision</th></tr>
+              <tr><td>Analog Optical Accumulation</td><td>138.4 dB</td><td>Continuous magnitude estimation (8.3M levels)</td></tr>
+              <tr><td>One-Hot Spatial RNS (JANUS)</td><td>&gt; 0 dB</td><td>Binary spatial localization (Light / No Light)</td></tr>
             </table>
-            <div class="drawer-section-title">Properties</div>
+            <div class="drawer-section-title">Permutation Multiplication</div>
             <ul class="drawer-list">
-              <li>256 waveguides per modulus lane → 256 distinct residue values</li>
-              <li>Exactly one lane active at any time (one-hot invariant)</li>
-              <li>Detector reads: active lane index = residue value</li>
-              <li>Tolerates &gt; 50% optical crosstalk without arithmetic error</li>
+              <li>Multiplication by weight w_i is physically executed as a bijective spatial permutation: π_w : x_i ↦ (x_i · w_i) mod m_i</li>
+              <li>Carry Propagation Delay → 0 (Independent parallel residue channels)</li>
+              <li>1 × 256 active LiTaO₃ Pockels input routers (50 aJ/switch at 100 GHz)</li>
+              <li>False positive probability bounded by P_FP ≤ 255 × 10⁻¹⁸ ≈ 2.55 × 10⁻¹⁶</li>
             </ul>
-            <pre class="drawer-code">Residue r ∈ {0…255}
-Waveguide w = r  (one-hot select)
-Detector output: (lane_index where signal present)</pre>
-            <span class="drawer-badge drawer-badge-blue">SPATIAL ENCODING</span>&nbsp;
-            <span class="drawer-badge drawer-badge-green">NOISE IMMUNE</span>
+            <pre class="drawer-code">Residue x_i ∈ [0, m_i − 1] ⊆ [0, 255]
+Waveguide Injection: x_i → e_x (One-Hot Select)
+Output Detector: D_k = 1 if P_sig &gt; P_sens, else 0</pre>
+            <span class="drawer-badge drawer-badge-blue">SPATIAL LOCALIZATION</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">SNR &gt; 0 dB</span>
           `
       },
       cmos: {
-        title: 'CMOS Backend Architecture',
+        title: 'CMOS Digital Backend & Hybrid Co-Design',
         html: `
             <div class="drawer-desc">
-              <p>The CMOS backend is a <strong>bounded 33 GHz FSM</strong> — not a general-purpose
-              processor. It contains exactly five hardware subsystems dedicated to receiving optical
-              results and reconstructing the 64-bit integer output via CRT arithmetic.</p>
-              <p>Each subsystem maps to a well-known industry analog, validating the design space
-              against deployed silicon.</p>
+              <p>The CMOS backend is a <strong>100 GHz wave-pipelined digital processor (10.0 ps cycle)</strong> providing
+              deterministic state validation and CRT reconstruction. Photonics executes massively parallel transport with zero hold power,
+              while CMOS logic performs exact integer reconstruction and fault monitoring.</p>
+              <p>Event-driven dynamic latches consume ~100 aJ per decision, bounding 134M-detector dynamic power to 5.24 W.</p>
             </div>
-            <div class="drawer-section-title">Subsystem Map</div>
+            <div class="drawer-section-title">CMOS Subsystem Hardware Map</div>
             <table class="drawer-table">
-              <tr><th>JANUS Block</th><th>Industry Analog</th><th>Function</th></tr>
-              <tr><td>Register File</td><td>ARM SVE / Intel AVX-512</td><td>Reconfigurable SRAM — 8-bit lanes merge to k×8</td></tr>
-              <tr><td>Garner Pipeline</td><td>Custom DSP MAC array</td><td>4-stage CRT reconstruction in 152 ps</td></tr>
-              <tr><td>JIR Thermal Ctrl</td><td>TI TMP117 + AD7124</td><td>ΔΣ ADC thermal diode monitor + slope predictor</td></tr>
-              <tr><td>Priority Encoder</td><td>NVIDIA Hopper warp scheduler</td><td>8-level OR tournament tree, 30.3 ps</td></tr>
-              <tr><td>Clock Gating</td><td>ARM DynamIQ / Apple ANE</td><td>Predictive per-tile power domain gating</td></tr>
+              <tr><th>Subsystem Block</th><th>Hardware Function</th><th>Power (Datacenter)</th></tr>
+              <tr><td>RNS Forward Decomposer</td><td>Maps 64-bit integer into k parallel residue streams</td><td>4.20 W</td></tr>
+              <tr><td>StrongARM Latch Readout</td><td>Dynamic regenerative latches integrated with Ge/Si APDs (100 aJ/decision)</td><td>5.24 W</td></tr>
+              <tr><td>Carry-Save Accumulator Tree</td><td>80-bit redundant carry-save adder arrays</td><td>14.80 W</td></tr>
+              <tr><td>Fast QRNS / CRT Engine</td><td>Dual-cluster inverse reconstruction in 210 ps (wave-pipelined)</td><td>18.03 W</td></tr>
+              <tr><td>JIR Interface &amp; Fault Trap</td><td>Tile scheduler, thermal monitor, and RRNS parity controller</td><td>3.00 W</td></tr>
             </table>
-            <div class="drawer-section-title">Clock Domain</div>
-            <ul class="drawer-list">
-              <li>Master clock: 33 GHz (30.3 ps period)</li>
-              <li>All five blocks share one synchronous domain</li>
-              <li>Garner pipeline latency: 5 cycles = 152 ps</li>
-            </ul>
-            <span class="drawer-badge drawer-badge-blue">33 GHz FSM</span>&nbsp;
-            <span class="drawer-badge drawer-badge-amber">5 BLOCKS</span>
+            <span class="drawer-badge drawer-badge-blue">100 GHz FSM</span>&nbsp;
+            <span class="drawer-badge drawer-badge-amber">100 aJ / DECISION</span>
           `
       },
       compiler: {
-        title: 'JIR Compiler & Register File',
+        title: 'JIR Controller & Predictive Thermal Management',
         html: `
             <div class="drawer-desc">
-              <p>The <strong>JANUS Intermediate Representation (JIR)</strong> compiler is responsible for
-              decomposing 64-bit integer workloads into per-modulus RNS residues and scheduling
-              optical waveguide routing configurations before each computation window opens.</p>
-              <p>The <strong>Register File</strong> is a reconfigurable SRAM array. During the optical
-              phase it operates as k independent 8-bit registers — one per modulus lane. During CRT
-              reconstruction it aliases those k registers into a single k×8-bit wide register, mirroring
-              the ARM SVE scalable vector aliasing model.</p>
+              <p>The <strong>JIR (JANUS Interface Representator)</strong> is the central tile-management and scheduling controller in the CMOS backend.
+              Operating over periodic <strong>τ_JIR = 5 µs monitoring cycles</strong>, the JIR tracks thermal sensor slopes (dT/dt) and
+              predictively engages Redundant RNS (RRNS) parity tiles ahead of thermal fault thresholds.</p>
+              <p>Parallel electro-thermal addressing allows all 1.006B PCM switches to be reprogrammed in a single <strong>0.1 ms window</strong> (10–50 pJ/switch)
+              overlapped with previous epoch CRT backlog processing for zero stall overhead (sustained utilization η = 0.85).</p>
             </div>
-            <div class="drawer-section-title">Register File Modes</div>
+            <div class="drawer-section-title">Predictive RRNS Throughput Trade-Off</div>
             <table class="drawer-table">
-              <tr><th>Phase</th><th>Mode</th><th>Width</th></tr>
-              <tr><td>Optical</td><td>k independent 8-bit</td><td>8 bits × k</td></tr>
-              <tr><td>CRT Reconstruction</td><td>Single merged register</td><td>k × 8 bits</td></tr>
+              <tr><th>Operating Mode</th><th>Compute Tiles Active</th><th>Sustained INT4 Throughput</th><th>Impact</th></tr>
+              <tr><td>Nominal (All tiles nominal)</td><td>32 Compute Engines</td><td>44,564.5 TMAC/s</td><td>100% Baseline</td></tr>
+              <tr><td>Mild Thermal Watch (1 tile warm)</td><td>31 Compute Engines</td><td>43,171.8 TMAC/s</td><td>96.9% (−3.1%)</td></tr>
+              <tr><td>Severe Thermal Watch (4 tiles warm)</td><td>28 Compute Engines</td><td>38,993.9 TMAC/s</td><td>87.5% (−12.5%)</td></tr>
             </table>
-            <div class="drawer-section-title">JIR Compilation Steps</div>
-            <ul class="drawer-list">
-              <li><strong>Decompose</strong> — 64-bit integer → k residues (CRT forward transform)</li>
-              <li><strong>Schedule</strong> — assign each residue to a modulus lane</li>
-              <li><strong>Route</strong> — program Beneš crossbar with PCM switching configuration</li>
-              <li><strong>Execute</strong> — trigger optical computation window</li>
-              <li><strong>Collect</strong> — read one-hot detector outputs into register file</li>
-            </ul>
-            <span class="drawer-badge drawer-badge-blue">JIR COMPILER</span>&nbsp;
-            <span class="drawer-badge drawer-badge-green">SVE-INSPIRED</span>
+            <span class="drawer-badge drawer-badge-blue">τ_JIR = 5 µs POLLING</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">PREDICTIVE RRNS</span>
           `
       },
       garner: {
-        title: 'CRT Garner Pipeline',
+        title: 'CRT Reconstruction & QRNS Dual-Cluster Diagonalization',
         html: `
             <div class="drawer-desc">
-              <p>The Garner Pipeline is a <strong>4-stage fixed-function arithmetic unit</strong> that
-              reconstructs the full 64-bit integer from k residues in exactly 5 clock cycles (152 ps
-              at 33 GHz). This represents a <strong>30% improvement</strong> over the naïve sequential
-              CRT approach (210 ps).</p>
+              <p>To support full 64-bit integer multiplication without modular overflow across 256-waveguide physical tiles,
+              JANUS implements a <strong>Quadratic Residue Number System (QRNS) dual-cluster architecture</strong>.
+              By choosing moduli m_i where j_i² ≡ −1 (mod m_i), 4 cross-products collapse into <strong>two independent parallel optical streams</strong>
+              (Z⁺ across Cluster 0: Tiles 0–7; Z⁻ across Cluster 1: Tiles 8–15).</p>
             </div>
-            <div class="drawer-section-title">Pipeline Stages</div>
+            <div class="drawer-section-title">Official 8-Modulus QRNS Registry</div>
             <table class="drawer-table">
-              <tr><th>#</th><th>Stage</th><th>Operation</th><th>Latency</th></tr>
-              <tr><td>1</td><td>Coeff-Multiply</td><td>Constant-coefficient modular multiply</td><td>1 cycle</td></tr>
-              <tr><td>2</td><td>Wallace Tree</td><td>Partial product reduction</td><td>1 cycle</td></tr>
-              <tr><td>3</td><td>Kogge-Stone</td><td>Parallel prefix carry-lookahead add</td><td>1 cycle</td></tr>
-              <tr><td>4</td><td>Montgomery Reduce</td><td>Modular reduction to output domain</td><td>2 cycles</td></tr>
+              <tr><th>Modulus (m_i)</th><th>Factorization</th><th>Root j_i</th><th>Dynamic Range</th></tr>
+              <tr><td>m₁ = 241, m₂ = 233, m₃ = 229</td><td>Primes (4k + 1)</td><td>j₁=64, j₂=89, j₃=107</td><td>7.91, 7.86, 7.84 bits</td></tr>
+              <tr><td>m₄ = 221, m₅ = 205</td><td>Composites (13×17, 5×41)</td><td>j₄=21, j₅=32</td><td>7.79, 7.68 bits</td></tr>
+              <tr><td>m₆ = 197, m₇ = 193, m₈ = 181</td><td>Primes (4k + 1)</td><td>j₆=14, j₇=81, j₈=19</td><td>7.62, 7.59, 7.50 bits</td></tr>
             </table>
-            <div class="drawer-section-title">Latency Budget</div>
-            <pre class="drawer-code">Naïve CRT (sequential):   210 ps
-Garner Pipeline (5-stage): 152 ps
-Improvement:               30.5% reduction</pre>
-            <span class="drawer-badge drawer-badge-green">152 ps</span>&nbsp;
-            <span class="drawer-badge drawer-badge-blue">4-STAGE</span>&nbsp;
-            <span class="drawer-badge drawer-badge-amber">30% FASTER</span>
+            <div class="drawer-section-title">CRT Arithmetic Fault Visibility</div>
+            <p>Single residue corruptions amplify into massive global anomalies (|X' − X| ∝ M_j &gt;&gt; |δ|), triggering instant invalidation (P_silent → 0).</p>
+            <span class="drawer-badge drawer-badge-green">EXACT INT64</span>&nbsp;
+            <span class="drawer-badge drawer-badge-blue">M₈ ≈ 4.01 × 10¹⁸</span>&nbsp;
+            <span class="drawer-badge drawer-badge-amber">P_SILENT → 0</span>
           `
       },
       thermal: {
-        title: 'JIR Thermal Controller',
+        title: '3D Z-Axis Thermal Decoupling & Resistance Network',
         html: `
             <div class="drawer-desc">
-              <p>GST-467 phase-change cells are highly sensitive to temperature. Even a few degrees of
-              drift can shift the amorphous-to-crystalline transition point, causing routing errors.
-              The <strong>JIR Thermal Controller</strong> monitors all photonic tile thermal diodes using
-              a ΔΣ ADC and runs a real-time slope estimator to predict thermal runaway before it occurs.</p>
-              <p>When a tile's temperature slope exceeds the safety threshold, the controller
-              <strong>predictively migrates</strong> active computations to redundant tiles without
-              stalling the pipeline — analogous to TI TMP117 / Analog Devices AD7124 firmware.</p>
+              <p>JANUS eliminates planar thermal coupling through a <strong>vertically partitioned 3D Z-axis stack</strong>:
+              CMOS logic (50 µm) → SiO₂ thermal buffer (100 µm) → SiPh routing strata (30 µm each) → Ge/Si APDs (10 µm) → Heat Spreaders (330 µm).
+              Total package height is 0.58–0.64 mm (compatible with 720 µm HBM memory stacks).</p>
             </div>
-            <div class="drawer-section-title">Thermal Control Specs</div>
-            <table class="drawer-table">
-              <tr><th>Parameter</th><th>Value</th></tr>
-              <tr><td>Sensor type</td><td>On-tile thermal diodes</td></tr>
-              <tr><td>ADC type</td><td>ΔΣ (delta-sigma)</td></tr>
-              <tr><td>Sampling rate</td><td>~1 kHz per tile</td></tr>
-              <tr><td>Slope estimator window</td><td>Rolling 4-sample gradient</td></tr>
-              <tr><td>Migration trigger</td><td>Predicted Tcrit within 200 ms</td></tr>
-              <tr><td>Redundant tile count</td><td>4 tiles hot-standby</td></tr>
-            </table>
-            <span class="drawer-badge drawer-badge-amber">THERMAL AWARE</span>&nbsp;
-            <span class="drawer-badge drawer-badge-green">PREDICTIVE MIGRATION</span>
+            <div class="drawer-section-title">Directional Thermal Extraction</div>
+            <ul class="drawer-list">
+              <li>CMOS heat (q_CMOS ↓) routes laterally via perimeter copper shunt to exterior heat sink</li>
+              <li>Photonic heat (q_photonic ↑) pulls upward into HS1 via dense 900,000 mm⁻² Cu–Cu pillar array (R_th,up = 0.18 K/W)</li>
+              <li>SiO₂ buffer diffusion time τ_diff ≈ 11.05 ms completely attenuates CMOS thermal spikes (&gt; 2,200 JIR cycles)</li>
+              <li>Steady-state SiPh rise is bounded to ΔT ≤ 0.41 °C (17× safety margin below ΔT_crit = 5.7 °C)</li>
+            </ul>
+            <span class="drawer-badge drawer-badge-amber">17× THERMAL MARGIN</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">11.05 ms SiO₂ BARRIER</span>
           `
       },
       priority: {
-        title: 'One-Hot Priority Encoder',
+        title: 'Passive Fan-Out & Ge/Si SAC²M Avalanche Photodetection',
         html: `
             <div class="drawer-desc">
-              <p>After photodetection, 256 binary signals arrive simultaneously — exactly one is high.
-              The <strong>One-Hot Priority Encoder</strong> resolves these to an 8-bit index in a single
-              30.3 ps clock cycle using an 8-level binary <em>tournament tree</em> of OR gates.</p>
-              <p>Because the one-hot invariant is guaranteed by the optical layer, arbitration logic is
-              entirely bypassed — a 40% gate reduction compared to a conventional priority encoder.
-              This is architecturally analogous to NVIDIA Hopper's warp scheduler.</p>
+              <p>JANUS replaces noisy in-line optical amplifiers with a master <strong>100 W CW 1064 nm Ytterbium-fiber laser</strong> (91.7% quantum defect efficiency, &gt; 75% WPE)
+              passively split across an 18-stage MMI tree (262,144 ports) to terminal <strong>Ge/Si SAC²M APDs</strong> (105 GHz bandwidth, gain M = 7, F = 2.0).</p>
+              <p>Delivered optical power (−18.59 dBm) provides a robust <strong>+4.61 dB binary detection margin</strong> over practical sensitivity (−23.20 dBm at BER 10⁻¹⁸) with zero ASE noise.</p>
             </div>
-            <div class="drawer-section-title">Tournament Tree Structure</div>
-            <ul class="drawer-list">
-              <li>Level 0: 256 leaves (raw photodetector outputs)</li>
-              <li>Levels 1–7: 128 → 64 → 32 → 16 → 8 → 4 → 2 OR-gate pairs</li>
-              <li>Level 8: single root → 8-bit index output</li>
-              <li>Propagation delay: 1 cycle = 30.3 ps</li>
-            </ul>
-            <div class="drawer-section-title">Gate Efficiency</div>
+            <div class="drawer-section-title">Optical Link Budget</div>
             <table class="drawer-table">
-              <tr><th>Architecture</th><th>Gate Count</th></tr>
-              <tr><td>Conventional priority encoder</td><td>~3400 gates</td></tr>
-              <tr><td>JANUS one-hot encoder</td><td>~2040 gates (−40%)</td></tr>
+              <tr><th>Component</th><th>Loss / Value</th></tr>
+              <tr><td>Laser Launch Power (1064 nm Yb)</td><td>+50.0 dBm (100 W CW)</td></tr>
+              <tr><td>18-Stage MMI Passive Split + Excess Loss</td><td>−68.59 dB total path loss</td></tr>
+              <tr><td>Delivered Power at APD (P_det)</td><td>−18.59 dBm (13.84 µW)</td></tr>
+              <tr><td>APD Sensitivity (BER 10⁻¹⁸)</td><td>−23.20 dBm (4.79 µW)</td></tr>
+              <tr><td>Binary Link Margin</td><td><strong>+4.61 dB (2.88× Power Safety Factor)</strong></td></tr>
             </table>
-            <span class="drawer-badge drawer-badge-blue">30.3 ps</span>&nbsp;
-            <span class="drawer-badge drawer-badge-green">−40% GATES</span>
+            <span class="drawer-badge drawer-badge-blue">1064 nm 100W YB-LASER</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">+4.61 dB MARGIN</span>
           `
       },
       clock: {
-        title: 'Predictive Clock Gating',
+        title: '100 GHz Wave-Pipelined Operating Frequency & Timing',
         html: `
             <div class="drawer-desc">
-              <p>At INT4 precision (k=1 modulus), 31 of 32 compute tiles are idle. Without clock gating
-              this idle circuitry dissipates near-full dynamic power. JANUS's <strong>Predictive Clock
-              Gating Network</strong> pre-gates power domains during weight-loading, eliminating switching
-              activity in idle tiles before the computation window opens.</p>
-              <p>At k=1, <strong>96% of pipeline dynamic power</strong> is saved. This is architecturally
-              equivalent to ARM DynamIQ's per-core power domain isolation and Apple Neural Engine's
-              weight-load pre-gating.</p>
+              <p>In the JANUS wave-pipelined architecture, functional stages along the optical-to-electrical datapath operate concurrently
+              on successive in-flight optical pulses. System throughput clock period is <strong>T_cycle = 10.0 ps (100 GHz)</strong>,
+              bounded by single-stage recovery rather than cumulative transit latency.</p>
             </div>
-            <div class="drawer-section-title">Gating Efficiency by Precision</div>
-            <table class="drawer-table">
-              <tr><th>Precision</th><th>k (moduli)</th><th>Active Tiles</th><th>Power Saved</th></tr>
-              <tr><td>INT4</td><td>1</td><td>1 / 32</td><td>~96%</td></tr>
-              <tr><td>INT8</td><td>2</td><td>2 / 32</td><td>~94%</td></tr>
-              <tr><td>INT16</td><td>4</td><td>4 / 32</td><td>~88%</td></tr>
-              <tr><td>INT64</td><td>8</td><td>8 / 32</td><td>~75%</td></tr>
-            </table>
-            <span class="drawer-badge drawer-badge-green">96% IDLE POWER SAVED</span>&nbsp;
-            <span class="drawer-badge drawer-badge-blue">PREDICTIVE</span>
+            <div class="drawer-section-title">10.0 ps Timing Decomposition</div>
+            <ul class="drawer-list">
+              <li>Electro-Optic Injection (t_mod): ≤ 10.0 ps (τ_FWHM ≈ 3–5 ps Pockels pulse)</li>
+              <li>Photodetector Carrier Clearance (t_PD): 1.52 ps (1 / 2π · 105 GHz APD bandwidth)</li>
+              <li>Electrical Interconnect Delay (t_wire): 1.33 ps (200 µm metal path at 1.5 × 10⁸ m/s)</li>
+              <li>Inter-Pulse Guard Margin (t_guard): 3.50 ps (prevents ISI and dispersion overlap)</li>
+              <li>Two-Phase Time Multiplexing: 5.0 ps half-phases double optical power per active receiver</li>
+              <li>Cumulative Latency: 963 ps (≈ 96 in-flight stages at 100 GHz)</li>
+            </ul>
+            <span class="drawer-badge drawer-badge-blue">100 GHz (10.0 ps)</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">96 IN-FLIGHT STAGES</span>
           `
       },
       fabrication: {
-        title: 'Fabrication & Yield Analysis',
+        title: 'Fabrication, 3D Heterogeneous Packaging & Open Challenges',
         html: `
             <div class="drawer-desc">
-              <p>JANUS uses a <strong>heterogeneous 3D Z-stack</strong>: a silicon photonics (SiPh) die
-              bonded face-to-face onto a CMOS logic die using imec's copper-to-copper (Cu-Cu) die-to-die
-              interconnect at ~250,000 vias/mm². LioniX thermo-optic heaters control waveguide phase,
-              and Ligentec provides the ultra-low-loss Si₃N₄ waveguide platform.</p>
+              <p>JANUS vertically partitions each functional stratum across a specialized 3D heterogeneous stack:
+              50 µm CMOS digital substrate, 100 µm SiO₂ buffer, and 30 µm SiPh routing strata.
+              All tiers occupy a single reticle window (40 mm² Mini, 100 mm² Edge, 300 mm² Datacenter).</p>
             </div>
-            <div class="drawer-section-title">Supply Chain</div>
-            <table class="drawer-table">
-              <tr><th>Component</th><th>Vendor</th><th>Role</th></tr>
-              <tr><td>Si₃N₄ waveguides</td><td>Ligentec</td><td>Low-loss optical routing layer</td></tr>
-              <tr><td>Thermo-optic heaters</td><td>LioniX</td><td>Waveguide phase tuning</td></tr>
-              <tr><td>CMOS logic die</td><td>SCL Mohali (India)</td><td>Backend FSM + CRT pipeline</td></tr>
-              <tr><td>D2D bonding</td><td>imec (Belgium)</td><td>Cu-Cu face-to-face, ~250k vias/mm²</td></tr>
-              <tr><td>Funding</td><td>C2S / India DLI</td><td>Government R&amp;D program</td></tr>
-            </table>
-            <div class="drawer-section-title">3D Stack</div>
+            <div class="drawer-section-title">Open Research Challenges (Intellectual Honesty)</div>
             <ul class="drawer-list">
-              <li>Layer 0 (bottom): CMOS logic — 33 GHz FSM + Garner Pipeline</li>
-              <li>Layer 1 (middle): Cu-Cu D2D bond interface, ~250k vias/mm²</li>
-              <li>Layer 2 (top): Si₃N₄ photonic layer — waveguides, GST-467 cells, heaters</li>
+              <li>1. Five-Stratum SiPh Yield: Characterizing cumulative interlayer via loss and yield across 1.01B switches in Datacenter tier</li>
+              <li>2. Fan-Out Reconciliation: Mapping 1:2¹⁸ passive split outputs to 134M physical detector sites, plus laser RIN-to-BER analysis</li>
+              <li>3. Multi-Fault CRT Bounds: Quantifying closed-form detectability under correlated multi-tile thermal events</li>
             </ul>
-            <span class="drawer-badge drawer-badge-blue">3D HETEROGENEOUS</span>&nbsp;
-            <span class="drawer-badge drawer-badge-green">250k VIAS/mm²</span>&nbsp;
-            <span class="drawer-badge drawer-badge-amber">GOVT FUNDED</span>
+            <span class="drawer-badge drawer-badge-blue">SINGLE RETICLE (300 mm²)</span>&nbsp;
+            <span class="drawer-badge drawer-badge-green">0.64 mm HBM CO-PACKAGED</span>&nbsp;
+            <span class="drawer-badge drawer-badge-amber">OPEN CHALLENGES</span>
           `
       }
     };
@@ -3614,6 +4367,8 @@ Improvement:               30.5% reduction</pre>
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && janusDrawer.classList.contains('open')) closeDrawer();
     });
+
+  })();
   </script>
 </body>
 

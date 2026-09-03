@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JANUS — CMOS Digital Backend</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/universe.css">
+  <script src="../shared/universe.js" defer></script>
+</head>
+<body>
+  <button class="return-btn" type="button">← Return to Universe</button>
+  
+  <div class="container">
+    <header>
+      <h1>CMOS Digital Backend</h1>
+      <div class="subtitle">100 GHz Wave-Pipelined Digital Reconstruction, StrongARM Readout, and Hybrid Partitioning</div>
+      <canvas id="schematicCanvas"></canvas>
+    </header>
+    
+    <div class="content">
+      <p>Many all-optical accelerator proposals attempt to eliminate electronic logic entirely. However, exact arithmetic verification, CRT integer reconstruction, memory coherence, and tile orchestration are fundamentally digital tasks that electronics executes with deterministic perfection. JANUS intentionally adopts a <strong>hybrid architectural philosophy</strong>:</p>
+      
+      <pre>Photonics → Massively Parallel Passive Transport &amp; Waveguide Routing
+CMOS Logic → Deterministic Verification, Control &amp; Exact Integer Reconstruction</pre>
+      
+      <p>This division allows each physical substrate to operate within its native strengths. Photonics delivers massive bandwidth density with zero hold power, while the 50 µm CMOS base die provides deterministic arithmetic verification at a <strong>100 GHz clock rate (10.0 ps cycle period)</strong>.</p>
+      
+      <div class="drawer-section-title">CMOS Subsystem Hardware Map</div>
+      <table class="drawer-table">
+        <tr><th>CMOS Subsystem Block</th><th>Hardware Implementation</th><th>Latency &amp; Power Budget (Datacenter)</th></tr>
+        <tr><td>RNS Forward Decomposition</td><td>Direct combinatorial bias mapper &amp; 8-bit residue generator</td><td>&lt; 5.0 ps / 4.20 W</td></tr>
+        <tr><td>Event-Driven StrongARM Readout</td><td>Clocked dynamic regenerative latches integrated with Ge/Si APDs</td><td>1.52 ps reset / 5.24 W (100 aJ/detection)</td></tr>
+        <tr><td>Carry-Save Accumulator Tree</td><td>80-bit redundant carry-save adder arrays</td><td>10.0 ps wave-pipelined / 14.80 W</td></tr>
+        <tr><td>Fast PRNS / CRT Reconstruction</td><td>Modular dual-cluster inverse mapper (P_real, P_cross) &amp; Garner engine</td><td>210 ps (hidden behind wave-pipelined stages) / 18.03 W</td></tr>
+        <tr><td>JIR Interface &amp; Fault Trap</td><td>Tile scheduler, thermal monitor, and RRNS parity controller</td><td>5 µs polling / 3.00 W</td></tr>
+      </table>
+      
+      <div class="drawer-section-title">Event-Driven Dynamic Latched Readout</div>
+      <p>Scaling to 134,217,728 physical photodetectors in the Datacenter configuration requires extreme mitigation of static power. Conventional continuous transimpedance amplifiers (TIAs) consume ~50 mW per channel, which would draw <strong>30 kW of static power</strong> and destroy the chip thermally.</p>
+      
+      <p>JANUS eliminates TIAs in favor of <strong>event-driven dynamic StrongARM regenerative latches</strong>. Operating on a sparse One-Hot basis (where only 1 in 256 waveguides carries light, spatial activity α = 1/256), hierarchical wake-up gating ensures inactive latches remain asleep. Combined with ultra-low input capacitance (C_int ≤ 3 fF) and column-shared S/H multiplexing, the electrical energy cost is reduced to <strong>≈ 100 aJ (0.1 fJ) per active decision</strong>, bounding total Datacenter detector dynamic power to just <strong>5.24 W</strong>.</p>
+      
+      <div class="drawer-section-title">Wave-Pipelined Digital Integration</div>
+      <ul class="drawer-list">
+        <li><strong>Single-Cycle Ingestion:</strong> Input operands are partitioned and converted into One-Hot spatial commands in a single 10.0 ps cycle slot.</li>
+        <li><strong>Adder-Tree Latency Hiding:</strong> The 210 ps CMOS CRT reconstruction latency is deeply pipelined into 21 sub-stages of 10.0 ps each, executing in parallel with optical transit.</li>
+        <li><strong>Full CMOS Power Breakdown:</strong> Total CMOS power under sustained 100 GHz full-load operation is <strong>2.01 W (Mini)</strong>, <strong>8.50 W (Edge)</strong>, and <strong>37.03 W (Datacenter)</strong>.</li>
+      </ul>
+      
+      <div>
+        <span class="drawer-badge drawer-badge-blue">100 GHz CMOS FSM</span>
+        <span class="drawer-badge drawer-badge-green">100 aJ STRONGARM LATCH</span>
+        <span class="drawer-badge drawer-badge-amber">80-BIT CARRY-SAVE</span>
+        <span class="drawer-badge drawer-badge-gold">HYBRID CO-DESIGN</span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const theme = new URLSearchParams(window.location.search).get('theme') || sessionStorage.getItem('janus-theme') || localStorage.getItem('janus-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    const isDark = theme === 'dark';
+    const accentColor = isDark ? '#5585ff' : '#b87010';
+    const accentRGB = isDark ? '85,133,255' : '184,112,16';
+    const textColor = isDark ? 'rgba(255,255,255,0.92)' : 'rgba(18,12,4,0.92)';
+    
+    const canvas = document.getElementById('schematicCanvas');
+    const ctx = canvas.getContext('2d');
+    let animId = null;
+    
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(230 * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    function drawCmosPipeline(t) {
+      const w = canvas.clientWidth;
+      const h = 230;
+      ctx.clearRect(0, 0, w, h);
+      
+      const pad = 20;
+      const availW = w - pad * 2;
+      const topBlocks = [
+        { name: 'RNS FORWARD\nDECOMPOSER', wFrac: 0.23 },
+        { name: 'STRONGARM\nLATCH READOUT', wFrac: 0.24 },
+        { name: '80-BIT CARRY-SAVE\nACCUMULATOR', wFrac: 0.28 },
+        { name: 'GARNER / QRNS\nCRT RECON', wFrac: 0.25 }
+      ];
+      
+      const bh = 52;
+      const topY = 28;
+      let curX = pad;
+      
+      topBlocks.forEach((b, i) => {
+        const bw = availW * b.wFrac - 10;
+        const pulse = 0.5 + 0.5 * Math.sin(t * 2.2 - i * 0.9);
+        
+        ctx.fillStyle = `rgba(${accentRGB},${0.06 + pulse * 0.08})`;
+        ctx.fillRect(curX, topY, bw, bh);
+        ctx.strokeStyle = `rgba(${accentRGB},${0.45 + pulse * 0.45})`;
+        ctx.lineWidth = 1.4;
+        ctx.strokeRect(curX, topY, bw, bh);
+        
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 8.5px "Space Mono", monospace';
+        ctx.textAlign = 'center';
+        b.name.split('\n').forEach((ln, li) => ctx.fillText(ln, curX + bw / 2, topY + 22 + li * 14));
+        
+        if (i < topBlocks.length - 1) {
+          const nextX = curX + bw + 10;
+          ctx.strokeStyle = `rgba(${accentRGB},0.5)`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(curX + bw, topY + bh / 2);
+          ctx.lineTo(nextX, topY + bh / 2);
+          ctx.stroke();
+        }
+        
+        curX += bw + 10;
+      });
+      
+      // Bottom JIR Fault Trap Block
+      const botW = Math.min(260, availW);
+      const botX = (w - botW) / 2;
+      const botY = 135;
+      const botH = 46;
+      
+      ctx.fillStyle = `rgba(${accentRGB},0.12)`;
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(botX, botY, botW, botH);
+      ctx.strokeRect(botX, botY, botW, botH);
+      
+      ctx.fillStyle = textColor;
+      ctx.font = 'bold 8.5px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('JIR CONTROLLER &amp; REAL-TIME ERROR TRAP', botX + botW / 2, botY + 20);
+      ctx.fillStyle = accentColor;
+      ctx.font = '8px "Space Mono", monospace';
+      ctx.fillText('τ_JIR = 5 µs Cycle | Deterministic Invalidation', botX + botW / 2, botY + 34);
+      
+      // Feedback connectors
+      ctx.strokeStyle = `rgba(${accentRGB},0.4)`;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(pad + availW - 30, topY + bh);
+      ctx.lineTo(botX + botW - 20, botY);
+      ctx.moveTo(botX + 20, botY);
+      ctx.lineTo(pad + 40, topY + bh);
+      ctx.stroke();
+    }
+    
+    function animate() {
+      const t = (Date.now() % 10000) / 1000;
+      drawCmosPipeline(t);
+      animId = requestAnimationFrame(animate);
+    }
+    animate();
+    
+    window.addEventListener('pagehide', () => {
+      if (animId !== null) cancelAnimationFrame(animId);
+    });
+  </script>
+</body>
+</html>

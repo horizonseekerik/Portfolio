@@ -5,165 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>OptiBranch — Three-Lane Architecture</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    *,*::before,*::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html,body { width: 100%; height: 100%; overflow-x: hidden; }
-    body { font-family: 'Cormorant Garamond', serif; -webkit-font-smoothing: antialiased; }
-    
-    body[data-theme="dark"] {
-      background: rgba(8, 8, 12, 0.88);
-      color: rgba(255, 255, 255, 0.9);
-      --accent: #b87010;
-      --accent-rgb: 184,112,16;
-      --border: rgba(175, 118, 18, 0.25);
-    }
-    body[data-theme="light"] {
-      background: rgba(233, 226, 209, 0.92);
-      color: rgba(18, 12, 4, 0.95);
-      --accent: #d4a574;
-      --accent-rgb: 212,165,116;
-      --border: rgba(175, 118, 18, 0.25);
-    }
-    
-    body {
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-    }
-    
-    .container {
-      position: relative;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 2rem 2rem 4rem 2rem;
-      min-height: 100vh;
-    }
-    
-    .return-btn {
-      position: fixed;
-      top: 2rem;
-      right: 2rem;
-      background: rgba(0, 0, 0, 0.1);
-      border: 1.5px solid var(--border);
-      color: var(--accent);
-      font-family: 'Space Mono', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      padding: 0.6rem 1.2rem;
-      cursor: pointer;
-      opacity: 0.65;
-      transition: opacity 0.25s, box-shadow 0.3s;
-      z-index: 100;
-    }
-    .return-btn:hover { opacity: 1; box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.4); }
-    
-    header {
-      margin-bottom: 3rem;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 2rem;
-    }
-    
-    h1 {
-      font-size: 2.8rem;
-      font-weight: 400;
-      font-style: italic;
-      line-height: 1.2;
-      margin-bottom: 1.5rem;
-      color: var(--accent);
-      text-shadow: 0 0 20px rgba(var(--accent-rgb), 0.2);
-    }
-    
-    #schematicCanvas {
-      width: 100%;
-      height: 220px;
-      margin: 1.5rem 0;
-      display: block;
-      border-radius: 4px;
-    }
-    
-    .content { line-height: 1.8; }
-    .content p { margin-bottom: 1.5rem; font-size: 1.02rem; opacity: 0.92; }
-    .content strong { color: var(--accent); font-weight: 600; }
-    
-    .drawer-section-title {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      margin: 2rem 0 1rem 0;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--border);
-      color: var(--accent);
-      opacity: 0.85;
-    }
-    
-    .drawer-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1.5rem 0;
-      font-size: 0.9rem;
-    }
-    .drawer-table th {
-      text-align: left;
-      padding: 0.8rem 0.6rem;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      border-bottom: 2px solid var(--border);
-      color: var(--accent);
-      font-weight: 600;
-    }
-    .drawer-table td {
-      padding: 0.6rem 0.6rem;
-      border-bottom: 1px solid var(--border);
-      opacity: 0.85;
-    }
-    
-    .drawer-badge {
-      display: inline-block;
-      padding: 0.25rem 0.6rem;
-      border-radius: 3px;
-      font-size: 0.65rem;
-      font-family: 'Space Mono', monospace;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-right: 0.6rem;
-      margin-bottom: 0.4rem;
-    }
-    
-    body[data-theme="dark"] .drawer-badge-gold {
-      background: rgba(184, 112, 16, 0.15);
-      color: #d4a574;
-      border: 1px solid rgba(184, 112, 16, 0.35);
-    }
-    body[data-theme="light"] .drawer-badge-gold {
-      background: rgba(184, 112, 16, 0.1);
-      color: #b87010;
-      border: 1px solid rgba(184, 112, 16, 0.3);
-    }
-    
-    body[data-theme="dark"] .drawer-badge-green {
-      background: rgba(72, 199, 116, 0.15);
-      color: #48c774;
-      border: 1px solid rgba(72, 199, 116, 0.3);
-    }
-    body[data-theme="light"] .drawer-badge-green {
-      background: rgba(26, 122, 74, 0.1);
-      color: #1a7a4a;
-      border: 1px solid rgba(26, 122, 74, 0.25);
-    }
-    
-    @media (max-width: 600px) {
-      .container { padding: 1.5rem; }
-      h1 { font-size: 2rem; }
-      .return-btn { padding: 0.5rem 1rem; font-size: 0.65rem; }
-    }
-  </style>
+  <link rel="stylesheet" href="../shared/universe.css">
+  <script src="../shared/universe.js" defer></script>
 </head>
 <body>
-  <button class="return-btn">[ Return to Universe ]</button>
+  <button class="return-btn" type="button">← Return to Universe</button>
   
   <div class="container">
     <header>
@@ -193,18 +39,20 @@
       <div>
         <span class="drawer-badge drawer-badge-gold">3 LANES WDM</span>
         <span class="drawer-badge drawer-badge-green">3× THROUGHPUT</span>
-      </div>
+    </div>
     </div>
   </div>
   
   <script>
-    const theme = localStorage.getItem('janus-theme') || 'dark';
+    const theme = new URLSearchParams(window.location.search).get('theme') || sessionStorage.getItem('janus-theme') || localStorage.getItem('janus-theme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
     document.body.setAttribute('data-theme', theme);
     
     const isDark = theme === 'dark';
-    const accentColor = isDark ? '#b87010' : '#d4a574';
-    const accentRGB = isDark ? '184,112,16' : '212,165,116';
+    const accentColor = isDark ? '#5585ff' : '#b87010';
+    const accentRGB = isDark ? '85,133,255' : '184,112,16';
+    const textColor = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(18,12,4,0.75)';
+    const dimColor = isDark ? 'rgba(85,133,255,0.18)' : 'rgba(184,112,16,0.18)';
     
     const canvas = document.getElementById('schematicCanvas');
     const ctx = canvas.getContext('2d');
@@ -267,6 +115,9 @@
     
     document.querySelector('.return-btn').addEventListener('click', () => {
       window.location.href = '../hi.html';
+    });
+    window.addEventListener('pagehide', () => {
+      if (typeof animId !== 'undefined' && animId !== null) cancelAnimationFrame(animId);
     });
   </script>
 </body>

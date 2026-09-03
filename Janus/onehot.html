@@ -7,231 +7,69 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared/universe.css">
   <script src="../shared/universe.js" defer></script>
-  <style>
-    *,*::before,*::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html,body { width: 100%; height: 100%; overflow-x: hidden; }
-    body { font-family: 'Cormorant Garamond', serif; -webkit-font-smoothing: antialiased; }
-    
-    body[data-theme="dark"] {
-      background: rgba(8, 8, 12, 0.88);
-      color: rgba(255, 255, 255, 0.9);
-      --accent: #5585ff;
-      --accent-rgb: 85,133,255;
-      --border: rgba(80, 130, 255, 0.25);
-      --text-dim: rgba(148, 178, 255, 0.88);
-    }
-    body[data-theme="light"] {
-      background: rgba(233, 226, 209, 0.92);
-      color: rgba(18, 12, 4, 0.95);
-      --accent: #b87010;
-      --accent-rgb: 184,112,16;
-      --border: rgba(175, 118, 18, 0.25);
-      --text-dim: rgba(95, 62, 8, 0.88);
-    }
-    
-    body {
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-    }
-    
-    .container {
-      position: relative;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 2rem 2rem 4rem 2rem;
-      min-height: 100vh;
-    }
-    
-    .return-btn {
-      position: fixed;
-      top: 2rem;
-      right: 2rem;
-      background: rgba(0, 0, 0, 0.1);
-      border: 1.5px solid var(--border);
-      color: var(--accent);
-      font-family: 'Space Mono', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      padding: 0.6rem 1.2rem;
-      cursor: pointer;
-      opacity: 0.65;
-      transition: opacity 0.25s, box-shadow 0.3s;
-      z-index: 100;
-    }
-    .return-btn:hover { opacity: 1; box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.4); }
-    .return-btn:active { opacity: 0.9; }
-    
-    header {
-      margin-bottom: 3rem;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 2rem;
-    }
-    
-    h1 {
-      font-size: 2.8rem;
-      font-weight: 400;
-      font-style: italic;
-      line-height: 1.2;
-      margin-bottom: 1.5rem;
-      color: var(--accent);
-      text-shadow: 0 0 20px rgba(var(--accent-rgb), 0.2);
-    }
-    
-    #schematicCanvas {
-      width: 100%;
-      height: 220px;
-      margin: 1.5rem 0;
-      display: block;
-      border-radius: 4px;
-    }
-    
-    .content {
-      line-height: 1.8;
-    }
-    
-    .content p {
-      margin-bottom: 1.5rem;
-      font-size: 1.02rem;
-      opacity: 0.92;
-    }
-    
-    .content strong {
-      color: var(--accent);
-      font-weight: 600;
-    }
-    
-    .drawer-section-title {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      margin: 2rem 0 1rem 0;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--border);
-      color: var(--accent);
-      opacity: 0.85;
-    }
-    
-    .drawer-list {
-      list-style: none;
-      margin: 0 0 1.5rem 1.5rem;
-    }
-    .drawer-list li {
-      margin-bottom: 0.8rem;
-      font-size: 1rem;
-      opacity: 0.88;
-    }
-    
-    .drawer-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1.5rem 0;
-      font-size: 0.9rem;
-    }
-    .drawer-table th {
-      text-align: left;
-      padding: 0.8rem 0.6rem;
-      font-family: 'Space Mono', monospace;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      border-bottom: 2px solid var(--border);
-      color: var(--accent);
-      font-weight: 600;
-    }
-    .drawer-table td {
-      padding: 0.6rem 0.6rem;
-      border-bottom: 1px solid var(--border);
-      opacity: 0.85;
-    }
-    
-    .drawer-badge {
-      display: inline-block;
-      padding: 0.25rem 0.6rem;
-      border-radius: 3px;
-      font-size: 0.65rem;
-      font-family: 'Space Mono', monospace;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-right: 0.6rem;
-      margin-bottom: 0.4rem;
-    }
-    
-    body[data-theme="dark"] .drawer-badge-blue {
-      background: rgba(80, 125, 255, 0.15);
-      color: #94b2ff;
-      border: 1px solid rgba(80, 125, 255, 0.35);
-    }
-    body[data-theme="light"] .drawer-badge-blue {
-      background: rgba(175, 118, 18, 0.1);
-      color: #b87010;
-      border: 1px solid rgba(175, 118, 18, 0.3);
-    }
-    
-    body[data-theme="dark"] .drawer-badge-green {
-      background: rgba(72, 199, 116, 0.15);
-      color: #48c774;
-      border: 1px solid rgba(72, 199, 116, 0.3);
-    }
-    body[data-theme="light"] .drawer-badge-green {
-      background: rgba(26, 122, 74, 0.1);
-      color: #1a7a4a;
-      border: 1px solid rgba(26, 122, 74, 0.25);
-    }
-    
-    @media (max-width: 600px) {
-      .container { padding: 1.5rem; }
-      h1 { font-size: 2rem; }
-      .return-btn { padding: 0.5rem 1rem; font-size: 0.65rem; }
-    }
-  </style>
 </head>
 <body>
-  <button class="return-btn">[ Return to Universe ]</button>
+  <button class="return-btn" type="button">← Return to Universe</button>
   
   <div class="container">
     <header>
-      <h1>One-Hot Optical RNS Encoding</h1>
+      <h1>One-Hot Optical RNS</h1>
+      <div class="subtitle">Bypassing Analog Amplitude Collapse via 256-Waveguide Spatial Localization</div>
       <canvas id="schematicCanvas"></canvas>
     </header>
     
     <div class="content">
-      <p>Conventional RNS processors sample optical <em>intensity</em> — requiring SNR &gt; 138 dB for 8-bit precision. JANUS sidesteps this entirely: each residue value is encoded as a <strong>spatial waveguide index</strong>, not a signal amplitude.</p>
-      <p>A residue of value v selects exactly waveguide v (out of 256). The detector only asks "is there light or not?" — a binary presence test. This collapses the SNR requirement from 138 dB down to <strong>&gt; 0 dB</strong>, making the system immune to optical noise at the arithmetic level.</p>
+      <p>Conventional optical neural networks accumulate continuous analog optical power, requiring high-resolution analog-to-digital converters (ADCs). For an unreduced 128×128 INT8 matrix accumulation (spanning S_max = 128 × 255 × 255 = <strong>8,323,200 discrete levels</strong>), standard quantization theory demands a minimum SNR of <strong>138.4 dB</strong> (23-bit ADC resolution at 100 GHz). Under shot noise, thermal noise, and multi-GHz bandwidth limits, this analog recovery is physically impossible.</p>
       
-      <div class="drawer-section-title">Encoding Comparison</div>
+      <p>JANUS resolves this contradiction by abandoning optical amplitude representation entirely. Instead of encoding numbers into light intensity, JANUS encodes values as a <strong>spatial waveguide position</strong> using One-Hot Optical Residue Number System (RNS) routing. Photodetection no longer estimates analog magnitude; it answers a binary question: <em>"Does waveguide k contain light?"</em></p>
+      
+      <div class="drawer-section-title">Spatial Encoding vs. Analog Accumulation</div>
       <table class="drawer-table">
-        <tr><th>Scheme</th><th>SNR Required</th><th>Bits</th></tr>
-        <tr><td>Intensity (conventional)</td><td>138 dB</td><td>8-bit</td></tr>
-        <tr><td>One-Hot Spatial (JANUS)</td><td>&gt; 0 dB</td><td>8-bit</td></tr>
+        <tr><th>Metric</th><th>Conventional Analog Photonic MAC</th><th>JANUS One-Hot Spatial RNS</th></tr>
+        <tr><td>Representation</td><td>Continuous optical intensity (P_out = Σ w_i x_i)</td><td>Spatial basis vector e_x ∈ {0,1}²⁵⁶ (1-of-256 waveguides)</td></tr>
+        <tr><td>Required SNR</td><td>138.4 dB (Datacenter 128×128)</td><td>&gt; 0 dB (Binary OOK decision: P_sig &gt; P_sens)</td></tr>
+        <tr><td>ADC Requirement</td><td>23-bit, 100 GHz ADC (Impractical)</td><td>Eliminated (Binary threshold detection)</td></tr>
+        <tr><td>Multiplication Mechanism</td><td>Analog attenuation / coherent interference</td><td>Deterministic spatial waveguide permutation (π_w: x ↦ x·w mod m)</td></tr>
+        <tr><td>Carry Propagation</td><td>Serial carry-lookahead ripple delay</td><td>Carry Propagation Delay → 0 (Independent parallel channels)</td></tr>
+        <tr><td>Detection Threshold</td><td>Millions of discrete voltage levels</td><td>P_th ≈ −23.20 dBm (4.79 µW receiver sensitivity)</td></tr>
+        <tr><td>False Positive Rate</td><td>Unbounded under analog drift</td><td>P_FP ≤ 255 × BER = 255 × 10⁻¹⁸ ≈ 2.55 × 10⁻¹⁶</td></tr>
       </table>
       
-      <div class="drawer-section-title">Properties</div>
+      <div class="drawer-section-title">Optical Routing Interpretation of Multiplication</div>
+      <p>Within JANUS, multiplication by a known weight w_i modulo m_i defines a fixed bijective spatial permutation π_w on the residue elements:</p>
+      <pre>Residue x_i ∈ [0, m_i − 1] ⊆ [0, 255]
+Waveguide Injection: x_i → e_x (One-Hot Select)
+Modular Multiplication: π_w : x_i ↦ (x_i · w_i) mod m_i
+Binary Output: D_k = 1 if light present in channel k, else 0</pre>
+      
+      <p>Optically, a modular multiplication is realized without arithmetic computation: light entering input waveguide x_i is routed deterministically through the non-volatile Beneš switch fabric to exit at output waveguide z_i = (x_i · w_i) mod m_i. Optical energy is conserved spatially (Σ P_i = P_total), eliminating analog loss from weighted attenuation.</p>
+      
+      <div class="drawer-section-title">Active Electro-Optic Injection (LiTaO₃ Pockels)</div>
+      <p>To avoid broadcast-and-attenuate loss, JANUS employs a 1 × 256 active electro-optic micro-ring router at each multiplier input fabricated in <strong>Lithium Tantalate (LiTaO₃)</strong>. Leveraging the linear Pockels effect rather than carrier injection, the router achieves:</p>
       <ul class="drawer-list">
-        <li>256 waveguides per modulus lane → 256 distinct residue values</li>
-        <li>Exactly one lane active at any time (one-hot invariant)</li>
-        <li>Detector reads: active lane index = residue value</li>
-        <li>Tolerates &gt; 50% optical crosstalk without arithmetic error</li>
+        <li><strong>Ultra-Low Dynamic Energy:</strong> ≈ 50 aJ per switch transition at 100 GHz.</li>
+        <li><strong>Datacenter Router Power:</strong> Total power across 134 million active routers is bounded to P_router = 134×10⁶ × 50 aJ × 100 GHz ≈ <strong>8.19 W</strong>.</li>
+        <li><strong>Single-Carrier Coherence:</strong> Light is injected exclusively into the active One-Hot channel; dark channels receive zero power, preserving carrier phase coherence across all branches (Δϕ_source ≈ 0).</li>
       </ul>
       
       <div>
-        <span class="drawer-badge drawer-badge-blue">SPATIAL ENCODING</span>
-        <span class="drawer-badge drawer-badge-green">NOISE IMMUNE</span>
+        <span class="drawer-badge drawer-badge-blue">1-OF-256 ONE-HOT</span>
+        <span class="drawer-badge drawer-badge-green">SNR &gt; 0 dB (BINARY)</span>
+        <span class="drawer-badge drawer-badge-amber">LiTaO₃ 50 aJ ROUTER</span>
+        <span class="drawer-badge drawer-badge-gold">CARRY DELAY → 0</span>
       </div>
     </div>
   </div>
   
   <script>
-    const theme = new URLSearchParams(window.location.search).get('theme') || 'dark';
+    const theme = new URLSearchParams(window.location.search).get('theme') || sessionStorage.getItem('janus-theme') || localStorage.getItem('janus-theme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
     document.body.setAttribute('data-theme', theme);
     
     const isDark = theme === 'dark';
     const accentColor = isDark ? '#5585ff' : '#b87010';
     const accentRGB = isDark ? '85,133,255' : '184,112,16';
-    const textColor = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(18,12,4,0.7)';
+    const textColor = isDark ? 'rgba(255,255,255,0.92)' : 'rgba(18,12,4,0.92)';
     
     const canvas = document.getElementById('schematicCanvas');
     const ctx = canvas.getContext('2d');
@@ -239,80 +77,96 @@
     
     function resizeCanvas() {
       const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.parentElement.getBoundingClientRect();
-      canvas.style.width = rect.width + 'px';
-      canvas.style.height = '220px';
+      const rect = canvas.getBoundingClientRect();
       canvas.width = Math.round(rect.width * dpr);
-      canvas.height = Math.round(220 * dpr);
-      ctx.scale(dpr, dpr);
+      canvas.height = Math.round(230 * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
-    function drawLanes(t) {
-      const w = canvas.width / (window.devicePixelRatio || 1);
-      const h = 220;
+    function drawOneHotLanes(t) {
+      const w = canvas.clientWidth;
+      const h = 230;
       ctx.clearRect(0, 0, w, h);
       
-      const laneCount = 8;
-      const laneW = w / laneCount;
-      const activeLane = Math.floor((t * 2) % laneCount);
+      const numLanes = 8;
+      const startY = 24;
+      const laneH = (h - 48) / (numLanes - 1);
+      const activeLane = Math.floor((t * 1.5) % numLanes);
       
-      for (let i = 0; i < laneCount; i++) {
-        const lx = i * laneW;
+      for (let i = 0; i < numLanes; i++) {
+        const y = startY + i * laneH;
         const isActive = i === activeLane;
         
         ctx.save();
-        ctx.strokeStyle = isActive ? accentColor : `rgba(${accentRGB},0.25)`;
-        ctx.lineWidth = isActive ? 3 : 1.5;
+        if (isActive) {
+          ctx.strokeStyle = accentColor;
+          ctx.lineWidth = 2.4;
+          ctx.shadowColor = accentColor;
+          ctx.shadowBlur = 8;
+        } else {
+          ctx.strokeStyle = `rgba(${accentRGB},0.16)`;
+          ctx.lineWidth = 1;
+        }
+        
         ctx.beginPath();
-        ctx.moveTo(lx + 8, 20);
-        ctx.lineTo(lx + 8, h - 20);
+        ctx.moveTo(90, y);
+        ctx.lineTo(w - 95, y);
         ctx.stroke();
         ctx.restore();
         
-        if (isActive) {
-          const pulse = 0.5 + 0.5 * Math.sin(t * Math.PI * 2);
-          const glowRad = 30 * pulse;
-          const grad = ctx.createRadialGradient(lx + 8, h / 2, 0, lx + 8, h / 2, glowRad);
-          grad.addColorStop(0, `rgba(${accentRGB},${pulse * 0.6})`);
-          grad.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = grad;
-          ctx.fillRect(lx - glowRad, h / 2 - glowRad, glowRad * 2, glowRad * 2);
-          
-          ctx.save();
-          ctx.fillStyle = '#fff';
-          ctx.beginPath();
-          ctx.arc(lx + 8, h / 2, 6, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
+        // Input labels
+        ctx.fillStyle = isActive ? accentColor : textColor;
+        ctx.font = isActive ? 'bold 8.5px "Space Mono", monospace' : '8px "Space Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`WG[${i}] (e_${i})`, 80, y + 3);
         
+        // Output detector indicators
         ctx.save();
-        ctx.fillStyle = textColor;
-        ctx.font = '7px "Space Mono", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText((i + 1).toString(), lx + laneW / 2, h - 4);
+        if (isActive) {
+          ctx.fillStyle = accentColor;
+          ctx.shadowColor = accentColor;
+          ctx.shadowBlur = 10;
+          ctx.fillRect(w - 85, y - 8, 38, 16);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 8px "Space Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('D=1', w - 66, y + 3.5);
+        } else {
+          ctx.strokeStyle = `rgba(${accentRGB},0.35)`;
+          ctx.strokeRect(w - 85, y - 8, 38, 16);
+          ctx.fillStyle = `rgba(${accentRGB},0.5)`;
+          ctx.font = '8px "Space Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('D=0', w - 66, y + 3.5);
+        }
         ctx.restore();
       }
       
-      ctx.save();
-      ctx.fillStyle = textColor;
-      ctx.font = '10px "Space Mono", monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('ONE-HOT RESIDUE LANE SELECTOR', w / 2, 12);
-      ctx.restore();
+      // Moving pulse along active lane
+      const activeY = startY + activeLane * laneH;
+      const pulseX = 90 + (((t * 220) % (w - 185)));
+      
+      const glow = ctx.createRadialGradient(pulseX, activeY, 0, pulseX, activeY, 14);
+      glow.addColorStop(0, '#ffffff');
+      glow.addColorStop(0.35, accentColor);
+      glow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(pulseX, activeY, 14, 0, Math.PI * 2);
+      ctx.fill();
     }
     
     function animate() {
-      const t = (Date.now() % 4000) / 1000;
-      drawLanes(t);
+      const t = (Date.now() % 10000) / 1000;
+      drawOneHotLanes(t);
       animId = requestAnimationFrame(animate);
     }
     animate();
     
-    document.querySelector('.return-btn').addEventListener('click', () => {
-      window.location.href = '../hi.html';
+    window.addEventListener('pagehide', () => {
+      if (animId !== null) cancelAnimationFrame(animId);
     });
   </script>
 </body>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JANUS — 100 GHz Wave-Pipelining</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/universe.css">
+  <script src="../shared/universe.js" defer></script>
+</head>
+<body>
+  <button class="return-btn" type="button">← Return to Universe</button>
+  
+  <div class="container">
+    <header>
+      <h1>100 GHz Wave-Pipelining</h1>
+      <div class="subtitle">Concurrent In-Flight Optical Transport, 10.0 ps Cycle Budget, and Two-Phase Time Multiplexing</div>
+      <canvas id="schematicCanvas"></canvas>
+    </header>
+    
+    <div class="content">
+      <p>In conventional electronic architectures, cycle time is bounded by the cumulative sum of logic path delays. In the JANUS <strong>wave-pipelined architecture</strong>, functional stages along the optical-to-electrical datapath are physically decoupled in space, operating concurrently on successive in-flight optical pulses traveling through the waveguide mesh.</p>
+      
+      <p>Consequently, the system throughput clock period (<strong>T_cycle = 10.0 ps, f_clk = 100 GHz</strong>) is not constrained by the cumulative optical propagation delay (~750 ps), but is strictly bounded by the bottleneck single-stage clearance and recovery interval.</p>
+      
+      <div class="drawer-section-title">10.0 ps Timing Boundary Decomposition</div>
+      <p>The 100 GHz clock period satisfies T_cycle = max(t_mod, t_PD, t_wire, t_guard) ≤ 10.0 ps, where each physical mechanism completes inside its allocated timing budget:</p>
+      <table class="drawer-table">
+        <tr><th>Physical Mechanism</th><th>Hardware Allocation</th><th>Timing Duration</th><th>Functional Guarantee</th></tr>
+        <tr><td>1. Electro-Optic Injection (t_mod)</td><td>LiTaO₃ Pockels Micro-Ring Routers</td><td>≤ 10.0 ps (τ_FWHM ≈ 3–5 ps)</td><td>Injects transform-limited optical pulse into active One-Hot channel</td></tr>
+        <tr><td>2. Photodetector Carrier Clearance (t_PD)</td><td>Ge/Si SAC²M Avalanche Photodiodes</td><td>1.52 ps (1 / 2π · 105 GHz)</td><td>Carriers clear multiplication cliff before next pulse arrival</td></tr>
+        <tr><td>3. Electrical Wire Delay (t_wire)</td><td>200 µm On-Chip Metal Interconnect</td><td>1.33 ps (v ≈ 1.5 × 10⁸ m/s)</td><td>StrongARM latch output propagation to local register file</td></tr>
+        <tr><td>4. Inter-Pulse Guard Margin (t_guard)</td><td>Waveguide Propagation Window</td><td>3.50 ps Margin</td><td>Prevents Inter-Symbol Interference (ISI) and dispersion overlap</td></tr>
+      </table>
+      
+      <div class="drawer-section-title">Two-Phase Time-Multiplexing Strategy</div>
+      <p>To conserve optical laser power and eliminate an entire stage of passive splitting, the 10.0 ps clock cycle is time-multiplexed into two discrete <strong>5.0 ps half-phases</strong>:</p>
+      <ul class="drawer-list">
+        <li><strong>Sequential Illumination:</strong> At any instantaneous moment (within a single 5 ps phase), only half of the photodetectors (262,144) are actively illuminated. Optical energy is steered sequentially rather than split simultaneously, <strong>doubling the delivered optical intensity per receiver</strong>.</li>
+        <li><strong>Full Cycle Resolution:</strong> Over the complete 10.0 ps clock cycle, all 524,288 active detection events across 32 tiles are resolved.</li>
+      </ul>
+      
+      <div class="drawer-section-title">Pipelining vs. End-to-End Latency Clarification</div>
+      <p>The 10.0 ps cycle represents the <em>throughput interval</em> (the rate at which successive matrix vectors enter the fabric), while single-computation end-to-end latency accumulates across the physical stack:</p>
+      <pre>1. PCM Beneš Optical Propagation (15 stages):    t_opt  ≈ 750.00 ps
+2. Ge/Si SAC²M Photodetector Clearance:          t_PD   ≈   1.52 ps
+3. Local Metal Interconnect Delay:               t_wire ≈   1.33 ps
+4. CMOS CRT Accumulator &amp; Reconstruction Tree:   t_CRT  ≈ 210.00 ps
+---------------------------------------------------------------------
+Total Cumulative End-to-End Latency:             T_lat  ≈ 962.85 ps (≈ 963 ps)</pre>
+      
+      <p>This 963 ps latency corresponds to an effective wave-pipelined depth of <strong>≈ 96 in-flight computation stages</strong> at 100 GHz, sustaining full throughput without pipeline bubbles.</p>
+      
+      <div>
+        <span class="drawer-badge drawer-badge-blue">100 GHz (10.0 ps CYCLE)</span>
+        <span class="drawer-badge drawer-badge-green">5.0 ps TWO-PHASE MUX</span>
+        <span class="drawer-badge drawer-badge-amber">96 IN-FLIGHT STAGES</span>
+        <span class="drawer-badge drawer-badge-gold">963 ps END-TO-END</span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const theme = new URLSearchParams(window.location.search).get('theme') || sessionStorage.getItem('janus-theme') || localStorage.getItem('janus-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    const isDark = theme === 'dark';
+    const accentColor = isDark ? '#5585ff' : '#b87010';
+    const accentRGB = isDark ? '85,133,255' : '184,112,16';
+    const textColor = isDark ? 'rgba(255,255,255,0.92)' : 'rgba(18,12,4,0.92)';
+    
+    const canvas = document.getElementById('schematicCanvas');
+    const ctx = canvas.getContext('2d');
+    let animId = null;
+    
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(230 * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    function drawTimingSlots(t) {
+      const w = canvas.clientWidth;
+      const h = 230;
+      ctx.clearRect(0, 0, w, h);
+      
+      const padX = 25;
+      const totalSlotW = w - padX * 2;
+      const startX = padX, startY = 44;
+      const slotH = 55;
+      
+      const slots = [
+        { name: 't_mod (Pockels)\n3–5 ps FWHM', wFrac: 0.35, color: `rgba(${accentRGB},0.2)` },
+        { name: 't_PD (APD Clear)\n1.52 ps', wFrac: 0.18, color: isDark ? 'rgba(72,199,116,0.25)' : 'rgba(26,122,74,0.25)' },
+        { name: 't_wire (Wire)\n1.33 ps', wFrac: 0.15, color: `rgba(${accentRGB},0.15)` },
+        { name: 't_guard (ISI)\n3.50 ps', wFrac: 0.32, color: 'rgba(128,128,128,0.18)' }
+      ];
+      
+      let curX = startX;
+      slots.forEach(s => {
+        const sw = totalSlotW * s.wFrac;
+        ctx.fillStyle = s.color;
+        ctx.fillRect(curX, startY, sw, slotH);
+        ctx.strokeStyle = `rgba(${accentRGB},0.45)`;
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(curX, startY, sw, slotH);
+        
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 8.5px "Space Mono", monospace';
+        ctx.textAlign = 'center';
+        s.name.split('\n').forEach((ln, li) => ctx.fillText(ln, curX + sw / 2, startY + 22 + li * 15));
+        
+        curX += sw;
+      });
+      
+      // Top 10.0 ps Clock Bracket
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(startX, startY - 10);
+      ctx.lineTo(startX, startY - 18);
+      ctx.lineTo(startX + totalSlotW, startY - 18);
+      ctx.lineTo(startX + totalSlotW, startY - 10);
+      ctx.stroke();
+      
+      ctx.fillStyle = accentColor;
+      ctx.font = 'bold 9px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('10.0 ps SYSTEM CLOCK PERIOD (100 GHz)', startX + totalSlotW / 2, startY - 24);
+      
+      // In-flight Pulse Wave
+      const pipeY = 150;
+      ctx.strokeStyle = `rgba(${accentRGB},0.3)`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(startX, pipeY);
+      ctx.lineTo(startX + totalSlotW, pipeY);
+      ctx.stroke();
+      
+      const numPulses = 6;
+      for (let i = 0; i < numPulses; i++) {
+        const pulseProgress = ((t * 1.5 + i / numPulses) % 1);
+        const px = startX + pulseProgress * totalSlotW;
+        
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = accentColor;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(px, pipeY, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      
+      ctx.fillStyle = textColor;
+      ctx.font = '8px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('96 CONCURRENT IN-FLIGHT STAGES (750 ps OPTICAL + 210 ps CRT)', w / 2, h - 14);
+    }
+    
+    function animate() {
+      const t = (Date.now() % 10000) / 1000;
+      drawTimingSlots(t);
+      animId = requestAnimationFrame(animate);
+    }
+    animate();
+    
+    window.addEventListener('pagehide', () => {
+      if (animId !== null) cancelAnimationFrame(animId);
+    });
+  </script>
+</body>
+</html>

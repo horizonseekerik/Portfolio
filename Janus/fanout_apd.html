@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JANUS — Passive Fan-Out &amp; APD Array</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/universe.css">
+  <script src="../shared/universe.js" defer></script>
+</head>
+<body>
+  <button class="return-btn" type="button">← Return to Universe</button>
+  
+  <div class="container">
+    <header>
+      <h1>Passive Fan-Out &amp; APD Array</h1>
+      <div class="subtitle">High-Power 1064 nm Carrier Distribution, Noise-Free Passive Splitting, and +4.61 dB Link Closure</div>
+      <canvas id="schematicCanvas"></canvas>
+    </header>
+    
+    <div class="content">
+      <p>Conventional optical accelerators propose embedding intermediate optical amplifiers (such as SOAs) within the optical datapath. However, semiconductor optical amplifiers consume over <strong>30 kW of electrical bias power</strong> across a large-scale mesh and introduce fatal Amplified Spontaneous Emission (ASE) noise (σ²_ASE ∝ G·n_sp·B) that irreversibly degrades signal fidelity. Similarly, microring parametric amplifiers encounter a fundamental Quality Factor versus Bandwidth Wall (Q ≤ 3,200 for 100 GHz pulses), failing under energy conservation bounds.</p>
+      
+      <p>JANUS eliminates in-line optical amplification entirely. Instead, a master high-power <strong>1064 nm continuous-wave Ytterbium-doped fiber laser</strong> (100 W / +50.0 dBm in Datacenter, WPE &gt; 75%) passively distributes carrier light across a <strong>1 : 2¹⁸ optical splitting tree</strong> to terminal high-speed <strong>Ge/Si SAC²M avalanche photodetectors (APDs)</strong>, achieving link closure with a robust <strong>+4.61 dB binary detection margin</strong> and zero ASE noise.</p>
+      
+      <div class="drawer-section-title">Wavelength Selection: 1064 nm Yb-Fiber vs. 1550 nm Erbium</div>
+      <table class="drawer-table">
+        <tr><th>Parameter</th><th>1550 nm Telecom C-Band (EDFA)</th><th>1064 nm Ytterbium-Doped Fiber Laser (JANUS)</th></tr>
+        <tr><td>Pump / Signal Wavelength</td><td>976 nm pump → 1550 nm signal</td><td>976 nm pump → 1064 nm signal</td></tr>
+        <tr><td>Quantum Defect Ratio (η_QD)</td><td>62.9% (37.1% converted to heat)</td><td><strong>91.7% (Only 8.3% Quantum Defect Heat)</strong></td></tr>
+        <tr><td>Thermal Lensing at 100 W CW</td><td>Severe core damage &amp; mode instability (&gt;60 W heat)</td><td>Negligible thermal degradation (&lt;9 W heat)</td></tr>
+        <tr><td>Wall-Plug Efficiency (WPE)</td><td>30% – 45%</td><td><strong>&gt; 75% Wall-Plug Efficiency</strong></td></tr>
+        <tr><td>Waveguide Loss in Si₃N₄</td><td>&lt; 0.1 dB/cm</td><td>&lt; 0.1 dB/cm</td></tr>
+      </table>
+      
+      <div class="drawer-section-title">1 : 2¹⁸ Passive Distribution Budget &amp; Link Margin</div>
+      <p>The optical carrier is distributed across 18 cascaded 1 : 2 multimode interference (MMI) splitters (N = 262,144 output ports):</p>
+      <pre>Ideal 18-Stage Splitting Loss:   L_split = 10·log₁₀(2¹⁸) ≈ 54.19 dB
+Excess Insertion &amp; Path Loss:    L_excess = 5.40 dB (MMI) + 7.50 dB (15-stage Beneš) + 1.50 dB (coupling) = 14.40 dB
+Total End-to-End Loss:           L_total = 54.19 dB + 14.40 dB = 68.59 dB
+
+Delivered Terminal Power:        P_det = +50.0 dBm − 68.59 dB = −18.59 dBm (13.84 µW)
+Receiver Sensitivity (BER 10⁻¹⁸): P_sens,practical ≈ −23.20 dBm (4.79 µW)
+Net Binary Detection Margin:     Margin = (−18.59 dBm) − (−23.20 dBm) = +4.61 dB (2.88× Power Safety Factor)</pre>
+      
+      <div class="drawer-section-title">Ge/Si SAC²M Avalanche Photodetector Physics</div>
+      <p>Terminal detection uses Separate-Absorption-Charge-Cliff-Multiplication (SAC²M) Ge/Si avalanche photodetectors:</p>
+      <ul class="drawer-list">
+        <li><strong>Low Excess Noise:</strong> Confining impact ionization to a pure silicon cliff layer achieves an ionization ratio of k ≈ 0.06. At gain M = 7, the McIntyre excess noise factor is F(M) ≈ 2.0 (far below conventional InGaAs APDs where F &gt; 5).</li>
+        <li><strong>Ultra-High Bandwidth:</strong> Gain–bandwidth product of <strong>441 GHz</strong> with an inherent 3 dB receiver bandwidth of <strong>105 GHz</strong>, comfortably resolving 100 GHz optical pulses.</li>
+        <li><strong>Fast Carrier Clearance:</strong> Photogenerated carriers clear the multiplication cliff in t_PD = 1 / (2π · 105 GHz) ≈ <strong>1.52 ps</strong>, enabling complete reset well within the 10.0 ps repetition slot.</li>
+        <li><strong>TIA-Less Direct Coupling:</strong> The SAC²M APD directly drives the sub-femtofarad input gate of a clocked StrongARM regenerative latch, completely removing continuous-time transimpedance amplifiers and saving &gt; 30 kW of static receiver power across the array.</li>
+      </ul>
+      
+      <div>
+        <span class="drawer-badge drawer-badge-blue">1064 nm 100W YB-LASER</span>
+        <span class="drawer-badge drawer-badge-green">+4.61 dB LINK MARGIN</span>
+        <span class="drawer-badge drawer-badge-amber">105 GHz SAC²M APD</span>
+        <span class="drawer-badge drawer-badge-gold">ZERO ASE NOISE</span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const theme = new URLSearchParams(window.location.search).get('theme') || sessionStorage.getItem('janus-theme') || localStorage.getItem('janus-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    const isDark = theme === 'dark';
+    const accentColor = isDark ? '#5585ff' : '#b87010';
+    const accentRGB = isDark ? '85,133,255' : '184,112,16';
+    const textColor = isDark ? 'rgba(255,255,255,0.92)' : 'rgba(18,12,4,0.92)';
+    
+    const canvas = document.getElementById('schematicCanvas');
+    const ctx = canvas.getContext('2d');
+    let animId = null;
+    
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(230 * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    function drawApdPhysics(t) {
+      const w = canvas.clientWidth;
+      const h = 230;
+      ctx.clearRect(0, 0, w, h);
+      
+      const startX = 30;
+      const apdW = w - 60;
+      const startY = 24;
+      
+      const subLayers = [
+        { name: 'p+ Contact (Germanium Absorption Layer — 1064 nm)', h: 36, color: `rgba(${accentRGB},0.15)` },
+        { name: 'p-Charge Layer (Electric Field Shaping)', h: 26, color: `rgba(${accentRGB},0.22)` },
+        { name: 'Silicon Multiplication Cliff (Impact Ionization: k=0.06, M=7, F=2.0)', h: 42, color: isDark ? 'rgba(72,199,116,0.25)' : 'rgba(26,122,74,0.25)' },
+        { name: 'n+ Silicon Substrate (High-Speed Cathode & StrongARM Latch)', h: 32, color: `rgba(${accentRGB},0.12)` }
+      ];
+      
+      let cy = startY;
+      subLayers.forEach(l => {
+        ctx.fillStyle = l.color;
+        ctx.fillRect(startX, cy, apdW, l.h);
+        ctx.strokeStyle = `rgba(${accentRGB},0.45)`;
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(startX, cy, apdW, l.h);
+        
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 8.5px "Space Mono", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(l.name, startX + 14, cy + l.h / 2 + 3);
+        
+        cy += l.h;
+      });
+      
+      // Photons entering from top
+      const numPhotons = 6;
+      const pulsePhase = (t * 2.2) % 1;
+      for (let i = 0; i < numPhotons; i++) {
+        const px = startX + 50 + i * ((apdW - 100) / (numPhotons - 1));
+        const py = startY + pulsePhase * 80;
+        
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = accentColor;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(px, py, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      
+      ctx.fillStyle = accentColor;
+      ctx.font = 'bold 8.5px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('Ge/Si SAC²M APD: 105 GHz Bandwidth | t_PD = 1.52 ps Carrier Clearance | Margin = +4.61 dB', w / 2, h - 10);
+    }
+    
+    function animate() {
+      const t = (Date.now() % 10000) / 1000;
+      drawApdPhysics(t);
+      animId = requestAnimationFrame(animate);
+    }
+    animate();
+    
+    window.addEventListener('pagehide', () => {
+      if (animId !== null) cancelAnimationFrame(animId);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JANUS — Physical Constraints &amp; Scaling Failures</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/universe.css">
+  <script src="../shared/universe.js" defer></script>
+</head>
+<body>
+  <button class="return-btn" type="button">← Return to Universe</button>
+  
+  <div class="container">
+    <header>
+      <h1>Physical Constraints &amp; Scaling Failures</h1>
+      <div class="subtitle">Mathematical Derivations of the Five Fundamental Scaling Contradictions in Analog Photonic Accelerators</div>
+      <canvas id="schematicCanvas"></canvas>
+    </header>
+    
+    <div class="content">
+      <p>The foundational thesis of <strong>JANUS</strong> is that large-scale photonic AI acceleration cannot emerge from incremental improvements to conventional analog architectures. Analog optical computing encounters five insurmountable thermodynamic, informational, and optical scaling contradictions when extended to high-dimensional exact arithmetic.</p>
+      
+      <div class="drawer-section-title">1. Analog Precision Collapse in Photonic Accumulation</div>
+      <p>Consider an unreduced N × N photonic matrix multiplication involving 8-bit activations and 8-bit weights. The maximum unreduced analog accumulation value scales as S_max = N × 255 × 255:</p>
+      <pre>Mini Tier (32 × 32):         S_max = 32 × 65,025 = 2,080,800     → SNR_req = 126.4 dB (21-bit ADC)
+Edge Tier (64 × 64):         S_max = 64 × 65,025 = 4,161,600     → SNR_req = 132.4 dB (22-bit ADC)
+Datacenter Tier (128 × 128): S_max = 128 × 65,025 = 8,323,200    → SNR_req = 138.4 dB (23-bit ADC)</pre>
+      <p>Under Shannon channel capacity (C = B·log₂(1 + SNR)), resolving 8.3 million discrete analog states at 100 GHz operating frequencies exceeds realistic detector and ADC limits by orders of magnitude.</p>
+      
+      <div class="drawer-section-title">2. Static Thermal Power Explosion in Thermo-Optic Routing</div>
+      <p>Conventional silicon photonic switching fabrics use thermo-optic Mach–Zehnder Interferometers (MZIs) requiring continuous resistive heating (P_MZI ≈ 0.10 mW per switch). Across N_tiles = 32 tiles with 15-stage Beneš fabrics (1,920 switches per multiplier):</p>
+      <table class="drawer-table">
+        <tr><th>Configuration</th><th>Mesh Dimension</th><th>Total Physical Switches</th><th>Continuous Static Power</th><th>Feasibility</th></tr>
+        <tr><td>Mini Tier</td><td>32 × 32</td><td>62,914,560 Switches</td><td><strong>6.29 kW</strong></td><td>Thermally Impractical</td></tr>
+        <tr><td>Edge Tier</td><td>64 × 64</td><td>251,658,240 Switches</td><td><strong>25.16 kW</strong></td><td>Thermally Impractical</td></tr>
+        <tr><td>Datacenter Tier</td><td>128 × 128</td><td>1,006,632,960 Switches</td><td><strong>100.66 kW</strong></td><td>Physical Thermal Barrier</td></tr>
+      </table>
+      <p>Dissipating 100 kW across a 300 mm² die induces catastrophic lateral heat diffusion (Δn = (dn/dT)·ΔT), destabilizing the refractive index and forcing continuous O(N²) calibration loops.</p>
+      
+      <div class="drawer-section-title">3. Nonlinear Spectral Failure in DWDM Scaling</div>
+      <p>Dense Wavelength-Division Multiplexing (DWDM) introduces Kerr nonlinearities (n = n₀ + n₂I) that scale superlinearly with launch power (P_NL ∝ γ·P³·L²). Four-Wave Mixing (FWM) creates parasitic ghost frequencies (ω_FWM = ω₁ + ω₂ − ω₃) that corrupt adjacent computational channels before detection.</p>
+      
+      <div class="drawer-section-title">4. Optical Propagation Loss &amp; Amplifier Noise (ASE)</div>
+      <p>Passive optical path attenuation across a 15-stage routing fabric approaches L_total ≈ 30–50 dB. Inserting semiconductor optical amplifiers (SOAs) introduces Amplified Spontaneous Emission (ASE) noise (σ²_ASE ∝ G·n_sp·B), degrading signal-to-noise ratio (SNR_out &lt; SNR_in) and causing unrecoverable arithmetic errors.</p>
+      
+      <div class="drawer-section-title">5. Dynamic Thermal Drift &amp; Calibration Overhead</div>
+      <p>Silicon thermo-optic coefficient (dn/dT ≈ 1.86 × 10⁻⁴ K⁻¹) causes thermal phase drift Δϕ = (2πL/λ)(dn/dT)ΔT. Because digital activity spikes produce dynamic temperature gradients, the transfer matrix becomes non-stationary (H(t) ≠ H(t + Δt)), trapping accelerators in permanent recalibration cycles.</p>
+      
+      <div class="drawer-section-title">Constraint Compliance Summary</div>
+      <table class="drawer-table">
+        <tr><th>Physical Constraint</th><th>Conventional Analog Failure</th><th>JANUS Architectural Resolution</th></tr>
+        <tr><td>Shannon Information Limit</td><td>138.4 dB required SNR</td><td><strong>One-Hot binary spatial localization (SNR &gt; 0 dB)</strong></td></tr>
+        <tr><td>Static Hold Power</td><td>100.67 kW heater dissipation</td><td><strong>Non-volatile Sb₂Se₃ PCM routing (0 W hold power)</strong></td></tr>
+        <tr><td>Nonlinear Mixing</td><td>FWM &amp; XPM ghost channels</td><td><strong>Single-wavelength coherent fanout (N_λ = 1)</strong></td></tr>
+        <tr><td>Amplifier Noise</td><td>ASE noise accumulation</td><td><strong>High-power 1064 nm passive fan-out + SAC²M APD (+4.61 dB margin)</strong></td></tr>
+        <tr><td>Thermal Phase Drift</td><td>Continuous O(N²) recalibration</td><td><strong>3D Z-axis thermal isolation (17× stability margin)</strong></td></tr>
+        <tr><td>Silent Fault Corruption</td><td>Graceful numerical drift</td><td><strong>CRT inconsistency amplification (P_silent → 0)</strong></td></tr>
+      </table>
+      
+      <div>
+        <span class="drawer-badge drawer-badge-blue">138.4 dB SNR COLLAPSE</span>
+        <span class="drawer-badge drawer-badge-green">100 kW HEAT REMOVED</span>
+        <span class="drawer-badge drawer-badge-amber">FWM SUPPRESSED</span>
+        <span class="drawer-badge drawer-badge-gold">0 W STATIC HOLD</span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const theme = new URLSearchParams(window.location.search).get('theme') || sessionStorage.getItem('janus-theme') || localStorage.getItem('janus-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    const isDark = theme === 'dark';
+    const accentColor = isDark ? '#5585ff' : '#b87010';
+    const accentRGB = isDark ? '85,133,255' : '184,112,16';
+    const textColor = isDark ? 'rgba(255,255,255,0.92)' : 'rgba(18,12,4,0.92)';
+    
+    const canvas = document.getElementById('schematicCanvas');
+    const ctx = canvas.getContext('2d');
+    let animId = null;
+    
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(230 * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    function drawConstraints(t) {
+      const w = canvas.clientWidth;
+      const h = 230;
+      ctx.clearRect(0, 0, w, h);
+      
+      const pairs = [
+        { failure: '138.4 dB SNR Collapse', resolution: 'One-Hot (SNR > 0 dB)' },
+        { failure: '100.67 kW Static Heat', resolution: '0 W GST-467 PCM' },
+        { failure: 'FWM / XPM Nonlinearity', resolution: 'Single-λ (1064 nm)' },
+        { failure: 'SOA Noise (ASE)', resolution: 'Passive Fan-Out (+4.61 dB)' },
+        { failure: 'Thermal Phase Drift', resolution: '3D Z-Axis Thermal Decoupling' }
+      ];
+      
+      const n = pairs.length;
+      const rowH = 34;
+      const startY = 18;
+      const colW = (w - 70) / 2;
+      
+      pairs.forEach((p, i) => {
+        const y = startY + i * (rowH + 6);
+        const pulse = 0.5 + 0.5 * Math.sin(t * 2.2 - i * 0.8);
+        
+        // Failure Box (Left)
+        ctx.fillStyle = isDark ? 'rgba(255,80,80,0.1)' : 'rgba(214,48,49,0.1)';
+        ctx.strokeStyle = isDark ? 'rgba(255,80,80,0.45)' : 'rgba(214,48,49,0.45)';
+        ctx.lineWidth = 1.2;
+        ctx.fillRect(20, y, colW, rowH);
+        ctx.strokeRect(20, y, colW, rowH);
+        
+        ctx.fillStyle = isDark ? '#ff7675' : '#d63031';
+        ctx.font = 'bold 8.5px "Space Mono", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(`✗ ${p.failure}`, 28, y + 21);
+        
+        // Arrow
+        ctx.strokeStyle = accentColor;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(20 + colW + 4, y + rowH / 2);
+        ctx.lineTo(20 + colW + 24, y + rowH / 2);
+        ctx.stroke();
+        
+        ctx.fillStyle = accentColor;
+        ctx.beginPath();
+        ctx.moveTo(20 + colW + 24, y + rowH / 2);
+        ctx.lineTo(20 + colW + 19, y + rowH / 2 - 3);
+        ctx.lineTo(20 + colW + 19, y + rowH / 2 + 3);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Resolution Box (Right)
+        ctx.save();
+        ctx.fillStyle = `rgba(${accentRGB},${0.08 + pulse * 0.12})`;
+        ctx.strokeStyle = `rgba(${accentRGB},${0.45 + pulse * 0.45})`;
+        ctx.lineWidth = 1.4;
+        ctx.shadowColor = accentColor;
+        ctx.shadowBlur = pulse * 8;
+        ctx.fillRect(20 + colW + 30, y, colW, rowH);
+        ctx.strokeRect(20 + colW + 30, y, colW, rowH);
+        ctx.restore();
+        
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 8.5px "Space Mono", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(`✓ ${p.resolution}`, 20 + colW + 38, y + 21);
+      });
+    }
+    
+    function animate() {
+      const t = (Date.now() % 10000) / 1000;
+      drawConstraints(t);
+      animId = requestAnimationFrame(animate);
+    }
+    animate();
+    
+    window.addEventListener('pagehide', () => {
+      if (animId !== null) cancelAnimationFrame(animId);
+    });
+  </script>
+</body>
+</html>

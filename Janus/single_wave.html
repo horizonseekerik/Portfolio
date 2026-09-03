@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JANUS — Single-Wavelength Injection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/universe.css">
+  <script src="../shared/universe.js" defer></script>
+</head>
+<body>
+  <button class="return-btn" type="button">← Return to Universe</button>
+  
+  <div class="container">
+    <header>
+      <h1>Single-Wavelength Injection</h1>
+      <div class="subtitle">Nonlinear Optical Suppression &amp; 50 aJ LiTaO₃ Electro-Optic Pockels Routers</div>
+      <canvas id="schematicCanvas"></canvas>
+    </header>
+    
+    <div class="content">
+      <p>Many optical neural accelerators attempt to scale computational density through Dense Wavelength-Division Multiplexing (DWDM), where multiple optical carriers propagate simultaneously through shared waveguides. However, as optical intensity increases, Kerr nonlinearities (n = n₀ + n₂I) generate severe inter-channel interference—including <strong>Four-Wave Mixing (FWM)</strong>, <strong>Cross-Phase Modulation (XPM)</strong>, and <strong>Spectral Beating Noise</strong>—that scale superlinearly (P_NL ∝ γ·P³·L²) and corrupt analog signals before photodetection.</p>
+      
+      <p>JANUS abandons multi-wavelength scaling entirely. Instead, the architecture operates on a <strong>single optical carrier frequency (N_λ = 1 at 1064 nm)</strong>, scaling throughput purely in the spatial domain (T ∝ N_spatial). Without multiple carrier frequencies, conditions for inter-channel Four-Wave Mixing collapse (ω₁ = ω₂ = ω₃ ⇒ ω_FWM = ω), structurally suppressing ghost frequencies (P_ghost → 0) and inter-channel entropy transfer (E_i→j → 0).</p>
+      
+      <div class="drawer-section-title">DWDM Spectral Scaling vs. JANUS Spatial Fanout</div>
+      <table class="drawer-table">
+        <tr><th>Metric</th><th>Conventional DWDM Architectures</th><th>JANUS Single-Wavelength Fanout</th></tr>
+        <tr><td>Wavelength Channels</td><td>Many (16 – 64 discrete λ)</td><td><strong>1 Single Carrier (1064 nm Yb-Fiber)</strong></td></tr>
+        <tr><td>Four-Wave Mixing (FWM)</td><td>Present &amp; Superlinear (γ·P³·L²)</td><td><strong>Structurally Suppressed (P_ghost → 0)</strong></td></tr>
+        <tr><td>Cross-Phase Modulation (XPM)</td><td>Severe inter-channel phase shift</td><td><strong>Structurally Suppressed</strong></td></tr>
+        <tr><td>Spectral Beating Noise</td><td>High (limits receiver SNR)</td><td><strong>Completely Absent</strong></td></tr>
+        <tr><td>Throughput Scaling Mechanism</td><td>Spectral Density (T ∝ N_λ)</td><td><strong>Spatial Waveguide Parallelism (T ∝ N_spatial)</strong></td></tr>
+        <tr><td>Carrier Phase Coherence</td><td>Multiple unsynchronized lasers</td><td><strong>Maintained from Common Laser (Δϕ_source ≈ 0)</strong></td></tr>
+      </table>
+      
+      <div class="drawer-section-title">Active Electro-Optic Injection (LiTaO₃ Pockels Routers)</div>
+      <p>Because JANUS uses a single optical carrier, the optical power can be injected efficiently into the computation mesh without passive broadcast-and-attenuate losses. Each multiplier input incorporates a <strong>1 × 256 active micro-ring router</strong> fabricated in <strong>Lithium Tantalate (LiTaO₃)</strong>:</p>
+      <ul class="drawer-list">
+        <li><strong>Linear Pockels Electro-Optic Effect:</strong> Exploit capacitive field-effect switching rather than thermal phase-tuning or free-carrier plasma dispersion, eliminating carrier recombination latency and thermal drift.</li>
+        <li><strong>Sub-Femtojoule Switching:</strong> Capacitive charge and full cycle discharge yields an ultra-low dynamic switching energy of <strong>≈ 50 aJ per transition at 100 GHz</strong>.</li>
+        <li><strong>Datacenter Router Power:</strong> Total electrical power across all 134,217,728 active input routers is bounded to P_router = 134×10⁶ × 50 aJ × 100 GHz ≈ <strong>8.19 W</strong>.</li>
+        <li><strong>Spatial Entropy Isolation:</strong> Only the designated One-Hot waveguide receives optical energy (dark channels receive zero light), preserving carrier link margin and isolating computational entropy across channels (∂C_i / ∂C_j ≈ 0).</li>
+      </ul>
+      
+      <div>
+        <span class="drawer-badge drawer-badge-blue">SINGLE-λ (1064 nm)</span>
+        <span class="drawer-badge drawer-badge-green">FWM / XPM SUPPRESSED</span>
+        <span class="drawer-badge drawer-badge-amber">50 aJ LiTaO₃ POCKELS</span>
+        <span class="drawer-badge drawer-badge-gold">Δϕ_SOURCE ≈ 0</span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const theme = new URLSearchParams(window.location.search).get('theme') || sessionStorage.getItem('janus-theme') || localStorage.getItem('janus-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    const isDark = theme === 'dark';
+    const accentColor = isDark ? '#5585ff' : '#b87010';
+    const accentRGB = isDark ? '85,133,255' : '184,112,16';
+    const textColor = isDark ? 'rgba(255,255,255,0.92)' : 'rgba(18,12,4,0.92)';
+    
+    const canvas = document.getElementById('schematicCanvas');
+    const ctx = canvas.getContext('2d');
+    let animId = null;
+    
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(230 * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    function drawSingleWaveInjection(t) {
+      const w = canvas.clientWidth;
+      const h = 230;
+      ctx.clearRect(0, 0, w, h);
+      
+      const numBranches = 5;
+      const startX = 25, startY = 30;
+      const branchH = (h - 60) / (numBranches - 1);
+      const activeBranch = Math.floor((t * 1.8) % numBranches);
+      
+      // Laser Source
+      ctx.fillStyle = `rgba(${accentRGB},0.15)`;
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 1.4;
+      ctx.fillRect(startX, h / 2 - 28, 95, 56);
+      ctx.strokeRect(startX, h / 2 - 28, 95, 56);
+      
+      ctx.fillStyle = textColor;
+      ctx.font = 'bold 8.5px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('1064 nm Yb', startX + 47, h / 2 - 8);
+      ctx.fillText('SINGLE CARRIER', startX + 47, h / 2 + 6);
+      ctx.fillStyle = accentColor;
+      ctx.fillText('N_λ = 1', startX + 47, h / 2 + 19);
+      
+      // LiTaO3 1x256 Router
+      const rx = startX + 130, rw = 95, rh = 140;
+      const ry = (h - rh) / 2;
+      ctx.fillStyle = `rgba(${accentRGB},0.08)`;
+      ctx.fillRect(rx, ry, rw, rh);
+      ctx.strokeStyle = `rgba(${accentRGB},0.45)`;
+      ctx.strokeRect(rx, ry, rw, rh);
+      
+      ctx.fillStyle = textColor;
+      ctx.font = 'bold 8.5px "Space Mono", monospace';
+      ctx.fillText('1 × 256', rx + rw / 2, ry + 26);
+      ctx.fillText('LiTaO₃ POCKELS', rx + rw / 2, ry + 42);
+      ctx.fillText('ROUTER', rx + rw / 2, ry + 58);
+      ctx.fillStyle = accentColor;
+      ctx.font = '8px "Space Mono", monospace';
+      ctx.fillText('50 aJ / switch', rx + rw / 2, ry + 78);
+      
+      // Connecting laser to router
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(startX + 95, h / 2);
+      ctx.lineTo(rx, h / 2);
+      ctx.stroke();
+      
+      // Output waveguides
+      for (let i = 0; i < numBranches; i++) {
+        const by = startY + i * branchH;
+        const isActive = i === activeBranch;
+        
+        ctx.save();
+        if (isActive) {
+          ctx.strokeStyle = accentColor;
+          ctx.lineWidth = 2.5;
+          ctx.shadowColor = accentColor;
+          ctx.shadowBlur = 10;
+        } else {
+          ctx.strokeStyle = `rgba(${accentRGB},0.15)`;
+          ctx.lineWidth = 1;
+        }
+        ctx.beginPath();
+        ctx.moveTo(rx + rw, by);
+        ctx.lineTo(w - 30, by);
+        ctx.stroke();
+        ctx.restore();
+        
+        if (isActive) {
+          ctx.strokeStyle = accentColor;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(rx, h / 2);
+          ctx.lineTo(rx + rw, by);
+          ctx.stroke();
+        }
+      }
+      
+      // Pulse
+      const activeBy = startY + activeBranch * branchH;
+      const pulseProg = (t * 2.5) % 1;
+      const px = rx + rw + pulseProg * (w - 30 - (rx + rw));
+      
+      const glow = ctx.createRadialGradient(px, activeBy, 0, px, activeBy, 14);
+      glow.addColorStop(0, '#ffffff');
+      glow.addColorStop(0.35, accentColor);
+      glow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(px, activeBy, 14, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    function animate() {
+      const t = (Date.now() % 10000) / 1000;
+      drawSingleWaveInjection(t);
+      animId = requestAnimationFrame(animate);
+    }
+    animate();
+    
+    window.addEventListener('pagehide', () => {
+      if (animId !== null) cancelAnimationFrame(animId);
+    });
+  </script>
+</body>
+</html>

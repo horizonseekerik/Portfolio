@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JANUS — Power &amp; Throughput Profiles</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/universe.css">
+  <script src="../shared/universe.js" defer></script>
+</head>
+<body>
+  <button class="return-btn" type="button">← Return to Universe</button>
+  
+  <div class="container">
+    <header>
+      <h1>Power &amp; Throughput Profiles</h1>
+      <div class="subtitle">Multi-Precision Scaling (INT4 to INT64), Subsystem Power Budgets, and Energy Efficiency Metrics</div>
+      <canvas id="schematicCanvas"></canvas>
+    </header>
+    
+    <div class="content">
+      <p>A central breakthrough of the JANUS architecture is sustaining <strong>exact, bounded integer precision</strong> across arbitrary precision targets (INT4 through INT64) without sacrificing throughput density or energy efficiency. Because modular residue multiplication scales logarithmically through parallel One-Hot channels, computational throughput scales directly with active tile parallelism.</p>
+      
+      <div class="drawer-section-title">Multi-Precision Sustained Operational Throughput</div>
+      <p>Sustained throughput under realistic operational utilization (η = 0.85) across all three physical deployment tiers:</p>
+      <table class="drawer-table">
+        <tr><th>Precision Format</th><th>Mini Tier (32 × 32)</th><th>Edge Tier (64 × 64)</th><th>Datacenter Tier (128 × 128)</th></tr>
+        <tr><td>INT4 Low-Precision Peak</td><td>3,276.8 TMAC/s</td><td>13,107.2 TMAC/s</td><td><strong>52,428.8 TMAC/s</strong></td></tr>
+        <tr><td>INT8 Quantized Inference</td><td>1,638.4 TMAC/s</td><td>6,553.6 TMAC/s</td><td><strong>26,214.4 TMAC/s</strong></td></tr>
+        <tr><td>INT16 Standard Precision</td><td>786.4 TMAC/s</td><td>3,145.7 TMAC/s</td><td><strong>12,582.9 TMAC/s</strong></td></tr>
+        <tr><td>INT32 Extended Dynamic Range</td><td>374.5 TMAC/s</td><td>1,498.0 TMAC/s</td><td><strong>5,991.9 TMAC/s</strong></td></tr>
+        <tr><td>INT64 Exact Arithmetic (QRNS)</td><td>174.1 TMAC/s</td><td>696.3 TMAC/s</td><td><strong>2,785.3 TMAC/s</strong></td></tr>
+      </table>
+      
+      <div class="drawer-section-title">Complete Full-System Electrical &amp; Optical Power Budget</div>
+      <p>Power breakdown under continuous sustained 100 GHz full-mesh execution:</p>
+      <table class="drawer-table">
+        <tr><th>Power Subsystem</th><th>Mini Tier (40 mm²)</th><th>Edge Tier (100 mm²)</th><th>Datacenter Tier (300 mm²)</th></tr>
+        <tr><td>Laser Wall-Plug Power (1064 nm Yb, WPE &gt; 75%)</td><td>10.00 W</td><td>33.33 W</td><td>133.33 W</td></tr>
+        <tr><td>CMOS Digital Logic (FSM, Accumulators, CRT)</td><td>2.01 W</td><td>8.50 W</td><td>37.03 W</td></tr>
+        <tr><td>StrongARM Latched Photodetectors (100 aJ/op)</td><td>0.33 W</td><td>1.31 W</td><td>5.24 W</td></tr>
+        <tr><td>Active LiTaO₃ Input Routers (50 aJ/switch)</td><td>0.51 W</td><td>2.05 W</td><td>8.19 W</td></tr>
+        <tr><td>JIR Controller, Thermal Sensors &amp; Clocking</td><td>0.18 W</td><td>0.72 W</td><td>3.00 W</td></tr>
+        <tr><td>Static PCM Hold Power (Sb₂Se₃)</td><td><strong>0.00 W (Non-Volatile)</strong></td><td><strong>0.00 W (Non-Volatile)</strong></td><td><strong>0.00 W (Non-Volatile)</strong></td></tr>
+        <tr><td>Total System Dissipation</td><td><strong>13.03 W</strong></td><td><strong>43.58 W</strong></td><td><strong>186.79 W</strong></td></tr>
+      </table>
+      
+      <div class="drawer-section-title">Energy Efficiency Figures of Merit (TMAC/s/W)</div>
+      <table class="drawer-table">
+        <tr><th>Configuration Tier</th><th>INT64 Exact Efficiency</th><th>INT8 Quantized Efficiency</th><th>INT4 Peak Efficiency</th></tr>
+        <tr><td>Mini Configuration (32 × 32)</td><td>13.36 TMAC/s/W</td><td>125.74 TMAC/s/W</td><td>251.48 TMAC/s/W</td></tr>
+        <tr><td>Edge Configuration (64 × 64)</td><td>15.98 TMAC/s/W</td><td>150.38 TMAC/s/W</td><td>300.76 TMAC/s/W</td></tr>
+        <tr><td>Datacenter Configuration (128 × 128)</td><td>14.91 TMAC/s/W</td><td>140.34 TMAC/s/W</td><td>280.68 TMAC/s/W</td></tr>
+      </table>
+      
+      <div>
+        <span class="drawer-badge drawer-badge-blue">2,785.3 TMAC/s (INT64)</span>
+        <span class="drawer-badge drawer-badge-green">52,428.8 TMAC/s (INT4)</span>
+        <span class="drawer-badge drawer-badge-amber">186.79 W TOTAL</span>
+        <span class="drawer-badge drawer-badge-gold">300.76 TMAC/s/W</span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const theme = new URLSearchParams(window.location.search).get('theme') || sessionStorage.getItem('janus-theme') || localStorage.getItem('janus-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    const isDark = theme === 'dark';
+    const accentColor = isDark ? '#5585ff' : '#b87010';
+    const accentRGB = isDark ? '85,133,255' : '184,112,16';
+    const textColor = isDark ? 'rgba(255,255,255,0.92)' : 'rgba(18,12,4,0.92)';
+    
+    const canvas = document.getElementById('schematicCanvas');
+    const ctx = canvas.getContext('2d');
+    let animId = null;
+    
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(230 * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    function drawThroughputBars(t) {
+      const w = canvas.clientWidth;
+      const h = 230;
+      ctx.clearRect(0, 0, w, h);
+      
+      const bars = [
+        { label: 'INT64', val: 3276.8, max: 52428.8, display: '3,277 TMAC/s (Peak)' },
+        { label: 'INT32', val: 6553.6, max: 52428.8, display: '6,554 TMAC/s (Peak)' },
+        { label: 'INT16', val: 13107.2, max: 52428.8, display: '13,107 TMAC/s (Peak)' },
+        { label: 'INT8',  val: 26214.4, max: 52428.8, display: '26,214 TMAC/s (Peak)' },
+        { label: 'INT4',  val: 52428.8, max: 52428.8, display: '52,429 TMAC/s (Peak)' }
+      ];
+      
+      const padX = 25;
+      const startY = 22;
+      const rowH = (h - 50) / bars.length;
+      const maxBarW = w - padX * 2 - 170;
+      
+      bars.forEach((b, i) => {
+        const y = startY + i * rowH;
+        const pulse = 0.5 + 0.5 * Math.sin(t * 2.0 - i * 0.6);
+        const barW = Math.max(16, (Math.log10(b.val) / Math.log10(52428.8)) * maxBarW);
+        
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 8.5px "Space Mono", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(b.label, padX, y + rowH / 2 + 3);
+        
+        ctx.save();
+        ctx.fillStyle = `rgba(${accentRGB},${0.15 + pulse * 0.25})`;
+        ctx.strokeStyle = `rgba(${accentRGB},${0.5 + pulse * 0.4})`;
+        ctx.lineWidth = 1.2;
+        ctx.shadowColor = accentColor;
+        ctx.shadowBlur = pulse * 6;
+        ctx.fillRect(padX + 50, y + 4, barW, rowH - 8);
+        ctx.strokeRect(padX + 50, y + 4, barW, rowH - 8);
+        ctx.restore();
+        
+        ctx.fillStyle = accentColor;
+        ctx.font = 'bold 8px "Space Mono", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(b.display, padX + 58 + barW, y + rowH / 2 + 3);
+      });
+      
+      ctx.fillStyle = textColor;
+      ctx.font = '8px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('DATACENTER TIER SUSTAINED THROUGHPUT ACROSS PRECISION TARGETS', w / 2, h - 8);
+    }
+    
+    function animate() {
+      const t = (Date.now() % 10000) / 1000;
+      drawThroughputBars(t);
+      animId = requestAnimationFrame(animate);
+    }
+    animate();
+    
+    window.addEventListener('pagehide', () => {
+      if (animId !== null) cancelAnimationFrame(animId);
+    });
+  </script>
+</body>
+</html>

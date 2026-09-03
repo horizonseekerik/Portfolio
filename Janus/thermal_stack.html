@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JANUS — 3D Z-Axis Thermal Stack</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/universe.css">
+  <script src="../shared/universe.js" defer></script>
+</head>
+<body>
+  <button class="return-btn" type="button">← Return to Universe</button>
+  
+  <div class="container">
+    <header>
+      <h1>3D Z-Axis Thermal Stack</h1>
+      <div class="subtitle">Vertical Thermal Partitioning, Directional Heat Extraction, and Sub-Millimeter Package Architecture</div>
+      <canvas id="schematicCanvas"></canvas>
+    </header>
+    
+    <div class="content">
+      <p>Large-scale photonic accelerators cannot sustain deterministic operation if CMOS logic, optical routing waveguides, and detector arrays share a common planar substrate. Lateral heat diffusion from switching transistors directly perturbs the silicon refractive index (dn/dT ≈ 1.86 × 10⁻⁴ K⁻¹), inducing optical phase drift (Δϕ = (2πL/λ)(dn/dT)ΔT) that destabilizes interferometric transfer matrices.</p>
+      
+      <p>JANUS resolves this through a <strong>vertically partitioned 3D Z-axis stack</strong> that thermally decouples the optical layer from the dominant digital heat plane, establishing directional heat extraction with a steady-state thermal safety margin of <strong>17× below the optical phase-instability threshold</strong>.</p>
+      
+      <div class="drawer-section-title">Active Die Stack &amp; Macro-Package Dimensions</div>
+      <p>The system is physically partitioned into isolated functional planes bounded within a sub-millimeter Z-axis height:</p>
+      <table class="drawer-table">
+        <tr><th>Layer</th><th>Thickness</th><th>Functional Role &amp; Thermal Properties</th></tr>
+        <tr><td>CMOS Substrate</td><td>50 µm</td><td>Digital reconstruction, StrongARM readout, and JIR scheduling</td></tr>
+        <tr><td>SiO₂ Thermal Buffer Layer</td><td>100 µm</td><td>Monolithic thermal buffer (CSiO2,global ≈ 0.0464 J/K, τ_diff ≈ 11.05 ms)</td></tr>
+        <tr><td>SiPh Optical Routing Strata</td><td>30 µm / stratum</td><td>Multi-stratum dilated Sb₂Se₃ Beneš fabric (3 strata Mini, 4 Edge, 5 Datacenter)</td></tr>
+        <tr><td>Ge/Si APD Detector Block</td><td>10 µm</td><td>Interleaved 2-layer Ge/Si SAC²M avalanche photodetector array</td></tr>
+        <tr><td>Heat Spreader 1 (HS1)</td><td>30 µm</td><td>Dense copper-pillar Micro-Matrix directly above detector block</td></tr>
+        <tr><td>Cu–Cu Pillar Spreader Gap</td><td>50 µm</td><td>Ultra-high-density (950,000 mm⁻²) Cu–Cu pillar array with structural void gaps</td></tr>
+        <tr><td>Heat Spreader 2 (HS2) Lid</td><td>250 µm</td><td>External convective slim-lid package heat sink</td></tr>
+        <tr><td>Total Packaged Height</td><td><strong>0.58 – 0.64 mm</strong></td><td>Compatible with adjacent 3D High Bandwidth Memory (HBM stack: 720 µm)</td></tr>
+      </table>
+      
+      <div class="drawer-section-title">Directional Thermal Extraction &amp; Resistance Network</div>
+      <p>Thermal decoupling is governed by an engineered asymmetry in Cu–Cu bond densities:</p>
+      <ul class="drawer-list">
+        <li><strong>Downward CMOS Thermal Bottleneck:</strong> The CMOS/SiO₂ boundary features a sparse 10,000 mm⁻² bond density, presenting a high vertical thermal resistance (R_th,down = 0.488 K/W) that prevents CMOS heat from penetrating upward.</li>
+        <li><strong>Perimeter Copper Thermal Shunt:</strong> CMOS digital dissipation (q_CMOS ↓) is forced laterally into a continuous low-resistance copper perimeter shunt surrounding the 300 mm² die, routing heat directly to the exterior heat sink while acting as an EMI Faraday cage.</li>
+        <li><strong>Upward Photonic Extraction:</strong> The SiPh/HS1 boundary features a dense 900,000 mm⁻² Cu–Cu array (R_th,up = 0.18 K/W), creating an open upward conduit (q_photonic ↑) that pulls optical and detector heat directly into Heat Spreader 1.</li>
+      </ul>
+      
+      <div class="drawer-section-title">Thermal Diffusion Constant &amp; Stability Budget</div>
+      <p>The time required for heat to diffuse vertically across the 100 µm SiO₂ buffer layer is:</p>
+      <pre>τ_diff = (h_SiO2)² / α_SiO2 = (100 × 10⁻⁶)² / (9.05 × 10⁻⁷ m²/s) ≈ 11.05 ms</pre>
+      <p>This 11.05 ms diffusion time is <strong>over 2,200 JIR cycles long</strong> (τ_JIR = 5 µs). Consequently, high-frequency CMOS thermal transients are completely attenuated before they can reach the SiPh routing layer. Under sustained full-load operation:</p>
+      <table class="drawer-table">
+        <tr><th>Thermal Metric</th><th>Mini Tier</th><th>Edge Tier</th><th>Datacenter Tier</th></tr>
+        <tr><td>Steady-State SiPh Temperature Rise (ΔT_steady)</td><td>0.41 °C</td><td>0.38 °C</td><td>0.32 °C</td></tr>
+        <tr><td>Critical Phase-Drift Threshold (ΔT_crit for L = 500 µm)</td><td>5.7 °C</td><td>5.7 °C</td><td>5.7 °C</td></tr>
+        <tr><td>Thermal Operating Safety Margin (ΔT_crit / ΔT_steady)</td><td><strong>13.9× Margin</strong></td><td><strong>15.0× Margin</strong></td><td><strong>17.8× Margin</strong></td></tr>
+        <tr><td>Max Global Transient ΔT per 5 µs JIR Cycle</td><td>0.0053 °C</td><td>0.0054 °C</td><td>0.0054 °C</td></tr>
+        <tr><td>Sb₂Se₃ Safety Margin below Phase Transition (&gt;180°C)</td><td>&gt; 50 °C</td><td>&gt; 50 °C</td><td>&gt; 50 °C</td></tr>
+      </table>
+      
+      <div>
+        <span class="drawer-badge drawer-badge-blue">0.64 mm HBM COMPATIBLE</span>
+        <span class="drawer-badge drawer-badge-green">17× THERMAL MARGIN</span>
+        <span class="drawer-badge drawer-badge-amber">11.05 ms SiO₂ BARRIER</span>
+        <span class="drawer-badge drawer-badge-gold">PERIMETER SHUNT</span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const theme = new URLSearchParams(window.location.search).get('theme') || sessionStorage.getItem('janus-theme') || localStorage.getItem('janus-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    const isDark = theme === 'dark';
+    const accentColor = isDark ? '#5585ff' : '#b87010';
+    const accentRGB = isDark ? '85,133,255' : '184,112,16';
+    const textColor = isDark ? 'rgba(255,255,255,0.92)' : 'rgba(18,12,4,0.92)';
+    
+    const canvas = document.getElementById('schematicCanvas');
+    const ctx = canvas.getContext('2d');
+    let animId = null;
+    
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(230 * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    function drawThermalStack(t) {
+      const w = canvas.clientWidth;
+      const h = 230;
+      ctx.clearRect(0, 0, w, h);
+      
+      const layers = [
+        { name: 'HEAT SPREADER 2 (HS2 Slim Lid) — 250 µm', h: 28, color: `rgba(${accentRGB},0.25)` },
+        { name: 'Cu-Cu PILLAR ARRAY &amp; SPREADER GAP (HS1) — 80 µm', h: 24, color: `rgba(${accentRGB},0.18)` },
+        { name: 'Ge/Si SAC²M APD DETECTOR BLOCK — 10 µm', h: 20, color: isDark ? 'rgba(72,199,116,0.25)' : 'rgba(26,122,74,0.25)' },
+        { name: 'SiPh 5-STRATA ROUTING (GST-467) — 150 µm', h: 36, color: `rgba(${accentRGB},0.15)` },
+        { name: 'SiO₂ THERMAL BUFFER MOAT — 100 µm (τ = 11.05 ms)', h: 30, color: 'rgba(128,128,128,0.18)' },
+        { name: 'CMOS DIGITAL BASE SUBSTRATE — 50 µm', h: 28, color: isDark ? 'rgba(80,130,255,0.3)' : 'rgba(184,112,16,0.3)' }
+      ];
+      
+      let curY = 16;
+      const startX = 24;
+      const stackW = w - 160;
+      
+      layers.forEach(l => {
+        ctx.fillStyle = l.color;
+        ctx.fillRect(startX, curY, stackW, l.h);
+        ctx.strokeStyle = `rgba(${accentRGB},0.45)`;
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(startX, curY, stackW, l.h);
+        
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 8px "Space Mono", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(l.name, startX + 10, curY + l.h / 2 + 3);
+        
+        curY += l.h + 3;
+      });
+      
+      // Perimeter Shunt on Right
+      const shuntX = startX + stackW + 12;
+      const shuntW = 28;
+      const shuntH = curY - 19;
+      
+      ctx.fillStyle = isDark ? 'rgba(240,140,60,0.3)' : 'rgba(230,126,34,0.3)';
+      ctx.strokeStyle = isDark ? '#f08c3c' : '#d35400';
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(shuntX, 16, shuntW, shuntH);
+      ctx.strokeRect(shuntX, 16, shuntW, shuntH);
+      
+      ctx.save();
+      ctx.translate(shuntX + shuntW / 2, 16 + shuntH / 2);
+      ctx.rotate(Math.PI / 2);
+      ctx.fillStyle = isDark ? '#f08c3c' : '#d35400';
+      ctx.font = 'bold 7.5px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('COPPER SHUNT', 0, 0);
+      ctx.restore();
+      
+      // Heat routing arrow
+      ctx.strokeStyle = isDark ? '#f08c3c' : '#d35400';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(startX + stackW / 2, curY - 15);
+      ctx.lineTo(shuntX, curY - 15);
+      ctx.lineTo(shuntX, 16);
+      ctx.stroke();
+    }
+    
+    function animate() {
+      const t = (Date.now() % 10000) / 1000;
+      drawThermalStack(t);
+      animId = requestAnimationFrame(animate);
+    }
+    animate();
+    
+    window.addEventListener('pagehide', () => {
+      if (animId !== null) cancelAnimationFrame(animId);
+    });
+  </script>
+</body>
+</html>

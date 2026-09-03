@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JANUS — Dilated Beneš Routing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared/universe.css">
+  <script src="../shared/universe.js" defer></script>
+</head>
+<body>
+  <button class="return-btn" type="button">← Return to Universe</button>
+  
+  <div class="container">
+    <header>
+      <h1>Dilated Beneš Routing</h1>
+      <div class="subtitle">15-Stage Non-Volatile Permutation Fabrics with 3D Vertical Reservoir Switch Cells</div>
+      <canvas id="schematicCanvas"></canvas>
+    </header>
+    
+    <div class="content">
+      <p>Conventional optical matrix accelerators rely on thermo-optic Mach–Zehnder Interferometer (MZI) meshes that consume continuous electrical bias power (~0.10 mW per switch). At datacenter scale, a thermo-optic mesh would demand <strong>100.67 kW of continuous static heat dissipation</strong> directly on the chip, inducing severe thermal crosstalk and continuous recalibration drift.</p>
+      
+      <p>JANUS eliminates static hold power entirely by replacing thermo-optic heaters with <strong>non-volatile Antimony Selenide (Sb₂Se₃) phase-change material (PCM) switches</strong> arranged in a 15-stage dilated Beneš network topology. Unlike conventional GST alloys that suffer from high optical absorption in the crystalline state, Sb₂Se₃ exhibits near-zero optical absorption loss (Δk ≈ 0 at 1064 nm) with high refractive index contrast (Δn ≈ 1.2–1.5), allowing pure phase modulation without excessive attenuation. The optical state is latched non-volatilely after programming (<strong>0 W static hold power</strong>), drawing energy strictly during weight reconfigurations (~10–50 pJ per switch).</p>
+      
+      <div class="drawer-section-title">15-Stage Dilated Beneš Topology</div>
+      <ul class="drawer-list">
+        <li><strong>Universal 15-Stage Depth:</strong> Because One-Hot RNS operates on a 256-waveguide basis, each per-multiplier routing fabric requires exactly S = 2·log₂(256) − 1 = <strong>15 stages</strong>, regardless of global matrix dimension.</li>
+        <li><strong>Logarithmic Switch Complexity:</strong> Each per-multiplier Beneš fabric contains N_switch = (256/2)·(15) = <strong>1,920 switches</strong>, scaling as O(N log N) compared to O(N²) for full crossbars.</li>
+        <li><strong>Full Fabric Deployment:</strong> The Datacenter tier deploys 524,288 Beneš fabrics across 32 tiles, containing <strong>1,006,632,960 (1.006 Billion)</strong> non-volatile Sb₂Se₃ switches operating at 0 W static power.</li>
+        <li><strong>Dilated Crosstalk Suppression:</strong> Active and dummy paths are physically disjoint (Active ∩ Dummy = ∅). Simultaneously routed channels never share switching elements, structurally suppressing coherent crosstalk leakage.</li>
+        <li><strong>Predictable Low Optical Loss:</strong> Total routing loss is bounded to L_routing = 15 stages × 0.5 dB = <strong>7.5 dB</strong>, fitting comfortably within the 1064 nm passive laser power budget.</li>
+      </ul>
+      
+      <div class="drawer-section-title">3D Vertical Reservoir Switch Geometry (Sb₂Se₃)</div>
+      <p>Conventional PCM switches degrade over repeated melt-quench cycles due to liquid-phase segregation. JANUS optimizes the Sb₂Se₃ phase-change switch through engineered vertical reservoir architecture:</p>
+      <ul class="drawer-list">
+        <li><strong>Near-Zero Absorption (Δk ≈ 0):</strong> Sb₂Se₃ provides transparent optical phase shifting in both amorphous and crystalline states at 1064 nm, slashing insertion loss per switch cell to &lt; 0.5 dB.</li>
+        <li><strong>Nanoscale Void Gap (~25 nm):</strong> The PCM cell is split into an upper thermal reservoir (V_reservoir) and a lower optical interaction layer (V_optical) separated by an engineered air void.</li>
+        <li><strong>Thermal Isolation:</strong> Air thermal conductivity (k_air ≈ 0.026 W/m·K) is 54× lower than SiO₂, keeping the optical datapath cool during write cycles.</li>
+        <li><strong>Mechanical Buffer:</strong> Accommodates the volumetric transition between phases, preventing delamination across <strong>10⁶–10⁸ operational write cycles</strong>.</li>
+      </ul>
+      
+      <div class="drawer-section-title">Routing Fabric Comparison</div>
+      <table class="drawer-table">
+        <tr><th>Metric</th><th>Thermo-Optic MZI Mesh</th><th>JANUS Dilated Sb₂Se₃ Beneš</th></tr>
+        <tr><td>Static Hold Power</td><td>0.10 mW / switch (100.67 kW total)</td><td>0 W (Non-Volatile)</td></tr>
+        <tr><td>Dynamic Switching Energy</td><td>Continuous Bias Current</td><td>≈ 10–50 pJ / switch</td></tr>
+        <tr><td>Routing Granularity</td><td>Global Matrix N</td><td>Fixed 256-Waveguide One-Hot (15 Stages)</td></tr>
+        <tr><td>Switch Count per Fabric</td><td>Crossbar: 65,536 switches</td><td>Dilated Beneš: 1,920 switches</td></tr>
+        <tr><td>Crosstalk Mitigation</td><td>Complex active calibration loops</td><td>Structural path dilation (Active ∩ Dummy = ∅)</td></tr>
+        <tr><td>Switching Endurance</td><td>Continuous degradation via drift</td><td>10⁶ – 10⁸ cycles (Vertical Reservoir)</td></tr>
+        <tr><td>Insertion Loss</td><td>15 – 20 dB</td><td>7.5 dB (15 × 0.5 dB)</td></tr>
+      </table>
+      
+      <div>
+        <span class="drawer-badge drawer-badge-blue">1.006B Sb₂Se₃ SWITCHES</span>
+        <span class="drawer-badge drawer-badge-green">0 W STATIC POWER</span>
+        <span class="drawer-badge drawer-badge-amber">Sb₂Se₃ VOID-GAP</span>
+        <span class="drawer-badge drawer-badge-gold">15-STAGE BENEŠ</span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const theme = new URLSearchParams(window.location.search).get('theme') || sessionStorage.getItem('janus-theme') || localStorage.getItem('janus-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    
+    const isDark = theme === 'dark';
+    const accentColor = isDark ? '#5585ff' : '#b87010';
+    const accentRGB = isDark ? '85,133,255' : '184,112,16';
+    const textColor = isDark ? 'rgba(255,255,255,0.92)' : 'rgba(18,12,4,0.92)';
+    
+    const canvas = document.getElementById('schematicCanvas');
+    const ctx = canvas.getContext('2d');
+    let animId = null;
+    
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(230 * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    function drawBenesNetwork(t) {
+      const w = canvas.clientWidth;
+      const h = 230;
+      ctx.clearRect(0, 0, w, h);
+      
+      const stages = 7;
+      const rows = 5;
+      const colW = (w - 70) / (stages - 1);
+      const rowH = (h - 60) / (rows - 1);
+      const startX = 35, startY = 22;
+      
+      const nodes = [];
+      for (let s = 0; s < stages; s++) {
+        for (let r = 0; r < rows; r++) {
+          nodes.push({ x: startX + s * colW, y: startY + r * rowH, s, r });
+        }
+      }
+      
+      // Grid lines
+      nodes.forEach(n1 => {
+        if (n1.s < stages - 1) {
+          const nextSame = nodes.find(n2 => n2.s === n1.s + 1 && n2.r === n1.r);
+          const crossOffset = (n1.r % 2 === 0) ? 1 : -1;
+          const nextCross = nodes.find(n2 => n2.s === n1.s + 1 && n2.r === n1.r + crossOffset);
+          
+          ctx.strokeStyle = `rgba(${accentRGB},0.15)`;
+          ctx.lineWidth = 1;
+          if (nextSame) {
+            ctx.beginPath();
+            ctx.moveTo(n1.x, n1.y);
+            ctx.lineTo(nextSame.x, nextSame.y);
+            ctx.stroke();
+          }
+          if (nextCross) {
+            ctx.beginPath();
+            ctx.moveTo(n1.x, n1.y);
+            ctx.lineTo(nextCross.x, nextCross.y);
+            ctx.stroke();
+          }
+        }
+      });
+      
+      // Active route
+      const routePath = [1, 2, 2, 3, 2, 1, 1];
+      const phase = (t * 0.35) % 1;
+      const segIdx = Math.floor(phase * (stages - 1));
+      const segFrac = (phase * (stages - 1)) % 1;
+      
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 2.4;
+      ctx.shadowColor = accentColor;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      for (let s = 0; s < stages - 1; s++) {
+        const a = nodes.find(n => n.s === s && n.r === routePath[s]);
+        const b = nodes.find(n => n.s === s + 1 && n.r === routePath[s + 1]);
+        if (a && b) {
+          if (s === 0) ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+        }
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      
+      // Moving photon
+      if (segIdx < stages - 1) {
+        const a = nodes.find(n => n.s === segIdx && n.r === routePath[segIdx]);
+        const b = nodes.find(n => n.s === segIdx + 1 && n.r === routePath[segIdx + 1]);
+        if (a && b) {
+          const px = a.x + (b.x - a.x) * segFrac;
+          const py = a.y + (b.y - a.y) * segFrac;
+          
+          const glow = ctx.createRadialGradient(px, py, 0, px, py, 14);
+          glow.addColorStop(0, '#ffffff');
+          glow.addColorStop(0.35, accentColor);
+          glow.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(px, py, 14, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      
+      // Nodes
+      nodes.forEach(n1 => {
+        const pulse = 0.5 + 0.5 * Math.sin(t * 2.0 + n1.r * 0.8 + n1.s * 0.5);
+        ctx.fillStyle = `rgba(${accentRGB},${0.15 + pulse * 0.25})`;
+        ctx.strokeStyle = `rgba(${accentRGB},${0.5 + pulse * 0.4})`;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(n1.x, n1.y, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      });
+      
+      ['IN', 'STAGE 1', 'STAGE 2', 'STAGE 3', 'STAGE 4', 'STAGE 5', 'OUT'].forEach((lbl, i) => {
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold 8px "Space Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(lbl, startX + i * colW, h - 8);
+      });
+    }
+    
+    function animate() {
+      const t = (Date.now() % 10000) / 1000;
+      drawBenesNetwork(t);
+      animId = requestAnimationFrame(animate);
+    }
+    animate();
+    
+    window.addEventListener('pagehide', () => {
+      if (animId !== null) cancelAnimationFrame(animId);
+    });
+  </script>
+</body>
+</html>
